@@ -1,0 +1,20 @@
+version: '3'
+services:
+  app:
+    build: ./app
+    environment: 
+      - MONGODB_URL=mongodb://mongo:mongo@mongodb
+    ports:
+      - 8000:8000
+    volumes:
+        - ./app:/app
+  mongodb:
+    image: mongo:5.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    command: --setParameter processUmask=022
+    volumes:
+      - ./mongo:/data/db
+    ports:
+      - 27017:27017

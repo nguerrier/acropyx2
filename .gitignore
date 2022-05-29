@@ -1,0 +1,4 @@
+mongo/
+app/.venv-docker/
+__pycache__/
+*.py[cod]
