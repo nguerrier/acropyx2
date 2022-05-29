@@ -1,3 +1,5 @@
+import logging
+from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
 from core.database import db
@@ -5,9 +7,11 @@ from core.config import settings
 from models.judges import JudgeModel, UpdateJudgeModel
 from typing import Optional, List
 from fastapi.encoders import jsonable_encoder
+from fastapi.responses import Response
 import pymongo
 from pydantic.error_wrappers import ValidationError
 
+logger = logging.getLogger(__name__)
 judges = APIRouter()
 collection = db.judges
 
@@ -24,6 +28,7 @@ def judges_start():
     dependencies=[Depends(auth)],
 )
 async def list():
+    logger.debug("list()")
     judges = await collection.find().to_list(1000)
     return judges
 
@@ -36,6 +41,7 @@ async def list():
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
+    logger.debug("get(%s)", id)
     res = await collection.find_one({"_id": id})
     if res is None:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
@@ -52,12 +58,14 @@ async def get(id: str):
     dependencies=[Depends(auth)],
 )
 async def create(judge: JudgeModel = Body(...)):
+    logger.debug("create judge")
     judge = jsonable_encoder(judge)
     try:
-        judge = await collection.insert_one(judge)
+        res = await collection.insert_one(judge)
+        judge = await db.judges.find_one({"_id": res.inserted_id})
+        logger.debug("judge %s created with id %s", judge['name'], judge['_id'])
     except pymongo.errors.DuplicateKeyError:
         raise HTTPException(status_code=400, detail="Judge already exists")
-    judge = await db.judges.find_one({"_id": judge.inserted_id})
     return judge
 
 #
@@ -70,6 +78,7 @@ async def create(judge: JudgeModel = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def update(id: str, judge: UpdateJudgeModel = Body(...)):
+    logger.debug("update judge %s", id)
     judge = {k: v for k, v in judge.dict().items() if v is not None}
     judge = jsonable_encoder(judge)
     if len(judge) > 1: # only update if there are no None item
@@ -90,6 +99,8 @@ async def update(id: str, judge: UpdateJudgeModel = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def delete(id: str):
+    logger.debug("delete judge %s", id)
     res = await collection.delete_one({"_id": id})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)

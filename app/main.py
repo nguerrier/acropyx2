@@ -1,11 +1,13 @@
+import core.logging
+import logging
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from routers.api import router
 from core.config import settings
-
+from routers.api import router
 from routers.judges import judges_start
 
+logger = logging.getLogger(__name__)
 app = FastAPI(title=settings.PROJECT_NAME)
 
 # Set all CORS enabled origins
@@ -21,6 +23,7 @@ if settings.BACKEND_CORS_ORIGINS:
 
 @app.on_event("startup")
 async def startup_event():
+    logger.debug("starup_event()")
     judges_start()
 
 app.include_router(router)
