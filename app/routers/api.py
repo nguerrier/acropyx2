@@ -7,5 +7,5 @@ from routers.judges import judges
 
 router = APIRouter()
 router.include_router(status, prefix="/status", tags=["status"])
-#router.include_router(pilots, prefix="/pilots", tags=["pilots"])
+router.include_router(pilots, prefix="/pilots", tags=["pilots"])
 router.include_router(judges, prefix="/judges", tags=["judges"])

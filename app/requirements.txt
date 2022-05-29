@@ -22,3 +22,7 @@ typed-ast
 typing-extensions
 uvicorn
 pycountry
+httpx
+openpyxl
+lxml
+cssselect

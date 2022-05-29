@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from core.config import settings
 from routers.api import router
 from routers.judges import judges_start
+from routers.pilots import pilots_start
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title=settings.PROJECT_NAME)
@@ -25,5 +26,6 @@ if settings.BACKEND_CORS_ORIGINS:
 async def startup_event():
     logger.debug("starup_event()")
     judges_start()
+    pilots_start()
 
 app.include_router(router)
