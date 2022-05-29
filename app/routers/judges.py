@@ -17,6 +17,7 @@ collection = db.judges
 
 def judges_start():
     collection.create_index([('name', pymongo.TEXT)], unique=True)
+    logger.debug('index created on "name"')
 
 #
 # Get all judges
@@ -62,7 +63,7 @@ async def create(judge: JudgeModel = Body(...)):
     judge = jsonable_encoder(judge)
     try:
         res = await collection.insert_one(judge)
-        judge = await db.judges.find_one({"_id": res.inserted_id})
+        judge = await collection.find_one({"_id": res.inserted_id})
         logger.debug("judge %s created with id %s", judge['name'], judge['_id'])
     except pymongo.errors.DuplicateKeyError:
         raise HTTPException(status_code=400, detail="Judge already exists")
