@@ -38,5 +38,39 @@ class Settings(BaseSettings):
         civl_link_all_pilots = 'https://civlcomps.org/ranking/export?rankingId=1481&type=export_pilots_ranking'
         civl_link_one_pilot = 'https://civlcomps.org/pilot/'
 
+    class tricks:
+        available_bonuses = [
+            {"name": "reverse", "pre_acronym": "R"},
+            {"name": "twisted", "pre_acronym": "/"},
+            {"name": "twisted exit", "post_acronym": "/"},
+            {"name": "full twist", "post_acronym": "\\"},
+            {"name": "devil twist", "post_acronym": "X"},
+            {"name": "to twisted sat", "post_acronym": "S"},
+            {"name": "flip", "post_acronym": "F"},
+            {"name": "double flip", "post_acronym": "FF"}
+        ]
+
+        available_directions = [
+            {"name": "right", "acronym": "R" },
+            {"name": "left", "acronym": "L" },
+            {"name": "mirror", "acronym": "M" },
+            {"name": "opposite", "acronym": "O"}
+        ]
+
+        bonus_constraints: [
+                ["twist", "devil_twist"],
+                ["twist", "full twist"],
+                ["twist", "to twisted sat"],
+
+                ["devil_twist", "twist exit"],
+                ["devil_twist", "full twist"],
+                ["devil twist", "to twisted sat"],
+
+                ["full twist", "twist exit"],
+                ["full twist", "to twisted sat"],
+
+                ["twist exit", "to twisted sat"],
+        ]
+
 
 settings = Settings()

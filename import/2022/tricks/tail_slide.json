@@ -1,0 +1,15 @@
+{
+    "name": "Tail Slide",
+    "acronym": "TS",
+    "solo": true,
+    "synchro": true,
+    "directions": [],
+    "technical_coefficient": 1.15,
+    "bonuses": [
+        {"name": "twisted", "bonus": 6, "pre_acronym": "/"}
+    ],
+    "first_trick": 0,
+    "no_first_trick": 0,
+    "no_last_trick": 0,
+    "last_trick": 0
+}

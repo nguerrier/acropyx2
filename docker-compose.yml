@@ -8,6 +8,13 @@ services:
       - 8000:8000
     volumes:
         - ./app:/app
+    tty: true
+#    environment:
+#      DEBUG_COLORS: "true"
+#      TERM: xterm-256color
+#      COLORTERM: truecolor
+
+
   mongodb:
     image: mongo:5.0
     environment:

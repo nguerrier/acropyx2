@@ -1,0 +1,15 @@
+{
+    "name": "S.A.T",
+    "acronym": "S",
+    "solo": true,
+    "synchro": true,
+    "directions": ["right", "left"],
+    "technical_coefficient": 1.25,
+    "bonuses": [
+        {"name": "twisted", "bonus": 2.5, "pre_acronym": "/"}
+    ],
+    "first_trick": 0,
+    "no_first_trick": 0,
+    "no_last_trick": 0,
+    "last_trick": 0
+}

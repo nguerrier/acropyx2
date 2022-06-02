@@ -8,6 +8,7 @@ from routers.api import router
 from controllers.judges import judges_start
 from controllers.pilots import pilots_start
 from controllers.teams import teams_start
+from controllers.tricks import tricks_start
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title=settings.PROJECT_NAME)
@@ -29,5 +30,6 @@ async def startup_event():
     judges_start()
     pilots_start()
     teams_start()
+    tricks_start()
 
 app.include_router(router)

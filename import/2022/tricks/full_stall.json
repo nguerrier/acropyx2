@@ -1,0 +1,17 @@
+{
+    "name": "Full Stall",
+    "acronym": "FS",
+    "solo": true,
+    "synchro": true,
+    "directions": [],
+    "technical_coefficient": 1.00,
+    "bonuses": [
+        {"name": "twisted", "bonus": 1.5, "pre_acronym": "/"},
+        {"name": "twisted exit", "bonus": 3, "post_acronym": "/"},
+        {"name": "devil twist", "bonus": 4.5, "post_acronym": "\\"}
+    ],
+    "first_trick": 0,
+    "no_first_trick": 0,
+    "no_last_trick": 0,
+    "last_trick": 0
+}
