@@ -34,5 +34,9 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
 
+    class pilots:
+        civl_link_all_pilots = 'https://civlcomps.org/ranking/export?rankingId=1481&type=export_pilots_ranking'
+        civl_link_one_pilot = 'https://civlcomps.org/pilot/'
+
 
 settings = Settings()
