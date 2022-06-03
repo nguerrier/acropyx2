@@ -35,6 +35,7 @@ class PilotModel(BaseModel):
     photo: HttpUrl
     background_picture: HttpUrl
     last_update: datetime = Field(default_factory=datetime.now)
+    rank: Optional[int]
 
     class Config:
         allow_population_by_field_name = True

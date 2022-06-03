@@ -5,6 +5,8 @@ from openpyxl import load_workbook
 from tempfile import NamedTemporaryFile
 import lxml.html
 import re
+from fastapi.concurrency import run_in_threadpool
+from random import shuffle
 
 from core.config import settings
 from models.pilots import PilotModel
@@ -131,6 +133,18 @@ async def update_pilot(civlid: int):
     background_picture = html.cssselect('.image-fon img')[0].get('src')
     logger.debug(background_picture)
 
+    rank = 9999
+    try:
+        r = html.cssselect('.paragliding-aerobatics + div')
+        if len(r) > 0:
+            r = r[0].cssselect('td')
+            if len(r) >= 2:
+                rank = int(r[1].text)
+    except:
+        pass
+
+    logger.debug(rank)
+
     pilot = PilotModel(
         civlid=civlid,
         name=name,
@@ -141,5 +155,6 @@ async def update_pilot(civlid: int):
         sponsors=sponsors,
         photo=photo,
         background_picture=background_picture,
+        rank = rank,
     )
     return await pilot.save()
