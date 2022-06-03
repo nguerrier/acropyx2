@@ -40,36 +40,48 @@ class Settings(BaseSettings):
 
     class tricks:
         available_bonuses = [
-            {"name": "reverse", "pre_acronym": "R"},
+            {"name": "reverse", "post_acronym": "R"},
             {"name": "twisted", "pre_acronym": "/"},
             {"name": "twisted exit", "post_acronym": "/"},
-            {"name": "full twist", "post_acronym": "\\"},
+            {"name": "full twisted", "post_acronym": "\\"},
             {"name": "devil twist", "post_acronym": "X"},
             {"name": "to twisted sat", "post_acronym": "S"},
             {"name": "flip", "post_acronym": "F"},
-            {"name": "double flip", "post_acronym": "FF"}
+            {"name": "double flip", "post_acronym": "FF"},
+            {"name": "wing touch", "post_acronym": "T"},
         ]
 
         available_directions = [
             {"name": "right", "acronym": "R" },
             {"name": "left", "acronym": "L" },
             {"name": "mirror", "acronym": "M" },
-            {"name": "opposite", "acronym": "O"}
+            {"name": "opposite", "acronym": "O"},
         ]
 
-        bonus_constraints: [
-                ["twist", "devil_twist"],
-                ["twist", "full twist"],
-                ["twist", "to twisted sat"],
+        bonus_constraints = [
+                ["twisted exit"],
+                ["twisted", "devil twist"],
+                ["twisted", "full twist"],
+                ["twisted", "to twisted sat"],
+                ["twisted", "flip"],
+                ["twisted", "double flip"],
 
-                ["devil_twist", "twist exit"],
-                ["devil_twist", "full twist"],
+                ["devil twist", "twisted exit"],
+                ["devil twist", "full twist"],
                 ["devil twist", "to twisted sat"],
+                ["devil twist", "flip"],
+                ["devil twist", "double flip"],
 
-                ["full twist", "twist exit"],
-                ["full twist", "to twisted sat"],
+                ["full twisted", "twisted exit"],
+                ["full twisted", "to twisted sat"],
+                ["full twisted", "flip"],
+                ["full twisted", "double flip"],
 
-                ["twist exit", "to twisted sat"],
+                ["twisted exit", "to twisted sat"],
+                ["twisted exit", "flip"],
+                ["twisted exit", "double flip"],
+
+                ["flip", "double flip"],
         ]
 
 

@@ -1,0 +1,17 @@
+{
+  "name": "Bro Hook",
+  "acronym": "BH",
+  "directions": [],
+  "solo": false,
+  "synchro": true,
+  "description": "One pilot flies straight, the other pilot approaches from behind and connects",
+  "minimum": "4 seconds connected",
+  "criterias": {},
+  "repetition_allowed": true,
+  "technical_coefficient": 1.8,
+  "bonuses": [],
+  "first_trick": 0,
+  "no_first_trick": 0,
+  "last_trick": 0,
+  "no_last_trick": 0
+}

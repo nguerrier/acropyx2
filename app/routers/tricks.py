@@ -2,9 +2,10 @@ import logging
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
-from models.tricks import TrickModel
+from models.tricks import TrickModel, UniqueTrick
 from typing import List
 from fastapi.responses import Response
+from controllers.tricks import generate_tricks, check_tricks_unicity
 
 logger = logging.getLogger(__name__)
 tricks = APIRouter()
@@ -22,18 +23,49 @@ async def list():
     return await TrickModel.getall()
 
 #
+# Get all scores
+#
+@tricks.get(
+    "/scores",
+    response_description="Get all tricks",
+    response_model=List[UniqueTrick],
+    dependencies=[Depends(auth)],
+)
+async def get_scores(solo: bool=True, synchro: bool=True):
+    return await TrickModel.get_scores(solo, synchro)
+
+
+#
+# Get a score
+#
+@tricks.get(
+    "/score/{id:path}", # https://github.com/tiangolo/fastapi/issues/4390#issuecomment-1019558295
+    response_description="Get a Trick",
+    response_model=UniqueTrick,
+    dependencies=[Depends(auth)],
+)
+async def get_score(id):
+    logger.debug(f"id: {id}")
+    trick = await TrickModel.get_score(id)
+    if trick is None:
+        raise HTTPException(status_code=404, detail=f"Trick {id} not found")
+    logger.debug(trick)
+    return trick
+
+
+#
 # Get one trick
 #
 @tricks.get(
     "/{id}",
     response_description="Get a Trick",
+    response_model=TrickModel,
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
     trick = await TrickModel.get(id)
     if trick is None:
         raise HTTPException(status_code=404, detail=f"Trick {id} not found")
-    logger.debug(trick)
     return trick
 
 #
@@ -46,9 +78,13 @@ async def get(id: str):
     response_model=TrickModel,
     dependencies=[Depends(auth)],
 )
-async def create(trick: TrickModel = Body(...)):
+async def create(trick: TrickModel = Body(...), erase: bool=False):
     try:
-        return await trick.create()
+        generate_tricks(trick)
+        if erase:
+            return await trick.create_or_update()
+        else:
+            return await trick.create()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -61,12 +97,16 @@ async def create(trick: TrickModel = Body(...)):
     response_description="Add new Trick",
     dependencies=[Depends(auth)],
 )
-async def create(tricks: List[TrickModel] = Body(...)):
+async def create_import(tricks: List[TrickModel] = Body(...), erase: bool=False):
     errors = []
     count = 0
     for trick in tricks:
         try:
-            await trick.create()
+            generate_tricks(trick)
+            if erase:
+                await trick.create_or_update()
+            else:
+                await trick.create()
             count += 1
         except Exception as e:
             errors.append(str(e))
@@ -89,6 +129,7 @@ async def create(tricks: List[TrickModel] = Body(...)):
 async def update(id: str, trick: TrickModel = Body(...)):
     try:
         trick.id = id
+        generate_tricks(trick)
         await trick.update()
         return trick
     except Exception as e:
@@ -107,3 +148,18 @@ async def delete(id: str):
     if not await TrickModel.delete(id):
         raise HTTPException(status_code=404, detail=f"Trick {id} not found")
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
+
+#
+# Check scores unicity
+#
+@tricks.patch(
+    "/scores",
+    status_code=200,
+    response_model=bool,
+    dependencies=[Depends(auth)],
+)
+async def check_score_unicity():
+    try:
+        return await check_tricks_unicity()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,19 @@
+{
+  "name": "Wingovers Cruzados",
+  "acronym": "WC",
+  "directions": [],
+  "solo": true,
+  "synchro": true,
+  "description": "Same as Wingover Opposite but the pilots must cross each other during the manoeuvre",
+  "minimum": null,
+  "criterias": {
+    "normal": "same as Wingover Opposite"
+  },
+  "repetition_allowed": true,
+  "technical_coefficient": 1.85,
+  "bonuses": [],
+  "first_trick": 0,
+  "no_first_trick": 0,
+  "last_trick": 0,
+  "no_last_trick": 0
+}

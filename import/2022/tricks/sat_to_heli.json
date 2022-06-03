@@ -1,0 +1,25 @@
+{
+  "name": "SAT to Helicopter",
+  "acronym": "SH",
+  "directions": ["left", "right"],
+  "solo": true,
+  "synchro": true,
+  "name_short": "SAT to Heli",
+  "description": "Several SAT rotation + connection to helicopter",
+  "minimum": "2 SAT rotations, 3 helicopter rotations",
+  "criterias": {
+    "normal": "flow and speed of transition",
+    "twisted": "twisted on the entry, must be untwisted during the transition into helicopter, NOT before",
+    "reverse": "immediate transition to a Helicopter in the opposite direction"
+  },
+  "connection": "Forbidden connection to Helicopter",
+  "technical_coefficient": 1.85,
+  "bonuses": [
+    {"name": "twisted","bonus": 4.5},
+    {"name": "reverse","bonus": 4.5}
+  ],
+  "first_trick": 0,
+  "no_first_trick": 0,
+  "last_trick": 0,
+  "no_last_trick": 0
+}
