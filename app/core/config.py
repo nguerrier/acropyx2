@@ -84,5 +84,8 @@ class Settings(BaseSettings):
                 ["flip", "double flip"],
         ]
 
+    class competitions:
+        apply_penalties: bool = True
+        nb_pilots_to_keep_for_next_run: int = 0
 
 settings = Settings()

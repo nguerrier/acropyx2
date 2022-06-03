@@ -25,26 +25,14 @@ async def list():
 # Get one competition
 #
 @competitions.get(
-    "/{id}",
+    "/{name}/{year}",
     response_description="Get a Competition",
     dependencies=[Depends(auth)],
 )
-async def get(id: str):
-    competition = await CompetitionModel.get(id, None)
+async def get(name: str, year: int):
+    competition = await CompetitionModel.get(name, year)
     if competition is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
-    logger.debug(competition)
-    return competition
-
-@competitions.get(
-    "/{id}/{year}",
-    response_description="Get a Competition",
-    dependencies=[Depends(auth)],
-)
-async def get(id: str, year: int):
-    competition = await CompetitionModel.get(id, year)
-    if competition is None:
-        raise HTTPException(status_code=404, detail=f"Competition '{id} - {year}' not found")
+        raise HTTPException(status_code=404, detail=f"Competition '{name} - {year}' not found")
     logger.debug(competition)
     return competition
 
@@ -64,18 +52,16 @@ async def create(competition: CompetitionModel = Body(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-#
-# Update an existing Competition
-#
 @competitions.put(
-    "/{id}",
+    "/{name}/{year}",
     response_description="Add new Competition",
     response_model=CompetitionModel,
     dependencies=[Depends(auth)],
 )
-async def update(id: str, competition: CompetitionModel = Body(...)):
+async def update(name: str, year: int, competition: CompetitionModel = Body(...)):
     try:
-        competition.id = id
+        competition.name = name
+        competition.year = year
         await competition.update()
         return competition
     except Exception as e:
@@ -85,12 +71,14 @@ async def update(id: str, competition: CompetitionModel = Body(...)):
 # Delete a Competition
 #
 @competitions.delete(
-    "/{id}",
+    "/{name}/{year}",
     status_code=204,
     response_description="Delete a Competition",
     dependencies=[Depends(auth)],
 )
-async def delete(id: str):
-    if not await CompetitionModel.delete(id):
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+async def delete(name: str, year: int, force: bool = False):
+    if not force:
+        raise HTTPException(status_code=400, detail=f"Cannot delete a competition")
+    if not await CompetitionModel.delete(name, year):
+        raise HTTPException(status_code=404, detail=f"Competition '{name} - {year}' not found")
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
