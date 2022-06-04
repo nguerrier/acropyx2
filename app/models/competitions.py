@@ -39,7 +39,7 @@ class CompetitionModel(BaseModel):
     type: CompetitionType
     config: CompetitionConfig
     start_date: date
-    stop_date: date
+    end_date: date
 
 #    @validator('pilots')
 #    def check_pilots(cls, v):
