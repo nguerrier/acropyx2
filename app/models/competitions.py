@@ -85,6 +85,7 @@ class CompetitionModel(BaseModel):
     async def create(self):
         try:
             await self.check()
+            await self.sort_pilots()
             competition = jsonable_encoder(self)
             res = await collection.insert_one(competition)
             self.id = res.inserted_id
@@ -97,6 +98,7 @@ class CompetitionModel(BaseModel):
 
     async def update(self):
         await self.check()
+        await self.sort_pilots()
         competition = jsonable_encoder(self)
         del competition['_id']
         await collection.update_one({"name": self.name}, {"$set": competition})
@@ -106,6 +108,13 @@ class CompetitionModel(BaseModel):
         self.id = res['_id']
         logger.debug("competition '%s' updated with id %s", self.name, self.id)
         return self
+
+    async def sort_pilots(self):
+        pilots = []
+        # PilotModel.getall return a sorted list of pilots by rank and name
+        for pilot in await PilotModel.getall(self.pilots):
+            pilots.append(pilot.name)
+        self.pilots = pilots
 
     @staticmethod
     def createIndexes():

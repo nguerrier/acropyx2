@@ -82,9 +82,14 @@ class PilotModel(BaseModel):
         return None
 
     @staticmethod
-    async def getall():
+    async def getall(list:List[str] = []):
+        if len(list) > 0:
+            cond = {"name": {"$in": list}}
+        else:
+            cond = {}
         pilots = []
-        for pilot in await collection.find().to_list(1000):
+        sort=[("rank", pymongo.ASCENDING),("name", pymongo.ASCENDING)]
+        for pilot in await collection.find(filter=cond, sort=sort).to_list(1000):
             pilots.append(PilotModel.parse_obj(pilot))
         return pilots
 
