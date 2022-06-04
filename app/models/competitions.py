@@ -1,10 +1,11 @@
 import logging
 from pydantic import BaseModel, Field, validator
 from bson import ObjectId
-from typing import List
+from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
 from enum import Enum
+from datetime import date
 
 from models.pilots import PilotModel
 from models.judges import JudgeModel
@@ -31,12 +32,14 @@ class CompetitionConfig(BaseModel):
 class CompetitionModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., min_len=1)
-    year: int = Field(..., gt=2000)
+    year: Optional[int]
     pilots: List[str] = Field([])
     judges: List[str] = Field([])
     state: CompetitionState
     type: CompetitionType
     config: CompetitionConfig
+    start_date: date
+    stop_date: date
 
 #    @validator('pilots')
 #    def check_pilots(cls, v):
@@ -66,6 +69,9 @@ class CompetitionModel(BaseModel):
         return f"{self.name} - {self.year}"
 
     async def check(self):
+        if self.year is None:
+            self.year = self.start_date.year
+
         for id in self.pilots:
             pilot = await PilotModel.get(id)
             if pilot is None:
@@ -133,7 +139,8 @@ class CompetitionModel(BaseModel):
     async def getall():
         logger.debug("getall()")
         competitions = []
-        for competition in await collection.find().to_list(1000):
+        sort=[("last_update", pymongo.ASCENDING),("name", pymongo.ASCENDING)]
+        for competition in await collection.find(sort=sort).to_list(1000):
             competitions.append(CompetitionModel.parse_obj(competition))
         return competitions
 
