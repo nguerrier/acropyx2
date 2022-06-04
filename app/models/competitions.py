@@ -9,6 +9,7 @@ from datetime import date
 
 from models.pilots import PilotModel
 from models.judges import JudgeModel
+from models.runs import Run
 
 from core.database import db, PyObjectId
 from core.config import settings
@@ -40,6 +41,7 @@ class CompetitionModel(BaseModel):
     config: CompetitionConfig
     start_date: date
     end_date: date
+    runs: List[Run]
 
 #    @validator('pilots')
 #    def check_pilots(cls, v):
