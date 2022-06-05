@@ -23,7 +23,7 @@ class Sponsor(BaseModel):
     img: str
 
 
-class PilotModel(BaseModel):
+class Pilot(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     civlid: int
     name: str
@@ -78,7 +78,7 @@ class PilotModel(BaseModel):
             {"civlid": civlid},
         ]})
         if pilot is not None:
-            return PilotModel.parse_obj(pilot)
+            return Pilot.parse_obj(pilot)
         return None
 
     @staticmethod
@@ -90,7 +90,7 @@ class PilotModel(BaseModel):
         pilots = []
         sort=[("rank", pymongo.ASCENDING),("name", pymongo.ASCENDING)]
         for pilot in await collection.find(filter=cond, sort=sort).to_list(1000):
-            pilots.append(PilotModel.parse_obj(pilot))
+            pilots.append(Pilot.parse_obj(pilot))
         return pilots
 
     @staticmethod

@@ -37,7 +37,7 @@ class UniqueTrick(BaseModel):
     technical_coefficient: float
     bonus: float
 
-class TrickModel(BaseModel):
+class Trick(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., min_length=1)
     acronym: str = Field(..., min_length=1)
@@ -82,7 +82,7 @@ class TrickModel(BaseModel):
 
     async def check(self):
 #        for id in self.pilots:
-#            pilot = await PilotModel.get(id)
+#            pilot = await Pilot.get(id)
 #            if pilot is None:
 #                raise Exception(f"Pilot '{id}' is unknown, only known pilots can be part of a trick")
         return
@@ -130,7 +130,7 @@ class TrickModel(BaseModel):
             {"name": id},
         ]})
         if trick is not None:
-            return TrickModel.parse_obj(trick)
+            return Trick.parse_obj(trick)
         return None
 
     @staticmethod
@@ -162,7 +162,7 @@ class TrickModel(BaseModel):
         logger.debug("getall()")
         tricks = []
         for trick in await collection.find().to_list(1000):
-            tricks.append(TrickModel.parse_obj(trick))
+            tricks.append(Trick.parse_obj(trick))
         return tricks
 
     @staticmethod

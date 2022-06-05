@@ -5,14 +5,14 @@ from typing import List
 from fastapi.encoders import jsonable_encoder
 import pymongo
 
-from models.pilots import PilotModel
+from models.pilots import Pilot
 
 from core.database import db, PyObjectId
 logger = logging.getLogger(__name__)
 collection = db.teams
 
 
-class TeamModel(BaseModel):
+class Team(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str
     pilots: List[str]
@@ -37,7 +37,7 @@ class TeamModel(BaseModel):
 
     async def check(self):
         for id in self.pilots:
-            pilot = await PilotModel.get(id)
+            pilot = await Pilot.get(id)
             if pilot is None:
                 raise Exception(f"Pilot '{id}' is unknown, only known pilots can be part of a team")
 
@@ -77,7 +77,7 @@ class TeamModel(BaseModel):
             {"name": id},
         ]})
         if team is not None:
-            return TeamModel.parse_obj(team)
+            return Team.parse_obj(team)
         return None
 
     @staticmethod
@@ -85,7 +85,7 @@ class TeamModel(BaseModel):
         logger.debug("getall()")
         teams = []
         for team in await collection.find().to_list(1000):
-            teams.append(TeamModel.parse_obj(team))
+            teams.append(Team.parse_obj(team))
         return teams
 
     @staticmethod

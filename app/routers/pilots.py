@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from typing import List
 
 from core.security import auth
-from models.pilots import PilotModel, collection
+from models.pilots import Pilot, collection
 from controllers.pilots import update_pilot, update_pilots, isTaskRunning
 
 logger = logging.getLogger(__name__)
@@ -16,12 +16,12 @@ pilots = APIRouter()
 @pilots.get(
     "/",
     response_description="List all pilots",
-    response_model=List[PilotModel],
+    response_model=List[Pilot],
     dependencies=[Depends(auth)],
 )
 async def list():
     logger.debug("list()")
-    return await PilotModel.getall()
+    return await Pilot.getall()
 
 #
 # Get one pilot
@@ -34,7 +34,7 @@ async def list():
 async def get(id: str):
     logger.debug("get(%s)", id)
 
-    pilot = await PilotModel.get(id)
+    pilot = await Pilot.get(id)
     if pilot is None:
         raise HTTPException(status_code=404, detail=f"Pilot {id} not found")
     return pilot
@@ -61,7 +61,7 @@ async def sync(background_tasks: BackgroundTasks):
     "/{civlid}",
     status_code=201,
     response_description="Add new Pilot",
-    response_model=PilotModel,
+    response_model=Pilot,
     dependencies=[Depends(auth)],
 )
 async def create(civlid: int):

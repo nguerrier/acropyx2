@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
-from models.teams import TeamModel
+from models.teams import Team
 from typing import List
 from fastapi.responses import Response
 
@@ -15,11 +15,11 @@ teams = APIRouter()
 @teams.get(
     "/",
     response_description="List all teams",
-    response_model=List[TeamModel],
+    response_model=List[Team],
     dependencies=[Depends(auth)],
 )
 async def list():
-    return await TeamModel.getall()
+    return await Team.getall()
 
 #
 # Get one team
@@ -30,7 +30,7 @@ async def list():
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
-    team = await TeamModel.get(id)
+    team = await Team.get(id)
     if team is None:
         raise HTTPException(status_code=404, detail=f"Team {id} not found")
     logger.debug(team)
@@ -43,10 +43,10 @@ async def get(id: str):
     "/",
     status_code=201,
     response_description="Add new Team",
-    response_model=TeamModel,
+    response_model=Team,
     dependencies=[Depends(auth)],
 )
-async def create(team: TeamModel = Body(...)):
+async def create(team: Team = Body(...)):
     try:
         return await team.create()
     except Exception as e:
@@ -58,10 +58,10 @@ async def create(team: TeamModel = Body(...)):
 @teams.put(
     "/{id}",
     response_description="Add new Team",
-    response_model=TeamModel,
+    response_model=Team,
     dependencies=[Depends(auth)],
 )
-async def update(id: str, team: TeamModel = Body(...)):
+async def update(id: str, team: Team = Body(...)):
     try:
         team.id = id
         await team.update()
@@ -79,6 +79,6 @@ async def update(id: str, team: TeamModel = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def delete(id: str):
-    if not await TeamModel.delete(id):
+    if not await Team.delete(id):
         raise HTTPException(status_code=404, detail=f"Team {id} not found")
     return Response(status_code=HTTPStatus.NO_CONTENT.value)

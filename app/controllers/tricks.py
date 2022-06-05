@@ -1,14 +1,14 @@
 import logging
 import itertools
-from models.tricks import TrickModel, Bonus
+from models.tricks import Trick, Bonus
 from core.config import settings
 
 logger = logging.getLogger(__name__)
 
 def tricks_start():
-    TrickModel.createIndexes()
+    Trick.createIndexes()
 
-def generate_tricks(trick: TrickModel):
+def generate_tricks(trick: Trick):
     combinations = []
     for i in range(1,len(trick.bonuses)+1):
         for combination in  list(itertools.combinations(trick.bonuses, i)):
@@ -41,7 +41,7 @@ def generate_tricks(trick: TrickModel):
     for t in trick.tricks:
         logger.debug(t)
 
-def generate_trick(trick: TrickModel, combination: [Bonus]):
+def generate_trick(trick: Trick, combination: [Bonus]):
 
     pre_name = ""
     pre_acronym = ""
@@ -102,7 +102,7 @@ def generate_trick(trick: TrickModel, combination: [Bonus]):
     return
 
 async def check_tricks_unicity():
-    tricks = await TrickModel.get_scores(solo=True, synchro=True)
+    tricks = await Trick.get_scores(solo=True, synchro=True)
     acronyms  = list(map(lambda x: x.acronym, tricks))
     duplicates = [a for a in acronyms if acronyms.count(a) > 1 ]
     if len(duplicates) > 0:

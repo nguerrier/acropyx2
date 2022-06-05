@@ -7,9 +7,9 @@ import pymongo
 from enum import Enum
 from datetime import datetime
 
-from models.pilots import PilotModel
+from models.pilots import Pilot
 from models.judges import JudgeModel
-from models.tricks import TrickModel
+from models.tricks import Trick
 from models.judge_marks import JudgeMark
 from models.final_marks import FinalMark
 
@@ -19,6 +19,6 @@ logger = logging.getLogger(__name__)
 
 class Flight(BaseModel):
     pilot: str
-    tricks: List[TrickModel]
+    tricks: List[Trick]
     marks: List[JudgeMark]
     final_marks: FinalMark

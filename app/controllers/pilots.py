@@ -9,7 +9,7 @@ from fastapi.concurrency import run_in_threadpool
 from random import shuffle
 
 from core.config import settings
-from models.pilots import PilotModel
+from models.pilots import Pilot
 
 logger = logging.getLogger(__name__)
 taskRunning = False
@@ -70,7 +70,7 @@ async def update_pilots():
 
 
 def pilots_start():
-    PilotModel.createIndexes()
+    Pilot.createIndexes()
 
 async def update_pilot(civlid: int):
     async with httpx.AsyncClient() as client:
@@ -145,7 +145,7 @@ async def update_pilot(civlid: int):
 
     logger.debug(rank)
 
-    pilot = PilotModel(
+    pilot = Pilot(
         civlid=civlid,
         name=name,
         country=country,

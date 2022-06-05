@@ -7,7 +7,7 @@ import pymongo
 from enum import Enum
 from datetime import date
 
-from models.pilots import PilotModel
+from models.pilots import Pilot
 from models.judges import JudgeModel
 from models.runs import Run
 
@@ -75,7 +75,7 @@ class CompetitionModel(BaseModel):
             self.year = self.start_date.year
 
         for id in self.pilots:
-            pilot = await PilotModel.get(id)
+            pilot = await Pilot.get(id)
             if pilot is None:
                 raise Exception(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
         for id in self.judges:
@@ -119,8 +119,8 @@ class CompetitionModel(BaseModel):
 
     async def sort_pilots(self):
         pilots = []
-        # PilotModel.getall return a sorted list of pilots by rank and name
-        for pilot in await PilotModel.getall(self.pilots):
+        # Pilot.getall return a sorted list of pilots by rank and name
+        for pilot in await Pilot.getall(self.pilots):
             pilots.append(pilot.name)
         self.pilots = pilots
 
