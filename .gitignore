@@ -1,4 +1,4 @@
 mongo/
-app/.venv-docker/
+back/.venv-docker/
 __pycache__/
 *.py[cod]

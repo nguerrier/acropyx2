@@ -1,13 +1,13 @@
 version: '3'
 services:
-  app:
-    build: ./app
+  back:
+    build: ./back
     environment: 
       - MONGODB_URL=mongodb://mongo:mongo@mongodb
     ports:
       - 8000:8000
     volumes:
-        - ./app:/app
+        - ./back:/app
     tty: true
 #    environment:
 #      DEBUG_COLORS: "true"
