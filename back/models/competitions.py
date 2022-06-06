@@ -8,7 +8,7 @@ from enum import Enum
 from datetime import date
 
 from models.pilots import Pilot
-from models.judges import JudgeModel
+from models.judges import Judge
 from models.runs import Run
 
 from core.database import db, PyObjectId
@@ -79,7 +79,7 @@ class CompetitionModel(BaseModel):
             if pilot is None:
                 raise Exception(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
         for id in self.judges:
-            judge = await JudgeModel.get(id)
+            judge = await Judge.get(id)
             if judge is None:
                 raise Exception(f"Judge '{id}' is unknown, only known judges can take part of a competition")
 

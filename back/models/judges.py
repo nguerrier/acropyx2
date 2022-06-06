@@ -6,6 +6,7 @@ from pycountry import countries
 from typing import Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
+from datetime import datetime
 
 from core.database import db, PyObjectId
 logger = logging.getLogger(__name__)
@@ -21,11 +22,12 @@ class JudgeLevel(Enum):
     senior = "senior"
 
 
-class JudgeModel(BaseModel):
+class Judge(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    name: str
-    country: str
-    level: JudgeLevel
+    name: str = Field(..., description="The full name of the judge")
+    country: str = Field(..., description="The country of the judge using the 3 letter acronym of the country")
+    level: JudgeLevel = Field(..., description="The level of the judge")
+    deleted: Optional[datetime] = Field(None, exclude={"deleted"}) # when set, the judge is deleted
 
     _normalize_country = validator('country', allow_reuse=True)(check_country)
 
@@ -44,6 +46,7 @@ class JudgeModel(BaseModel):
     async def create(self):
         try:
             judge = jsonable_encoder(self)
+            judge['deleted'] = None
             res = await collection.insert_one(judge)
             self.id = res.inserted_id
             logger.debug("judge %s created with id %s", self.name, self.id)
@@ -51,45 +54,70 @@ class JudgeModel(BaseModel):
         except pymongo.errors.DuplicateKeyError:
             raise Exception(f"Judge '{self.name}' already exists")
 
-    async def update(self):
+    async def save(self):
         judge = jsonable_encoder(self)
-        del judge['_id']
-        await collection.update_one({"name": self.name}, {"$set": judge})
-        res = await collection.find_one({"name": self.name})
-        if res is None:
-            raise Exception(f"Judge '{self.name}' not found")
-        self.id = res['_id']
-        logger.debug("judge '%s' updated with id %s", self.name, self.id)
-        return self
+#        del judge['_id']
+        logger.debug({"_id": str(self.id)})
+        logger.debug(judge)
+        res =  await collection.update_one({"_id": str(self.id)}, {"$set": judge})
+        logger.debug(f"[{self.name}] update_one({self.id}) returned match={res.matched_count} modifiy={res.modified_count}")
+        logger.debug(res.raw_result)
+        return res.modified_count == 1
 
     @staticmethod
     def createIndexes():
-        collection.create_index('name', unique=True)
-        logger.debug('index created on "name"')
+        collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        logger.debug('index created on "name,deleted"')
 
     @staticmethod
     async def get(id):
         logger.debug("get(%s)", id)
-        judge = await collection.find_one({ "$or": [
-            {"_id": id},
-            {"name": id},
-        ]})
+        judge = await collection.find_one({
+            "$or": [
+                {"_id": id},
+                {"$and": [
+                    {"name": id},
+                    {"deleted": None}
+                ]},
+            ]
+        })
         if judge is not None:
-            return JudgeModel.parse_obj(judge)
+            logger.debug(f"get find_one -> {judge}")
+            return Judge.parse_obj(judge)
         return None
 
     @staticmethod
     async def getall():
         logger.debug("getall()")
         judges = []
-        for judge in await collection.find().to_list(1000):
-            judges.append(JudgeModel.parse_obj(judge))
+        for judge in await collection.find({"deleted": None}, sort=[("level", pymongo.DESCENDING), ("name", pymongo.ASCENDING)]).to_list(1000):
+            judges.append(Judge.parse_obj(judge))
         return judges
 
     @staticmethod
-    async def delete(id: str):
-        res = await collection.delete_one({ "$or": [
-            {"_id": id},
-            {"name": id},
-        ]})
-        return res.deleted_count == 1
+    async def update(id: str, judge_update):
+        judge = await Judge.get(id)
+        if judge is None:
+            return None
+
+        logger.debug(f"got judge: {judge}")
+        judge_update.id = judge.id
+        return await judge_update.save()
+
+    @staticmethod
+    async def delete(id: str, restore: bool = False):
+        judge = await Judge.get(id)
+        if judge is None:
+            return None
+
+        if restore ^ (judge.deleted is not None):
+            return False
+
+        if restore:
+            judge.deleted = None
+            action = "restoring"
+        else:
+            judge.deleted = datetime.now()
+            action = "deleting"
+        logger.debug(f"{action} Judge {judge}")
+        return await judge.save()

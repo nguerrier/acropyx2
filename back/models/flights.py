@@ -8,7 +8,6 @@ from enum import Enum
 from datetime import datetime
 
 from models.pilots import Pilot
-from models.judges import JudgeModel
 from models.tricks import Trick
 from models.judge_marks import JudgeMark
 from models.final_marks import FinalMark

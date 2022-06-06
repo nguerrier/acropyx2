@@ -7,7 +7,7 @@ import pymongo
 from enum import Enum
 from datetime import datetime
 
-from models.judges import JudgeModel
+from models.judges import Judge
 
 from core.config import settings
 

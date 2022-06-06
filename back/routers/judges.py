@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
-from models.judges import JudgeModel
+from models.judges import Judge
 from typing import List
 from fastapi.responses import Response
 
@@ -15,11 +15,11 @@ judges = APIRouter()
 @judges.get(
     "/",
     response_description="List all judges",
-    response_model=List[JudgeModel],
+    response_model=List[Judge],
     dependencies=[Depends(auth)],
 )
 async def list():
-    return await JudgeModel.getall()
+    return await Judge.getall()
 
 #
 # Get one judge
@@ -30,7 +30,7 @@ async def list():
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
-    judge = await JudgeModel.get(id)
+    judge = await Judge.get(id)
     if judge is None:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
     logger.debug(judge)
@@ -43,10 +43,10 @@ async def get(id: str):
     "/",
     status_code=201,
     response_description="Add new Judge",
-    response_model=JudgeModel,
+    response_model=Judge,
     dependencies=[Depends(auth)],
 )
-async def create(judge: JudgeModel = Body(...)):
+async def create(judge: Judge = Body(...)):
     try:
         return await judge.create()
     except Exception as e:
@@ -57,17 +57,20 @@ async def create(judge: JudgeModel = Body(...)):
 #
 @judges.put(
     "/{id}",
+    status_code=204,
     response_description="Add new Judge",
-    response_model=JudgeModel,
     dependencies=[Depends(auth)],
 )
-async def update(id: str, judge: JudgeModel = Body(...)):
+async def update(id: str, judge: Judge = Body(...)):
     try:
-        judge.id = id
-        await judge.update()
-        return judge
+        res = await Judge.update(id, judge)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
+        raise HTTPException(status_code=404, detail=f"Judge {id} not found")
+
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)
 
 #
 # Delete a Judge
@@ -78,7 +81,19 @@ async def update(id: str, judge: JudgeModel = Body(...)):
     response_description="Delete a Judge",
     dependencies=[Depends(auth)],
 )
-async def delete(id: str):
-    if not await JudgeModel.delete(id):
+async def delete(id: str, restore: bool = False):
+    try:
+        res = await Judge.delete(id, restore)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
+
+    if res is False:
+        if restore:
+            raise HTTPException(status_code=409, detail=f"Judge {id} is not marked as deleted")
+        else:
+            raise HTTPException(status_code=409, detail=f"Judge {id} is already marked as deleted")
+
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
