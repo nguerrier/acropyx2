@@ -27,6 +27,7 @@ async def list():
 @judges.get(
     "/{id}",
     response_description="Get a Judge",
+    response_model=Judge,
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
@@ -59,6 +60,7 @@ async def create(judge: Judge = Body(...)):
     "/{id}",
     status_code=204,
     response_description="Add new Judge",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def update(id: str, judge: Judge = Body(...)):
@@ -70,8 +72,6 @@ async def update(id: str, judge: Judge = Body(...)):
     if res is None:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
 
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)
-
 #
 # Delete a Judge
 #
@@ -79,6 +79,7 @@ async def update(id: str, judge: Judge = Body(...)):
     "/{id}",
     status_code=204,
     response_description="Delete a Judge",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def delete(id: str, restore: bool = False):
@@ -95,5 +96,3 @@ async def delete(id: str, restore: bool = False):
             raise HTTPException(status_code=409, detail=f"Judge {id} is not marked as deleted")
         else:
             raise HTTPException(status_code=409, detail=f"Judge {id} is already marked as deleted")
-
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)

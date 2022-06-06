@@ -27,6 +27,7 @@ async def list():
 @teams.get(
     "/{id}",
     response_description="Get a Team",
+    response_model=Team,
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
@@ -59,6 +60,7 @@ async def create(team: Team = Body(...)):
     "/{id}",
     status_code=204,
     response_description="Add new Team",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def update(id: str, team: Team = Body(...)):
@@ -70,8 +72,6 @@ async def update(id: str, team: Team = Body(...)):
     if res is None:
         raise HTTPException(status_code=404, detail=f"Team {id} not found")
 
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)
-
 #
 # Delete a Team
 #
@@ -79,6 +79,7 @@ async def update(id: str, team: Team = Body(...)):
     "/{id}",
     status_code=204,
     response_description="Delete a Team",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def delete(id: str, restore: bool = False):
@@ -95,5 +96,3 @@ async def delete(id: str, restore: bool = False):
             raise HTTPException(status_code=409, detail=f"Team {id} is not marked as deleted")
         else:
             raise HTTPException(status_code=409, detail=f"Team {id} is already marked as deleted")
-
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)
