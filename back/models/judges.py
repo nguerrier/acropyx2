@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 collection = db.judges
 
 def check_country(cls, v):
-    assert countries.get(alpha_2=v) is not None, f"Invalid country '{v}'"
+    assert countries.get(alpha_3=v) is not None, f"Invalid country '{v}'"
     return v
 
 class JudgeLevel(Enum):
