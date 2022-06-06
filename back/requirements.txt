@@ -21,6 +21,7 @@ toml
 typed-ast
 typing-extensions
 uvicorn
+gunicorn
 pycountry
 httpx
 openpyxl
