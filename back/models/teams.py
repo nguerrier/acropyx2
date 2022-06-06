@@ -1,8 +1,9 @@
 import logging
 from pydantic import BaseModel, Field, validator
 from bson import ObjectId
-from typing import List
+from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
+from datetime import datetime
 import pymongo
 
 from models.pilots import Pilot
@@ -14,8 +15,9 @@ collection = db.teams
 
 class Team(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    name: str
-    pilots: List[str]
+    name: str = Field(..., description="The name of the team")
+    pilots: List[str] = Field(..., description="The 2 pilots composing the team")
+    deleted: Optional[datetime] = Field(None, exclude={"deleted"}) # when set, the team is deleted
 
     @validator('pilots')
     def check_pilots(cls, v):
@@ -29,9 +31,8 @@ class Team(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "name": "John Doe",
-                "country": "fr",
-                "level": "certified",
+                "name": "Team Rocket",
+                "pilots": ["John Rocket", "Jerry Fire"]
             }
         }
 
@@ -42,9 +43,10 @@ class Team(BaseModel):
                 raise Exception(f"Pilot '{id}' is unknown, only known pilots can be part of a team")
 
     async def create(self):
+        await self.check()
         try:
-            await self.check()
             team = jsonable_encoder(self)
+            team['deleted'] = None
             res = await collection.insert_one(team)
             self.id = res.inserted_id
             logger.debug("team %s created with id %s", self.name, self.id)
@@ -52,31 +54,32 @@ class Team(BaseModel):
         except pymongo.errors.DuplicateKeyError:
             raise Exception(f"Team '{self.name}' already exists")
 
-    async def update(self):
+    async def save(self):
         await self.check()
         team = jsonable_encoder(self)
-        del team['_id']
-        await collection.update_one({"name": self.name}, {"$set": team})
-        res = await collection.find_one({"name": self.name})
-        if res is None:
-            raise Exception(f"Team '{self.name}' not found")
-        self.id = res['_id']
-        logger.debug("team '%s' updated with id %s", self.name, self.id)
-        return self
+        res =  await collection.update_one({"_id": str(self.id)}, {"$set": team})
+        logger.debug(f"[{self.name}] update_one({self.id}) returned match={res.matched_count} modifiy={res.modified_count}")
+        return res.modified_count == 1
 
     @staticmethod
     def createIndexes():
-        collection.create_index('name', unique=True)
-        logger.debug('index created on "name"')
+        collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        logger.debug('index created on "name,deleted"')
 
     @staticmethod
     async def get(id):
         logger.debug("get(%s)", id)
-        team = await collection.find_one({ "$or": [
-            {"_id": id},
-            {"name": id},
-        ]})
+        team = await collection.find_one({
+            "$or": [
+                {"_id": id},
+                {"$and": [
+                    {"name": id},
+                    {"deleted": None}
+                ]},
+            ]
+        })
         if team is not None:
+            logger.debug(f"get find_one -> {team}")
             return Team.parse_obj(team)
         return None
 
@@ -84,14 +87,33 @@ class Team(BaseModel):
     async def getall():
         logger.debug("getall()")
         teams = []
-        for team in await collection.find().to_list(1000):
+        for team in await collection.find({"deleted": None}, sort=[("name", pymongo.ASCENDING)]).to_list(1000):
             teams.append(Team.parse_obj(team))
         return teams
 
     @staticmethod
-    async def delete(id: str):
-        res = await collection.delete_one({ "$or": [
-            {"_id": id},
-            {"name": id},
-        ]})
-        return res.deleted_count == 1
+    async def update(id: str, team_update):
+        team = await Team.get(id)
+        if team is None:
+            return None
+
+        team_update.id = team.id
+        return await team_update.save()
+
+    @staticmethod
+    async def delete(id: str, restore: bool = False):
+        team = await Team.get(id)
+        if team is None:
+            return None
+
+        if restore ^ (team.deleted is not None):
+            return False
+
+        if restore:
+            team.deleted = None
+            action = "restoring"
+        else:
+            team.deleted = datetime.now()
+            action = "deleting"
+        logger.debug(f"{action} Team {team}")
+        return await team.save()

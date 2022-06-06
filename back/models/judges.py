@@ -56,7 +56,6 @@ class Judge(BaseModel):
 
     async def save(self):
         judge = jsonable_encoder(self)
-#        del judge['_id']
         logger.debug({"_id": str(self.id)})
         logger.debug(judge)
         res =  await collection.update_one({"_id": str(self.id)}, {"$set": judge})

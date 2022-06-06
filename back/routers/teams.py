@@ -57,17 +57,20 @@ async def create(team: Team = Body(...)):
 #
 @teams.put(
     "/{id}",
+    status_code=204,
     response_description="Add new Team",
-    response_model=Team,
     dependencies=[Depends(auth)],
 )
 async def update(id: str, team: Team = Body(...)):
     try:
-        team.id = id
-        await team.update()
-        return team
+        res = await Team.update(id, team)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
+        raise HTTPException(status_code=404, detail=f"Team {id} not found")
+
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)
 
 #
 # Delete a Team
@@ -78,7 +81,19 @@ async def update(id: str, team: Team = Body(...)):
     response_description="Delete a Team",
     dependencies=[Depends(auth)],
 )
-async def delete(id: str):
-    if not await Team.delete(id):
+async def delete(id: str, restore: bool = False):
+    try:
+        res = await Team.delete(id, restore)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
         raise HTTPException(status_code=404, detail=f"Team {id} not found")
+
+    if res is False:
+        if restore:
+            raise HTTPException(status_code=409, detail=f"Team {id} is not marked as deleted")
+        else:
+            raise HTTPException(status_code=409, detail=f"Team {id} is already marked as deleted")
+
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
