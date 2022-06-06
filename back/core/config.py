@@ -6,6 +6,7 @@ from pydantic import AnyHttpUrl, BaseSettings, validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "acropyx"
+    PROJECT_DESCRIPTION: str = "Manage Paragliding Aerobatics competitions"
     VERSION: str = "2.0.1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days

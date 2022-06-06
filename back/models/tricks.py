@@ -7,50 +7,27 @@ from fastapi.encoders import jsonable_encoder
 import pymongo
 from core.config import settings
 
+from models.bonus import Bonus
+from models.unique_tricks import UniqueTrick
+
 from core.database import db, PyObjectId
 logger = logging.getLogger(__name__)
 collection = db.tricks
 
-class Bonus(BaseModel):
-    name: str = Field(..., min_length=1)
-    bonus: float = Field(..., ge=0.0)
-#    pre_acronym: Optional[str]
-#    post_acronym: Optional[str]
-
-    @validator('name')
-    def check_name(cls, v):
-        bonuses = list(map(lambda x:x['name'], settings.tricks.available_bonuses))
-        if v not in bonuses:
-            bonuses = ", ".join(bonuses)
-            raise ValueError(f"Invalid bonus ({v}), must be one of: {bonuses}")
-        return v
-
-#    @root_validator
-#    def check_pre_acronym(cls, values):
-#        if values['pre_acronym'] is None and values['post_acronym'] is None:
-#            raise ValueError("At least pre_acronym or post_acronym must be set")
-#        return values
-
-class UniqueTrick(BaseModel):
-    name: str
-    acronym: str
-    technical_coefficient: float
-    bonus: float
-
 class Trick(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    name: str = Field(..., min_length=1)
-    acronym: str = Field(..., min_length=1)
-    solo: bool
-    synchro: bool
-    directions: List[str]
-    technical_coefficient: float = Field(..., ge=0.0)
-    bonuses: List[Bonus]
-    first_maneuver: int = Field(0, ge=0)
-    no_first_maneuver: int = Field(0, ge=0)
-    last_maneuver: int = Field(0, ge=0)
-    no_last_maneuver: int = Field(0, ge=0)
-    tricks: List[UniqueTrick] = Field([])
+    name: str = Field(..., min_length=1, description="The name of the trick (without bonuses)")
+    acronym: str = Field(..., min_length=1, description="The acronym of the trick (without bonuses)")
+    solo: bool = Field(..., description="Is this trick valid for solo competitions")
+    synchro: bool = Field(..., description="Is this trick valid for synchro competitions")
+    directions: List[str] = Field(..., description="List of allowed diredctions for the trick. Empty list implies a trick with a unique direction")
+    technical_coefficient: float = Field(..., ge=0.0, description="The technical coefficient of the trick")
+    bonuses: List[Bonus] = Field(..., description="List of all bonuses that can apply to this trick")
+    first_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must be performed in the first N tricks of the run")
+    no_first_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must not be performed in the first N tricks of the run")
+    last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must be performed in the last N tricks of the run")
+    no_last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must not be performed in the last N tricks of the run")
+    tricks: List[UniqueTrick] = Field([], description="List of all the variant of the trick (this is automatically generated)")
 
     @validator('directions')
     def check_directions(cls, v):
@@ -74,9 +51,30 @@ class Trick(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "name": "John Doe",
-                "country": "fr",
-                "level": "certified",
+                "name": "Misty to Helicopter",
+                "acronym": "MH",
+                "solo": True,
+                "synchro": True,
+                "directions": ["left", "right"],
+                "technical_coefficient": 1.75,
+                "bonuses": [
+                    {"name": "twisted", "bonus": 3},
+                    {"name": "reverse", "bonus": 3}
+                ],
+                "first_maneuver": 0,
+                "no_first_maneuver": 0, 
+                "last_maneuver": 0,
+                "no_last_maneuver": 0,
+                "tricks": [
+                    {      "name": "left Misty to Helicopter",      "acronym": "LMH",      "technical_coefficient": 1.75,      "bonus": 0    },
+                    {      "name": "right Misty to Helicopter",      "acronym": "RMH",      "technical_coefficient": 1.75,      "bonus": 0    },
+                    {      "name": "twisted left Misty to Helicopter",      "acronym": "/LMH",      "technical_coefficient": 1.75,      "bonus": 3    },
+                    {      "name": "twisted right Misty to Helicopter",      "acronym": "/RMH",      "technical_coefficient": 1.75,      "bonus": 3    },
+                    {      "name": "left Misty to Helicopter reverse",      "acronym": "LMHR",      "technical_coefficient": 1.75,      "bonus": 3    },
+                    {      "name": "right Misty to Helicopter reverse",      "acronym": "RMHR",      "technical_coefficient": 1.75,      "bonus": 3    },
+                    {      "name": "twisted left Misty to Helicopter reverse",      "acronym": "/LMHR",      "technical_coefficient": 1.75,      "bonus": 6    },
+                    {      "name": "twisted right Misty to Helicopter reverse",      "acronym": "/RMHR",      "technical_coefficient": 1.75,      "bonus": 6    }
+                ]
             }
         }
 

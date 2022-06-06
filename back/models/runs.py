@@ -25,3 +25,15 @@ class Run(BaseModel):
     pilots: List[str] = Field(..., min_len=1)
     judges: List[str] = Field(..., min_len=1)
     flights: List[Flight]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "state": "init",
+                "start": "2022-06-06 10:00:00",
+                "end": "2022-06-06 20:00:00",
+                "pilots": ["Théo De Blic", "Luke de Weert"],
+                "judges": ["Jérôme Loyet", "Julien Grosse"],
+                "flights": []
+            }
+        }
