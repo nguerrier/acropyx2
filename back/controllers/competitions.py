@@ -1,7 +1,7 @@
 import logging
-from models.competitions import CompetitionModel
+from models.competitions import Competition
 
 logger = logging.getLogger(__name__)
 
 def competitions_start():
-    CompetitionModel.createIndexes()
+    Competition.createIndexes()

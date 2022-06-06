@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
 from enum import Enum
-from datetime import date
+from datetime import date, datetime
 
 from models.pilots import Pilot
 from models.judges import Judge
@@ -30,30 +30,19 @@ class CompetitionConfig(BaseModel):
     nb_pilots_to_keep_for_next_run: int = Field(settings.competitions.nb_pilots_to_keep_for_next_run, ge=0)
     apply_penalties: bool = Field(settings.competitions.apply_penalties)
 
-class CompetitionModel(BaseModel):
+class Competition(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., min_len=1)
-    year: Optional[int]
+    year: int
     pilots: List[str] = Field([])
     judges: List[str] = Field([])
     state: CompetitionState
     type: CompetitionType
     config: CompetitionConfig
-    start_date: date
-    end_date: date
+    start_date: Optional[date]
+    end_date: Optional[date]
     runs: List[Run]
-
-#    @validator('pilots')
-#    def check_pilots(cls, v):
-#        if len(v) < 2:
-#            raise ValueError('At least 2 pilots must be registered to a competition')
-#        return v
-
-#    @validator('judges')
-#    def check_judges(cls, v):
-#        if len(v) < 2:
-#            raise ValueError('At least 2 judges are needed for a valid competition')
-#        return v
+    deleted: Optional[datetime]
 
     class Config:
         allow_population_by_field_name = True
@@ -61,9 +50,6 @@ class CompetitionModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "name": "John Doe",
-                "country": "fr",
-                "level": "certified",
             }
         }
 
@@ -89,9 +75,21 @@ class CompetitionModel(BaseModel):
             if len(self.judges) < 2:
                 raise Exception("At least 2 judges are needed to open a competition")
 
+        if self.start_date is not None and self.end_date is not None and self.start_date >= self.end_date:
+            raise Exception("End date must be higher than start date")
+
+        if self.start_date is None and self.state != CompetitionState.init:
+            raise Exception("start_date must be set when competition is opened")
+
+        if self.end_date is None and self.state == CompetitionState.closed:
+            raise Exception("end_date must be set when competition is closed")
+
 
     async def create(self):
         try:
+            self.state = CompetitionState.init
+            self.deleted = None
+            self.runs = []
             await self.check()
             await self.sort_pilots()
             competition = jsonable_encoder(self)
@@ -101,21 +99,14 @@ class CompetitionModel(BaseModel):
             return self
         except pymongo.errors.DuplicateKeyError:
             title = self.title()
-            logger.debug("title %s", self.title())
             raise Exception(f"Competition '{title}' already exists")
 
-    async def update(self):
+    async def save(self):
         await self.check()
         await self.sort_pilots()
         competition = jsonable_encoder(self)
-        del competition['_id']
-        await collection.update_one({"name": self.name}, {"$set": competition})
-        res = await collection.find_one({"name": self.name})
-        if res is None:
-            raise Exception(f"Competition '{self.name}' not found")
-        self.id = res['_id']
-        logger.debug("competition '%s' updated with id %s", self.name, self.id)
-        return self
+        res = await collection.update_one({"_id": str(self.id)}, {"$set": competition})
+        return res.modified_count == 1
 
     async def sort_pilots(self):
         pilots = []
@@ -126,27 +117,61 @@ class CompetitionModel(BaseModel):
 
     @staticmethod
     def createIndexes():
-        collection.create_index([('name', pymongo.ASCENDING), ('year', pymongo.ASCENDING)], unique=True)
-        logger.debug('index created on "name"')
+        collection.create_index([('name', pymongo.ASCENDING), ('year', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        logger.debug('index created on "name,year,deleted"')
 
     @staticmethod
     async def get(name: str, year: int):
         logger.debug(f"get({name}, {year})")
-        competition = await collection.find_one({"$and": [{"name": name}, {"year": year}]})
+        competition = await collection.find_one({
+            "$or": [
+                {"_id": name}, 
+                {"$and": 
+                    [
+                        {"name": name},
+                        {"year": year},
+                        {"deleted": None}
+                    ]
+                }
+            ]
+        })
         if competition is not None:
-            return CompetitionModel.parse_obj(competition)
+            return Competition.parse_obj(competition)
         return None
 
     @staticmethod
     async def getall():
         logger.debug("getall()")
         competitions = []
-        sort=[("last_update", pymongo.ASCENDING),("name", pymongo.ASCENDING)]
-        for competition in await collection.find(sort=sort).to_list(1000):
-            competitions.append(CompetitionModel.parse_obj(competition))
+        sort=[("last_update", pymongo.ASCENDING), ("name", pymongo.ASCENDING), ("year", pymongo.ASCENDING)]
+        for competition in await collection.find({"deleted": None}, sort=sort).to_list(1000):
+            competitions.append(Competition.parse_obj(competition))
         return competitions
 
     @staticmethod
-    async def delete(name: str, year: int):
-        res = await collection.delete_one({"$and": [{"name": name}, {"year": year}]})
-        return res.deleted_count == 1
+    async def update(id: str, year: int, competition_update):
+        competition = await Competition.get(id, year)
+        if competition is None:
+            return None
+
+        logger.debug(f"got competition: {competition}")
+        competition_update.id = competition.id
+        return await competition_update.save()
+
+    @staticmethod
+    async def delete(id: str, year: int, restore: bool = False):
+        competition = await Competition.get(id, year)
+        if competition is None:
+            return None
+
+        if restore ^ (competition.deleted is not None):
+            return False
+
+        if restore:
+            competition.deleted = None
+            action = "restoring"
+        else:
+            competition.deleted = datetime.now()
+            action = "deleting"
+        logger.debug(f"{action} competition {competition}")
+        return await competition.save()
