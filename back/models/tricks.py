@@ -5,6 +5,8 @@ from bson import ObjectId
 from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
+from datetime import datetime
+
 from core.config import settings
 
 from models.bonus import Bonus
@@ -28,6 +30,7 @@ class Trick(BaseModel):
     last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must be performed in the last N tricks of the run")
     no_last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must not be performed in the last N tricks of the run")
     tricks: List[UniqueTrick] = Field([], description="List of all the variant of the trick (this is automatically generated)")
+    deleted: Optional[datetime]
 
     @validator('directions')
     def check_directions(cls, v):
@@ -74,7 +77,8 @@ class Trick(BaseModel):
                     {      "name": "right Misty to Helicopter reverse",      "acronym": "RMHR",      "technical_coefficient": 1.75,      "bonus": 3    },
                     {      "name": "twisted left Misty to Helicopter reverse",      "acronym": "/LMHR",      "technical_coefficient": 1.75,      "bonus": 6    },
                     {      "name": "twisted right Misty to Helicopter reverse",      "acronym": "/RMHR",      "technical_coefficient": 1.75,      "bonus": 6    }
-                ]
+                ],
+                "deleted": "2022-06-06 10:00:00",
             }
         }
 
@@ -87,6 +91,7 @@ class Trick(BaseModel):
 
     async def create(self):
         try:
+            self.deleted = None
             await self.check()
             trick = jsonable_encoder(self)
             res = await collection.insert_one(trick)
@@ -96,36 +101,31 @@ class Trick(BaseModel):
         except pymongo.errors.DuplicateKeyError:
             raise Exception(f"Trick '{self.name}' already exists")
 
-    async def update(self):
+    async def save(self):
         await self.check()
         trick = jsonable_encoder(self)
-        del trick['_id']
-        await collection.update_one({"name": self.name}, {"$set": trick})
-        res = await collection.find_one({"name": self.name})
-        if res is None:
-            raise Exception(f"Trick '{self.name}' not found")
-        self.id = res['_id']
-        logger.debug("trick '%s' updated with id %s", self.name, self.id)
-        return self
-
-    async def create_or_update(self):
-        try:
-            return await self.create()
-        except:
-            return await self.update()
+        res = await collection.update_one({"_id": str(self.id)}, {"$set": trick})
+        return res.modified_count == 1
 
     @staticmethod
     def createIndexes():
-        collection.create_index('name', unique=True)
-        collection.create_index('acronym', unique=True)
-        logger.debug('index created on "name"')
+        collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        collection.create_index([('acronym', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        logger.debug('index created on "name,deleted" and "acronym,deleted"')
 
     @staticmethod
     async def get(id):
         logger.debug("get(%s)", id)
         trick = await collection.find_one({ "$or": [
             {"_id": id},
-            {"name": id},
+            {"$and" : [
+                {"name": id},
+                {"deleted": None},
+            ]},
+            {"$and" : [
+                {"acronym": id},
+                {"deleted": None},
+            ]}
         ]})
         if trick is not None:
             return Trick.parse_obj(trick)
@@ -152,21 +152,41 @@ class Trick(BaseModel):
         if trick is None or len(trick['tricks']) != 1:
             return None
 
-        bonus = UniqueTrick.parse_obj(trick['tricks'][0])
-        return bonus
+        return UniqueTrick.parse_obj(trick['tricks'][0])
 
     @staticmethod
     async def getall():
         logger.debug("getall()")
         tricks = []
-        for trick in await collection.find().to_list(1000):
+        for trick in await collection.find(sort=[("technical_coefficient", pymongo.ASCENDING)]).to_list(1000):
+        #for trick in await collection.find().to_list(1000):
             tricks.append(Trick.parse_obj(trick))
         return tricks
 
     @staticmethod
-    async def delete(id: str):
-        res = await collection.delete_one({ "$or": [
-            {"_id": id},
-            {"name": id},
-        ]})
-        return res.deleted_count == 1
+    async def update(id: str, trick_update):
+        trick = await Trick.get(id)
+        if trick is None:
+            return None
+
+        logger.debug(f"got trick: {trick}")
+        trick_update.id = trick.id
+        return await trick_update.save()
+
+    @staticmethod
+    async def delete(id: str, restore: bool = False):
+        trick = await Trick.get(id)
+        if trick is None:
+            return None
+
+        if restore ^ (trick.deleted is not None):
+            return False
+
+        if restore:
+            trick.deleted = None
+            action = "restoring"
+        else:
+            trick.deleted = datetime.now()
+            action = "deleting"
+        logger.debug(f"{action} trick {trick}")
+        return await trick.save()

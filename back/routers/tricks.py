@@ -78,13 +78,10 @@ async def get(id: str):
     response_model=Trick,
     dependencies=[Depends(auth)],
 )
-async def create(trick: Trick = Body(...), erase: bool=False):
+async def create(trick: Trick = Body(...)):
     try:
         generate_tricks(trick)
-        if erase:
-            return await trick.create_or_update()
-        else:
-            return await trick.create()
+        return await trick.create()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -95,45 +92,45 @@ async def create(trick: Trick = Body(...), erase: bool=False):
     "/import",
     status_code=201,
     response_description="Add new Trick",
+    response_model=str,
     dependencies=[Depends(auth)],
 )
-async def create_import(tricks: List[Trick] = Body(...), erase: bool=False):
+async def create_import(tricks: List[Trick] = Body(...)):
     errors = []
     count = 0
     for trick in tricks:
         try:
             generate_tricks(trick)
-            if erase:
-                await trick.create_or_update()
-            else:
-                await trick.create()
+            await trick.create()
             count += 1
         except Exception as e:
             errors.append(str(e))
     if len(errors) > 0:
         count_error = len(errors)
         errors = ",".join(errors)
-        msg = f"Imported successfully {count} pilots and {count_error} failed: {errors}"
+        msg = f"Imported successfully {count} tricks and {count_error} failed: {errors}"
         raise HTTPException(status_code=400, detail=msg)
-    return f"Imported successfully {count} pilots without errors"
+    return f"Imported successfully {count} tricks without errors"
 
 #
 # Update an existing Trick
 #
 @tricks.put(
     "/{id}",
+    status_code=204,
     response_description="Add new Trick",
-    response_model=Trick,
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def update(id: str, trick: Trick = Body(...)):
     try:
-        trick.id = id
         generate_tricks(trick)
-        await trick.update()
-        return trick
+        res = await Trick.update(id, trick)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
+        raise HTTPException(status_code=404, detail=f"Trick {id} not found")
 
 #
 # Delete a Trick
@@ -142,24 +139,20 @@ async def update(id: str, trick: Trick = Body(...)):
     "/{id}",
     status_code=204,
     response_description="Delete a Trick",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
-async def delete(id: str):
-    if not await Trick.delete(id):
-        raise HTTPException(status_code=404, detail=f"Trick {id} not found")
-    return Response(status_code=HTTPStatus.NO_CONTENT.value)
-
-#
-# Check scores unicity
-#
-@tricks.patch(
-    "/scores",
-    status_code=200,
-    response_model=bool,
-    dependencies=[Depends(auth)],
-)
-async def check_score_unicity():
+async def delete(id: str, restore: bool = False):
     try:
-        return await check_tricks_unicity()
+        res = await Trick.delete(id, restore)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if res is None:
+        raise HTTPException(status_code=404, detail=f"Trick {id} not found")
+
+    if res is False:
+        if restore:
+            raise HTTPException(status_code=409, detail=f"Trick {id} is not marked as deleted")
+        else:
+            raise HTTPException(status_code=409, detail=f"Trick {id} is already marked as deleted")

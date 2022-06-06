@@ -17,7 +17,7 @@ class Team(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., description="The name of the team")
     pilots: List[str] = Field(..., description="The 2 pilots composing the team")
-    deleted: Optional[datetime] = Field(None, exclude={"deleted"}) # when set, the team is deleted
+    deleted: Optional[datetime]
 
     @validator('pilots')
     def check_pilots(cls, v):

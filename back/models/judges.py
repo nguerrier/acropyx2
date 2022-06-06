@@ -27,7 +27,7 @@ class Judge(BaseModel):
     name: str = Field(..., description="The full name of the judge")
     country: str = Field(..., description="The country of the judge using the 3 letter acronym of the country")
     level: JudgeLevel = Field(..., description="The level of the judge")
-    deleted: Optional[datetime] = Field(None, exclude={"deleted"}) # when set, the judge is deleted
+    deleted: Optional[datetime]
 
     _normalize_country = validator('country', allow_reuse=True)(check_country)
 
