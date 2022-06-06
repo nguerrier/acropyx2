@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response
 from typing import List
 
 from core.security import auth
@@ -29,6 +29,7 @@ async def list():
 @pilots.get(
     "/{id}",
     response_description="Get a Pilot",
+    response_model=Pilot,
     dependencies=[Depends(auth)],
 )
 async def get(id: str):
@@ -46,13 +47,13 @@ async def get(id: str):
     "/",
     status_code=201,
     response_description="Create all missing pilots from CIVL database",
+    response_class=Response,
     dependencies=[Depends(auth)],
 )
 async def sync(background_tasks: BackgroundTasks):
     if isTaskRunning():
-        return "an update task is already running ..."
+        raise HTTPException(status_code=400, detail="an update task is already running ...")
     background_tasks.add_task(update_pilots)
-    return "OK"
 
 #
 # Create a new Pilot
@@ -67,25 +68,3 @@ async def sync(background_tasks: BackgroundTasks):
 async def create(civlid: int):
     logger.debug("create or update pilot with civlid %d", civlid)
     return await update_pilot(civlid)
-
-#
-# Update an existing Pilot
-#
-@pilots.put(
-    "/{id}",
-    response_description="Add new Pilot",
-    dependencies=[Depends(auth)],
-)
-async def update(id: str):
-    raise HTTPException(status_code=501)
-
-#
-# Delete a Pilot
-#
-@pilots.delete(
-    "/{id}",
-    response_description="Delete a Pilot",
-    dependencies=[Depends(auth)],
-)
-async def delete(id: str):
-    raise HTTPException(status_code=501)
