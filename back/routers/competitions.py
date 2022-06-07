@@ -18,8 +18,7 @@ competitions = APIRouter()
     response_model=List[Competition],
 )
 async def list():
-    competitions = []
-    for c in await Competition.getall()
+    return await Competition.getall()
 
 #
 # Get one competition
