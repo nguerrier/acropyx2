@@ -16,7 +16,6 @@ judges = APIRouter()
     "/",
     response_description="List all judges",
     response_model=List[Judge],
-    dependencies=[Depends(auth)],
 )
 async def list():
     return await Judge.getall()
@@ -28,7 +27,6 @@ async def list():
     "/{id}",
     response_description="Get a Judge",
     response_model=Judge,
-    dependencies=[Depends(auth)],
 )
 async def get(id: str):
     judge = await Judge.get(id)

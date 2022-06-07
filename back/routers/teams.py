@@ -16,7 +16,6 @@ teams = APIRouter()
     "/",
     response_description="List all teams",
     response_model=List[Team],
-    dependencies=[Depends(auth)],
 )
 async def list():
     return await Team.getall()
@@ -28,7 +27,6 @@ async def list():
     "/{id}",
     response_description="Get a Team",
     response_model=Team,
-    dependencies=[Depends(auth)],
 )
 async def get(id: str):
     team = await Team.get(id)
