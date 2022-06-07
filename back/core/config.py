@@ -88,6 +88,20 @@ class Settings(BaseSettings):
     class competitions:
         apply_penalties: bool = True
         nb_pilots_to_keep_for_next_run: int = 0
+        marks_repartition: dict = {
+            "solo": {
+                "technical": 40,
+                "choreography": 40,
+                "landing": 20,
+            },
+            "synchro": {
+                "technical": 25,
+                "choreography": 25,
+                "landing": 25,
+                "synchro": 25,
+            }
+        }
+        max_bonus_trick_per_run: int = 5
 
     class runs:
         sample: int = 0

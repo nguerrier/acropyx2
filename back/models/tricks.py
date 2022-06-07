@@ -132,7 +132,7 @@ class Trick(BaseModel):
         return None
 
     @staticmethod
-    async def get_scores(solo: bool, synchro: bool):
+    async def get_scores(solo: bool, synchro: bool) -> List[UniqueTrick]:
         logger.debug(f"get_scores({solo}, {synchro})")
         if not solo and not synchro:
             return []
@@ -143,16 +143,17 @@ class Trick(BaseModel):
         return tricks
 
     @staticmethod
-    async def get_score(id):
-        logger.debug(f"get_score({id})")
-        trick = await collection.find_one({"tricks.name": id }, { "tricks.$": 1 })
+    async def get_score(id, solo:bool = True, synchro:bool = True) -> UniqueTrick:
+        trick = await collection.find_one({"deleted": None, "$or": [{"tricks.name": id}, {"tricks.acronym": id}]})
         if trick is None:
-            trick = await collection.find_one({"tricks.acronym": id }, { "tricks.$": 1 })
-
-        if trick is None or len(trick['tricks']) != 1:
             return None
-
-        return UniqueTrick.parse_obj(trick['tricks'][0])
+        trick = Trick.parse_obj(trick)
+        if solo and not trick.solo or synchro and not trick.synchro:
+            return None
+        for t in trick.tricks:
+            if t.name == id or t.acronym == id:
+                return UniqueTrick.parse_obj(t)
+        return None
 
     @staticmethod
     async def getall():

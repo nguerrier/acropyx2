@@ -9,12 +9,15 @@ from datetime import datetime
 
 from core.config import settings
 
+from models.judge_marks import JudgeMark
+
 class FinalMark(BaseModel):
+    judges_mark: JudgeMark
+    technicity: float = Field(..., ge=0)
+    bonus_percentage: float = Field(..., ge=0)
     technical: float = Field(..., ge=0)
     choreography: float = Field(..., ge=0)
     landing: float = Field(..., ge=0)
-    synchro: Optional[float]
-    bonus_percentage: float = Field(..., ge=0)
-    technicity: float = Field(..., ge=0)
+    synchro: float = Field(..., ge=0)
+    bonus: float = Field(..., ge=0)
     score: float = Field(..., ge=0)
-

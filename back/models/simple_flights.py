@@ -7,18 +7,13 @@ import pymongo
 from enum import Enum
 from datetime import datetime
 
-from models.pilots import Pilot
-from models.tricks import Trick
-from models.unique_tricks import UniqueTrick
 from models.judge_marks import JudgeMark
-from models.final_marks import FinalMark
+from models.tricks import Trick
 
 from core.config import settings
 
 logger = logging.getLogger(__name__)
 
-class Flight(BaseModel):
-    pilot: str
-    tricks: List[UniqueTrick]
-    marks: List[JudgeMark]
-    final_marks: Optional[FinalMark]
+class SimpleFlight(BaseModel):
+    tricks: List[str]
+    mark: JudgeMark
