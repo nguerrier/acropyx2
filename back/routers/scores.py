@@ -17,7 +17,6 @@ scores= APIRouter()
     response_model=FinalMark,
 )
 async def simulate(t: CompetitionType, flight: SimpleFlight = Body(...)):
-    return await simulate_score(flight, t)
     try:
         return await simulate_score(flight, t)
     except Exception as e:

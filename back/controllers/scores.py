@@ -37,7 +37,7 @@ async def simulate_score(flight: SimpleFlight, type: CompetitionType) -> FinalMa
 
     if len(errors) > 0:
         errors = ", ".join(errors)
-        raise Exception(f"Some tricks are unknown: {errors}")
+        raise Exception(f"Some tricks are unknown for a {type} run: {errors}")
 
     logger.debug(tricks)
     f = Flight(
@@ -84,6 +84,8 @@ def calculate_score(flight: Flight, type: CompetitionType) -> FinalMark:
         choreographies.append(m.choreography)
         landings.append(m.landing)
         if type == CompetitionType.synchro:
+            if m.synchro is None:
+                raise Exception(f"synchro mark is missing. It is mandatory for {type} runs")
             synchros.append(m.synchro)
 
     mark.judges_mark.technical = average(technicals)

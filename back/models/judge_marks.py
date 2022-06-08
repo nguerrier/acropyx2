@@ -16,4 +16,4 @@ class JudgeMark(BaseModel):
     technical: float = Field(..., ge=0)
     choreography: float = Field(..., ge=0)
     landing: float = Field(..., ge=0)
-    synchro: Optional[float]
+    synchro: Optional[float] = Field(None, ge=0)

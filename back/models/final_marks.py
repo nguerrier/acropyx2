@@ -18,6 +18,6 @@ class FinalMark(BaseModel):
     technical: float = Field(..., ge=0)
     choreography: float = Field(..., ge=0)
     landing: float = Field(..., ge=0)
-    synchro: float = Field(..., ge=0)
     bonus: float = Field(..., ge=0)
     score: float = Field(..., ge=0)
+    synchro: float = Field(..., ge=0)
