@@ -28,7 +28,7 @@ function DashboardHeader() {
   const handleLogout = () => {
     client.logout();
     setIsLoggedIn(false)
-    navigate('/')
+    navigate('/login')
   }
 
   const handleLogin = () => {
@@ -75,17 +75,10 @@ function DashboardHeader() {
                     API Docs
                 </a>
 */}
-                <Link to="/pilots"
+                {isLoggedIn && <Link to="/pilots"
                     className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mx-4">
                     Pilots
-                </Link>
-{/*
-                {!isLoggedIn && <Link
-                    className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white"
-                    to={`/sign-up`}>
-                    Create Account
                 </Link>}
-*/}
             </div>
             <div>
               {displayButton}

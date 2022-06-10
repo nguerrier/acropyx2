@@ -18,6 +18,8 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 def check_credentials(username: str, password: str) -> bool:
+    if settings.ADMIN_USER is None or settings.ADMIN_PASS is None:
+        return True
     correct_username = secrets.compare_digest(username, settings.ADMIN_USER)
     correct_password = secrets.compare_digest(password, settings.ADMIN_PASS)
     return (correct_username and correct_password)
