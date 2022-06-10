@@ -1,7 +1,8 @@
 import core.logging
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
+import time
 
 from core.config import settings
 from routers.api import router
@@ -50,5 +51,15 @@ async def startup_event():
     teams_start()
     tricks_start()
     competitions_start()
+
+# add a X-Process-Time header
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
 
 app.include_router(router)

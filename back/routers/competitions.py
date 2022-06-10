@@ -16,6 +16,7 @@ competitions = APIRouter()
     "/",
     response_description="List all competitions",
     response_model=List[Competition],
+    dependencies=[Depends(auth)]
 )
 async def list():
     return await Competition.getall()
@@ -27,6 +28,7 @@ async def list():
     "/{id}",
     response_description="Get a Competition",
     response_model=Competition,
+    dependencies=[Depends(auth)]
 )
 async def get_by_id(id: str):
     return await get(id, 0)
@@ -35,6 +37,7 @@ async def get_by_id(id: str):
     "/{name}/{year}",
     response_description="Get a Competition",
     response_model=Competition,
+    dependencies=[Depends(auth)]
 )
 async def get(name: str, year: int):
     competition = await Competition.get(name, year)

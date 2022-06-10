@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
+from routers.auth import auth
 from routers.status import status
 from routers.pilots import pilots
 from routers.judges import judges
@@ -12,6 +13,7 @@ from routers.scores import scores
 from core.config import settings
 
 router = APIRouter()
+router.include_router(auth, prefix="/auth", tags=["auth"])
 router.include_router(status, prefix="/status", tags=["status"])
 router.include_router(pilots, prefix="/pilots", tags=["pilots"])
 router.include_router(judges, prefix="/judges", tags=["judges"])

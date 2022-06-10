@@ -15,6 +15,7 @@ scores= APIRouter()
 @scores.post(
     "/simulate/{t}",
     response_model=FinalMark,
+    dependencies=[Depends(auth)]
 )
 async def simulate(t: CompetitionType, flight: SimpleFlight = Body(...)):
     try:

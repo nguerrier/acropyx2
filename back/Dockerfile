@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN apk update && apk add --no-cache build-base
+RUN apk update && apk add --no-cache build-base libffi-dev
 RUN python -m pip install --upgrade pip
 
 EXPOSE 8000
