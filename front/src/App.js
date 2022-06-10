@@ -8,10 +8,12 @@ import RecipeDashboard from './pages/my-recipes';
 import ErrorPage from './pages/error-page';
 import PilotDashboard from './pages/pilots';
 
+const PATH_PREFIX = process.env.REACT_APP_URI_ROOT || "/";
+
 const App = () => {
   return (
     <div className="App bg-black">
-      <BrowserRouter>
+      <BrowserRouter basename={PATH_PREFIX}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route exact path="/pilots" element={<PilotDashboard />} />

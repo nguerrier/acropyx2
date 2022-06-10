@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "https://fatpat.github.io/acropyx2/static/css/main.84e2aa05.css",
-    "main.js": "https://fatpat.github.io/acropyx2/static/js/main.673232e1.js",
+    "main.js": "https://fatpat.github.io/acropyx2/static/js/main.622dd180.js",
     "index.html": "https://fatpat.github.io/acropyx2/index.html",
     "main.84e2aa05.css.map": "https://fatpat.github.io/acropyx2/static/css/main.84e2aa05.css.map",
-    "main.673232e1.js.map": "https://fatpat.github.io/acropyx2/static/js/main.673232e1.js.map"
+    "main.622dd180.js.map": "https://fatpat.github.io/acropyx2/static/js/main.622dd180.js.map"
   },
   "entrypoints": [
     "static/css/main.84e2aa05.css",
-    "static/js/main.673232e1.js"
+    "static/js/main.622dd180.js"
   ]
 }
