@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/acropyx2/static/css/main.84e2aa05.css",
+    "main.js": "/acropyx2/static/js/main.d66ebdb5.js",
+    "index.html": "/acropyx2/index.html",
+    "main.84e2aa05.css.map": "/acropyx2/static/css/main.84e2aa05.css.map",
+    "main.d66ebdb5.js.map": "/acropyx2/static/js/main.d66ebdb5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.84e2aa05.css",
+    "static/js/main.d66ebdb5.js"
+  ]
+}
