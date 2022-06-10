@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Any
 
@@ -16,7 +16,7 @@ def login(
 
     user = check_credentials(username=form_data.username, password=form_data.password)
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
 
     return {
         "access_token": create_access_token(sub=form_data.username),
