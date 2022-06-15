@@ -8,6 +8,7 @@ from enum import Enum
 from datetime import datetime
 
 from models.flights import Flight
+from models.competition_configs import CompetitionConfig
 
 from core.config import settings
 
@@ -20,20 +21,24 @@ class RunState(str, Enum):
 
 class Run(BaseModel):
     state: RunState
-    start: Optional[datetime]
-    end: Optional[datetime]
     pilots: List[str] = Field(..., min_len=1)
+    teams: List[str] = Field(..., min_len=1)
     judges: List[str] = Field(..., min_len=1)
+    repeatable_tricks: List[str]
+    config: CompetitionConfig
     flights: List[Flight]
 
     class Config:
         schema_extra = {
             "example": {
                 "state": "init",
-                "start": "2022-06-06 10:00:00",
-                "end": "2022-06-06 20:00:00",
-                "pilots": ["Théo De Blic", "Luke de Weert"],
-                "judges": ["Jérôme Loyet", "Julien Grosse"],
-                "flights": []
+                "pilots": [1234, 4567],
+                "judges": ["bb1726576153281283", "ba789798798798798798"],
+                "flights": [],
+                "competitionConfig": {
+                    "warning": 0.5,
+                    "malus_repetition": 13
+                }
             }
         }
+

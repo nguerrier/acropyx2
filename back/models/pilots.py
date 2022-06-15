@@ -24,7 +24,7 @@ class Sponsor(BaseModel):
 
 
 class Pilot(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: int = Field(..., alias="_id")
     civlid: int = Field(..., description="The CIVL ID of the pilot")
     name: str = Field(..., description="The complete name of the pilot")
     link: HttpUrl = Field(..., description="The link to the CIVL pilot page")
@@ -75,29 +75,22 @@ class Pilot(BaseModel):
         logger.debug(pilot)
         try:
             res = await collection.insert_one(pilot)
-            self.id = res.inserted_id
+            logger.debug(f"inservet_id={res.inserted_id}")
             action = "created"
         except pymongo.errors.DuplicateKeyError:
-            del pilot['_id']
-            await collection.update_one({"name": self.name}, {"$set": pilot})
+            await collection.update_one({"_id": self.id}, {"$set": pilot})
             res = await collection.find_one({"name": self.name})
-            self.id = res['_id']
             action = "updated"
 
         logger.debug("pilot %s %s (CIVL ID=%d, id=%s)", self.name, action, self.civlid, self.id)
         return self
 
     @staticmethod
-    async def get(id: str):
-        try:
-            civlid = int(id)
-        except ValueError:
-            civlid = -1
-
+    async def get(id: int):
+        logger.debug(id)
         pilot = await collection.find_one({ "$or": [
             {"_id": id},
             {"name": id},
-            {"civlid": civlid},
         ]})
         if pilot is not None:
             return Pilot.parse_obj(pilot)
@@ -106,7 +99,10 @@ class Pilot(BaseModel):
     @staticmethod
     async def getall(list:List[str] = []):
         if len(list) > 0:
-            cond = {"name": {"$in": list}}
+            cond = {"$or": [
+                {"id": {"$in": list}},
+                {"name": {"$in": list}}
+            ]}
         else:
             cond = {}
         pilots = []

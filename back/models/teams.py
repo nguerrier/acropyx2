@@ -16,7 +16,7 @@ collection = db.teams
 class Team(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., description="The name of the team")
-    pilots: List[str] = Field(..., description="The 2 pilots composing the team")
+    pilots: List[int] = Field(..., description="The 2 pilots composing the team (by CIVLID)")
     deleted: Optional[datetime]
 
     @validator('pilots')
@@ -31,16 +31,20 @@ class Team(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "_id": "687687687687aze",
                 "name": "Team Rocket",
-                "pilots": ["John Rocket", "Jerry Fire"]
+                "pilots": [1234, 4567]
             }
         }
 
     async def check(self):
+        pilots = []
         for id in self.pilots:
             pilot = await Pilot.get(id)
             if pilot is None:
                 raise Exception(f"Pilot '{id}' is unknown, only known pilots can be part of a team")
+            pilots.append(pilot.civlid)
+        self.pilots=pilots
 
     async def create(self):
         await self.check()
@@ -67,27 +71,27 @@ class Team(BaseModel):
         logger.debug('index created on "name,deleted"')
 
     @staticmethod
-    async def get(id):
+    async def get(id, deleted: bool = False):
         logger.debug("get(%s)", id)
-        team = await collection.find_one({
-            "$or": [
-                {"_id": id},
-                {"$and": [
-                    {"name": id},
-                    {"deleted": None}
-                ]},
-            ]
-        })
+        if deleted:
+            search = {"_id": id}
+        else:
+            search = {"_id": id, "deleted": None}
+        team = await collection.find_one(search)
         if team is not None:
             logger.debug(f"get find_one -> {team}")
             return Team.parse_obj(team)
         return None
 
     @staticmethod
-    async def getall():
+    async def getall(deleted: bool = False):
         logger.debug("getall()")
+        if deleted:
+            search = {}
+        else:
+            search = {"deleted": None}
         teams = []
-        for team in await collection.find({"deleted": None}, sort=[("name", pymongo.ASCENDING)]).to_list(1000):
+        for team in await collection.find(search, sort=[("name", pymongo.ASCENDING)]).to_list(1000):
             teams.append(Team.parse_obj(team))
         return teams
 
@@ -98,11 +102,12 @@ class Team(BaseModel):
             return None
 
         team_update.id = team.id
+        team_update.deleted = team.deleted
         return await team_update.save()
 
     @staticmethod
     async def delete(id: str, restore: bool = False):
-        team = await Team.get(id)
+        team = await Team.get(id, True)
         if team is None:
             return None
 

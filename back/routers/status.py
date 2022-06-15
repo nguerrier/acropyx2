@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+
 from core.security import auth
 from core.config import settings
 from core.database import db
@@ -9,10 +10,11 @@ status = APIRouter()
 @status.get(
     "/",
     response_model=Status,
-    dependencies=[Depends(auth)]
 )
 async def get():
-    return Status.parse_obj({
+    ret = Status.parse_obj({
         "version": settings.VERSION,
-        "mongo": await db.command("buildinfo"),
+#        "mongo": await db.command("buildinfo"),
     })
+
+    return ret

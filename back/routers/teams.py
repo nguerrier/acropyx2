@@ -16,10 +16,9 @@ teams = APIRouter()
     "/",
     response_description="List all teams",
     response_model=List[Team],
-    dependencies=[Depends(auth)]
 )
-async def list():
-    return await Team.getall()
+async def list(deleted: bool = False):
+    return await Team.getall(deleted)
 
 #
 # Get one team
@@ -28,10 +27,9 @@ async def list():
     "/{id}",
     response_description="Get a Team",
     response_model=Team,
-    dependencies=[Depends(auth)]
 )
-async def get(id: str):
-    team = await Team.get(id)
+async def get(id: str, deleted: bool = False):
+    team = await Team.get(id, deleted)
     if team is None:
         raise HTTPException(status_code=404, detail=f"Team {id} not found")
     logger.debug(team)
@@ -59,7 +57,7 @@ async def create(team: Team = Body(...)):
 @teams.put(
     "/{id}",
     status_code=204,
-    response_description="Add new Team",
+    response_description="Update an existing Team",
     response_class=Response,
     dependencies=[Depends(auth)],
 )

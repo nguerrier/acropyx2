@@ -17,7 +17,6 @@ pilots = APIRouter()
     "/",
     response_description="List all pilots",
     response_model=List[Pilot],
-    dependencies=[Depends(auth)]
 )
 async def list():
     logger.debug("list()")
@@ -27,17 +26,16 @@ async def list():
 # Get one pilot
 #
 @pilots.get(
-    "/{id}",
+    "/{civlid}",
     response_description="Get a Pilot",
     response_model=Pilot,
-    dependencies=[Depends(auth)]
 )
-async def get(id: str):
-    logger.debug("get(%s)", id)
+async def get(civlid: int):
+    logger.debug("get(%s)", civlid)
 
-    pilot = await Pilot.get(id)
+    pilot = await Pilot.get(civlid)
     if pilot is None:
-        raise HTTPException(status_code=404, detail=f"Pilot {id} not found")
+        raise HTTPException(status_code=404, detail=f"Pilot {civlid} not found")
     return pilot
 
 #

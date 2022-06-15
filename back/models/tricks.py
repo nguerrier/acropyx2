@@ -30,6 +30,7 @@ class Trick(BaseModel):
     last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must be performed in the last N tricks of the run")
     no_last_maneuver: int = Field(0, ge=0, description="If positive, indicates that the trick must not be performed in the last N tricks of the run")
     tricks: List[UniqueTrick] = Field([], description="List of all the variant of the trick (this is automatically generated)")
+    repeatable: bool = Field(False, description="Is this trick can be repeatable")
     deleted: Optional[datetime]
 
     @validator('directions')
@@ -68,6 +69,7 @@ class Trick(BaseModel):
                 "no_first_maneuver": 0, 
                 "last_maneuver": 0,
                 "no_last_maneuver": 0,
+                "repeatable": False,
                 "tricks": [
                     {      "name": "left Misty to Helicopter",      "acronym": "LMH",      "technical_coefficient": 1.75,      "bonus": 0    },
                     {      "name": "right Misty to Helicopter",      "acronym": "RMH",      "technical_coefficient": 1.75,      "bonus": 0    },
@@ -114,19 +116,13 @@ class Trick(BaseModel):
         logger.debug('index created on "name,deleted" and "acronym,deleted"')
 
     @staticmethod
-    async def get(id):
+    async def get(id, deleted: bool = False):
         logger.debug("get(%s)", id)
-        trick = await collection.find_one({ "$or": [
-            {"_id": id},
-            {"$and" : [
-                {"name": id},
-                {"deleted": None},
-            ]},
-            {"$and" : [
-                {"acronym": id},
-                {"deleted": None},
-            ]}
-        ]})
+        if deleted:
+            search = {"_id": id}
+        else:
+            search = {"_id": id, "deleted": None}
+        trick = await collection.find_one(search)
         if trick is not None:
             return Trick.parse_obj(trick)
         return None
@@ -156,11 +152,18 @@ class Trick(BaseModel):
         return None
 
     @staticmethod
-    async def getall():
+    async def getall(deleted: bool = False, repeatable: bool = None):
         logger.debug("getall()")
         tricks = []
-        for trick in await collection.find(sort=[("technical_coefficient", pymongo.ASCENDING)]).to_list(1000):
-        #for trick in await collection.find().to_list(1000):
+        if deleted:
+            search = {}
+        else:
+            search = {"deleted": None}
+
+        if repeatable is not None:
+            search["repeatable"] = repeatable
+
+        for trick in await collection.find(search, sort=[("technical_coefficient", pymongo.ASCENDING)]).to_list(1000):
             tricks.append(Trick.parse_obj(trick))
         return tricks
 
@@ -176,7 +179,7 @@ class Trick(BaseModel):
 
     @staticmethod
     async def delete(id: str, restore: bool = False):
-        trick = await Trick.get(id)
+        trick = await Trick.get(id, True)
         if trick is None:
             return None
 

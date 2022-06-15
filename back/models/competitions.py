@@ -8,8 +8,11 @@ from enum import Enum
 from datetime import date, datetime
 
 from models.pilots import Pilot
+from models.teams import Team
 from models.judges import Judge
-from models.runs import Run
+from models.runs import Run, RunState
+from models.tricks import Trick
+from models.competition_configs import CompetitionConfig
 
 from core.database import db, PyObjectId
 from core.config import settings
@@ -26,21 +29,39 @@ class CompetitionState(str, Enum):
     open = 'open'
     closed = 'closed'
 
-class CompetitionConfig(BaseModel):
-    nb_pilots_to_keep_for_next_run: int = Field(settings.competitions.nb_pilots_to_keep_for_next_run, ge=0)
-    apply_penalties: bool = Field(settings.competitions.apply_penalties)
-
-class Competition(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
-    year: int
-    pilots: List[str] = Field([])
-    judges: List[str] = Field([])
-    state: CompetitionState
+    start_date: date
+    end_date: date
     type: CompetitionType
+
+    async def create(self):
+
+        competition = Competition(
+            name = self.name,
+            start_date = self.start_date,
+            end_date = self.end_date,
+            type = self.type,
+            state = CompetitionState.init,
+            config = CompetitionConfig(),
+            repeatable_tricks = [str(trick.id) for trick in await Trick.getall(repeatable=True)],
+            pilots = [],
+            teams = [],
+            judges = [],
+            runs = [],
+            deleted = None,
+        )
+
+        return await competition.create()
+
+class Competition(CompetitionNew):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    pilots: List[int] = Field([])
+    teams: List[str] = Field([])
+    judges: List[str] = Field([])
+    repeatable_tricks: List[str] = Field([])
+    state: CompetitionState
     config: CompetitionConfig
-    start_date: Optional[date]
-    end_date: Optional[date]
     runs: List[Run]
     deleted: Optional[datetime]
 
@@ -53,114 +74,273 @@ class Competition(BaseModel):
             }
         }
 
-    def title(self):
-        return f"{self.name} - {self.year}"
-
     async def check(self):
-        if self.year is None:
-            self.year = self.start_date.year
+        if self.type == CompetitionType.solo:
+            for id in self.pilots:
+                pilot = await Pilot.get(id)
+                if pilot is None:
+                    raise Exception(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
 
-        for id in self.pilots:
-            pilot = await Pilot.get(id)
-            if pilot is None:
-                raise Exception(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
+        if self.type == CompetitionType.synchro:
+            for id in self.teams:
+                team = await Team.get(id)
+                if team is None:
+                    raise Exception(f"Team '{id}' is unknown, only known teams can take part of a competition")
+
         for id in self.judges:
             judge = await Judge.get(id)
             if judge is None:
                 raise Exception(f"Judge '{id}' is unknown, only known judges can take part of a competition")
 
         if self.state != CompetitionState.init:
-            if len(self.pilots) < 2:
+            if self.type == CompetitionType.solo and len(self.pilots) < 2:
+                raise Exception("At least 2 pilots are needed to open a competition")
+            if self.type == CompetitionType.synchro and len(self.teams) < 2:
                 raise Exception("At least 2 pilots are needed to open a competition")
             if len(self.judges) < 2:
                 raise Exception("At least 2 judges are needed to open a competition")
 
-        if self.start_date is not None and self.end_date is not None and self.start_date >= self.end_date:
+        if self.start_date > self.end_date:
             raise Exception("End date must be higher than start date")
-
-        if self.start_date is None and self.state != CompetitionState.init:
-            raise Exception("start_date must be set when competition is opened")
-
-        if self.end_date is None and self.state == CompetitionState.closed:
-            raise Exception("end_date must be set when competition is closed")
-
 
     async def create(self):
         try:
-            self.state = CompetitionState.init
             self.deleted = None
             self.runs = []
             await self.check()
-            await self.sort_pilots()
             competition = jsonable_encoder(self)
             res = await collection.insert_one(competition)
             self.id = res.inserted_id
-            logger.debug("competition %s created with id %s", self.title(), self.id)
+            logger.debug("competition %s created with id %s", self.name, self.id)
             return self
         except pymongo.errors.DuplicateKeyError:
-            title = self.title()
-            raise Exception(f"Competition '{title}' already exists")
+            raise Exception(f"Competition '{self.name}' already exists")
 
     async def save(self):
         await self.check()
-        await self.sort_pilots()
         competition = jsonable_encoder(self)
         res = await collection.update_one({"_id": str(self.id)}, {"$set": competition})
         return res.modified_count == 1
 
-    async def sort_pilots(self):
-        pilots = []
-        # Pilot.getall return a sorted list of pilots by rank and name
-        for pilot in await Pilot.getall(self.pilots):
-            pilots.append(pilot.name)
-        self.pilots = pilots
+#    async def sort_pilots(self):
+#        if len(self.pilots) == 0:
+#            return
+#
+#        pilots = []
+#        # Pilot.getall return a sorted list of pilots by rank and name
+#        for pilot in await Pilot.getall(self.pilots):
+#            pilots.append(pilot.name)
+#        self.pilots = pilots
 
+    async def update(self, updated_comp: CompetitionNew):
+        self.name = updated_comp.name
+        self.start_date = updated_comp.start_date
+        self.end_date = updated_comp.end_date
+        if self.type != updated_comp.type and self.state != CompetitionState.init:
+            raise Exception("Can't change the type of an already open or closed competition")
+        self.type = updated_comp.type
+        await self.save()
+
+    async def update_pilots(self, pilots: List[int]):
+        if self.type != CompetitionType.solo:
+            raise Exception("Pilot's list can only be changed on a solo competition")
+        self.pilots = pilots
+        await self.save()
+
+    async def update_teams(self, teams: List[str]):
+        if self.type != CompetitionType.synchro:
+            raise Exception("Team's list can only be changed on a synchro competition")
+        self.teams = teams
+        await self.save()
+
+    async def update_judges(self, judges: List[str]):
+        self.judges = judges
+        await self.save()
+
+    async def update_repeatable_tricks(self, repeatable_tricks: List[str]):
+        self.repeatable_tricks = repeatable_tricks
+        await self.save()
+
+    async def update_config(self, config: CompetitionConfig):
+        self.config = config
+        await self.save()
+
+    async def open(self):
+        if self.state != CompetitionState.init:
+            raise Exception("Can't open a comp which is not in state 'init'")
+
+        self.state = CompetitionState.open
+        await self.save()
+
+    async def close(self):
+        if self.state != CompetitionState.open:
+            raise Exception("Can't close a comp which is not in state 'open'")
+
+        self.state = CompetitionState.closed
+        await self.save()
+
+    async def reopen(self):
+        if self.state != CompetitionState.closed:
+            raise Exception("Can't reopen a comp which is not in state 'closed'")
+
+        self.state = CompetitionState.open
+        await self.save()
+
+    async def new_run(self, pilots_to_qualify: int = 0):
+        if self.state != CompetitionState.open:
+            raise Exception("Competition must be 'open' to create a new run")
+
+        if self.type == CompetitionType.solo:
+            l = self.pilots
+        else:
+            l = self.teams
+
+        if len(self.runs) > 0: # take the list of pilots from the previous run
+            # TODO order by the overall ranking after the previous run
+            if self.type == CompetitionType.solo:
+                l = self.runs[-1].pilots
+            else:
+                l = self.runs[-1].teams
+        else: #  first run to be added, use the list of pilots of the competition
+            if self.type == CompetitionType.solo:
+                # TODO order by the CIVL ranking
+                l = self.pilots
+            else:
+                # TOOD: order by team name, fine tuning the order will be made manually
+                l = self.teams
+
+        if pilots_to_qualify > 0: # only keep the N first (best) pilots/teams of the list
+            l = l[0:pilots_to_qualify]
+
+        run = Run(
+            state=RunState.init,
+            type=self.type, pilots=l,
+            judges=self.judges,
+            config=self.config,
+            repeatable_tricks=self.repeatable_tricks,
+            flights=[]
+        )
+        self.runs.append(run)
+        await self.save()
+        return run
+
+    async def run_get(self, i: int) -> Run:
+        try:
+            return self.runs[i]
+        except IndexError:
+            return None
+
+    async def run_update_pilots(self, i: int, pilots: List[int]):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+        if self.type != CompetitionType.solo:
+            raise Exception("Pilot's list can only be changed on a solo run")
+        run.pilots = pilots
+        self.runs[i] = run
+        await self.save()
+
+    async def run_update_teams(self, i: int, teams: List[str]):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+        if self.type != CompetitionType.synchro:
+            raise Exception("Team's list can only be changed on a synchro run")
+        run.teams = teams
+        self.runs[i] = run
+        await self.save()
+
+    async def run_update_judges(self, i: int, judges: List[str]):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+        run.judges = judges
+        self.runs[i] = run
+        await self.save()
+
+    async def run_update_repeatable_tricks(self, i: int, repeatable_tricks: List[str]):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+        run.repeatable_tricks = repeatable_tricks
+        self.runs[i] = run
+        await self.save()
+
+    async def run_update_config(self, i: int, config: CompetitionConfig):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+        run.config = config
+        self.runs[i] = run
+        await self.save()
+
+    async def run_open(self, i: int):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+
+        if run.state != RunState.init:
+            raise Exception("Can't open a run which is not in state 'init'")
+
+        run.state = RunState.open
+        self.runs[i] = run
+        await self.save()
+
+    async def run_close(self, i: int):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+
+        if run.state != RunState.open:
+            raise Exception("Can't close a run which is not in state 'open'")
+
+        run.state = RunState.closed
+        self.runs[i] = run
+        await self.save()
+
+    async def run_reopen(self, i: int):
+        run = await self.run_get(i)
+        if run is None:
+            raise Exception(f"run #{i} not found")
+
+        if run.state != RunState.closed:
+            raise Exception("Can't reopen a run which is not in state 'close'")
+
+        run.state = RunState.open
+        self.runs[i] = run
+        await self.save()
+
+#
+#
+#   Static methods
+#
+#
     @staticmethod
     def createIndexes():
-        collection.create_index([('name', pymongo.ASCENDING), ('year', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
-        logger.debug('index created on "name,year,deleted"')
+        collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        logger.debug('index created on "name,deleted"')
 
     @staticmethod
-    async def get(name: str, year: int):
-        logger.debug(f"get({name}, {year})")
-        competition = await collection.find_one({
-            "$or": [
-                {"_id": name}, 
-                {"$and": 
-                    [
-                        {"name": name},
-                        {"year": year},
-                        {"deleted": None}
-                    ]
-                }
-            ]
-        })
+    async def get(id: str, deleted: bool = False):
+        if deleted:
+            search = {"_id": id}
+        else:
+            search = {"_id": id, "deleted": None}
+        competition = await collection.find_one(search)
         if competition is not None:
             return Competition.parse_obj(competition)
         return None
 
     @staticmethod
     async def getall():
-        logger.debug("getall()")
         competitions = []
-        sort=[("last_update", pymongo.ASCENDING), ("name", pymongo.ASCENDING), ("year", pymongo.ASCENDING)]
-        for competition in await collection.find({"deleted": None}, sort=sort).to_list(1000):
+        for competition in await collection.find({"deleted": None}, sort=[("name", pymongo.ASCENDING)]).to_list(1000):
             competitions.append(Competition.parse_obj(competition))
         return competitions
 
     @staticmethod
-    async def update(id: str, year: int, competition_update):
-        competition = await Competition.get(id, year)
-        if competition is None:
-            return None
-
-        logger.debug(f"got competition: {competition}")
-        competition_update.id = competition.id
-        return await competition_update.save()
-
-    @staticmethod
-    async def delete(id: str, year: int, restore: bool = False):
-        competition = await Competition.get(id, year)
+    async def delete(id: str, restore: bool = False):
+        competition = await Competition.get(id, True)
         if competition is None:
             return None
 
@@ -173,5 +353,4 @@ class Competition(BaseModel):
         else:
             competition.deleted = datetime.now()
             action = "deleting"
-        logger.debug(f"{action} competition {competition}")
         return await competition.save()

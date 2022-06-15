@@ -17,10 +17,9 @@ tricks = APIRouter()
     "/",
     response_description="List all tricks",
     response_model=List[Trick],
-    dependencies=[Depends(auth)]
 )
-async def list():
-    return await Trick.getall()
+async def list(deleted: bool = False, repeatable: bool = None):
+    return await Trick.getall(deleted = deleted, repeatable = repeatable)
 
 #
 # Get all scores
@@ -29,7 +28,6 @@ async def list():
     "/scores",
     response_description="Get all tricks",
     response_model=List[UniqueTrick],
-    dependencies=[Depends(auth)]
 )
 async def get_scores(solo: bool=True, synchro: bool=True):
     return await Trick.get_scores(solo, synchro)
@@ -42,7 +40,6 @@ async def get_scores(solo: bool=True, synchro: bool=True):
     "/score/{id:path}", # https://github.com/tiangolo/fastapi/issues/4390#issuecomment-1019558295
     response_description="Get a Trick",
     response_model=UniqueTrick,
-    dependencies=[Depends(auth)]
 )
 async def get_score(id):
     logger.debug(f"id: {id}")
@@ -60,10 +57,9 @@ async def get_score(id):
     "/{id}",
     response_description="Get a Trick",
     response_model=Trick,
-    dependencies=[Depends(auth)]
 )
-async def get(id: str):
-    trick = await Trick.get(id)
+async def get(id: str, deleted: bool = False):
+    trick = await Trick.get(id, deleted)
     if trick is None:
         raise HTTPException(status_code=404, detail=f"Trick {id} not found")
     return trick

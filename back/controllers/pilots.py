@@ -7,6 +7,7 @@ import lxml.html
 import re
 from fastapi.concurrency import run_in_threadpool
 from random import shuffle
+from core.database import PyObjectId
 
 from core.config import settings
 from models.pilots import Pilot
@@ -146,6 +147,7 @@ async def update_pilot(civlid: int):
     logger.debug(rank)
 
     pilot = Pilot(
+        id=civlid,
         civlid=civlid,
         name=name,
         country=country,

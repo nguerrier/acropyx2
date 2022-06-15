@@ -38,7 +38,7 @@ class Judge(BaseModel):
         schema_extra = {
             "example": {
                 "name": "John Doe",
-                "country": "fr",
+                "country": "fra",
                 "level": "certified",
             }
         }
@@ -49,18 +49,13 @@ class Judge(BaseModel):
             judge['deleted'] = None
             res = await collection.insert_one(judge)
             self.id = res.inserted_id
-            logger.debug("judge %s created with id %s", self.name, self.id)
             return self
         except pymongo.errors.DuplicateKeyError:
             raise Exception(f"Judge '{self.name}' already exists")
 
     async def save(self):
         judge = jsonable_encoder(self)
-        logger.debug({"_id": str(self.id)})
-        logger.debug(judge)
         res =  await collection.update_one({"_id": str(self.id)}, {"$set": judge})
-        logger.debug(f"[{self.name}] update_one({self.id}) returned match={res.matched_count} modifiy={res.modified_count}")
-        logger.debug(res.raw_result)
         return res.modified_count == 1
 
     @staticmethod
@@ -69,27 +64,27 @@ class Judge(BaseModel):
         logger.debug('index created on "name,deleted"')
 
     @staticmethod
-    async def get(id):
+    async def get(id, deleted: bool = False):
         logger.debug("get(%s)", id)
-        judge = await collection.find_one({
-            "$or": [
-                {"_id": id},
-                {"$and": [
-                    {"name": id},
-                    {"deleted": None}
-                ]},
-            ]
-        })
+        if deleted:
+            search = {"_id": id}
+        else:
+            search = {"_id": id, "deleted": None}
+        judge = await collection.find_one(search)
         if judge is not None:
             logger.debug(f"get find_one -> {judge}")
             return Judge.parse_obj(judge)
         return None
 
     @staticmethod
-    async def getall():
+    async def getall(deleted: bool = False):
         logger.debug("getall()")
+        if deleted:
+            search = {}
+        else:
+            search = {"deleted": None}
         judges = []
-        for judge in await collection.find({"deleted": None}, sort=[("level", pymongo.DESCENDING), ("name", pymongo.ASCENDING)]).to_list(1000):
+        for judge in await collection.find(search, sort=[("level", pymongo.DESCENDING), ("name", pymongo.ASCENDING)]).to_list(1000):
             judges.append(Judge.parse_obj(judge))
         return judges
 
@@ -105,7 +100,7 @@ class Judge(BaseModel):
 
     @staticmethod
     async def delete(id: str, restore: bool = False):
-        judge = await Judge.get(id)
+        judge = await Judge.get(id, True)
         if judge is None:
             return None
 

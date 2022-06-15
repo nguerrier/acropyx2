@@ -87,22 +87,23 @@ class Settings(BaseSettings):
         ]
 
     class competitions:
-        apply_penalties: bool = True
-        nb_pilots_to_keep_for_next_run: int = 0
-        marks_repartition: dict = {
-            "solo": {
-                "technical": 40,
-                "choreography": 40,
-                "landing": 20,
-            },
-            "synchro": {
-                "technical": 25,
-                "choreography": 25,
-                "landing": 25,
-                "synchro": 25,
-            }
-        }
-        max_bonus_trick_per_run: int = 5
+        warning : float = 0.5
+        malus_repartition : float = 13
+        warnings_to_dsq : int = 3
+        judges_weight_senior : int = 100
+        judges_weight_certified : int = 100
+        judges_weight_trainee : int = 20
+        mark_percentage_solo_technical : int = 40
+        mark_percentage_solo_choreography : int = 40
+        mark_percentage_solo_technical : int = 40
+        mark_percentage_synchro_technical : int = 25
+        mark_percentage_synchro_choreography : int = 25
+        mark_percentage_synchro_technical : int = 25
+        mark_percentage_synchro_technical : int = 25
+        max_bonus_twisted_per_run : int = 5
+        max_bonus_reverse_per_run : int = 3
+        max_bonus_flip_per_run : int = 2
+
 
     class runs:
         sample: int = 0

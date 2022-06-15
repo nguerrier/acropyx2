@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
-from models.judges import Judge
+from models.judges import Judge, JudgeLevel
 from typing import List
 from fastapi.responses import Response
 
@@ -16,10 +16,20 @@ judges = APIRouter()
     "/",
     response_description="List all judges",
     response_model=List[Judge],
-    dependencies=[Depends(auth)]
 )
-async def list():
-    return await Judge.getall()
+async def list(deleted: bool = False):
+    return await Judge.getall(deleted)
+
+#
+# get Judges levels
+#
+@judges.get(
+    "/levels/",
+    response_description="Get list of judges levels",
+    response_model=List[JudgeLevel],
+)
+def get_levels():
+    return [level.value for level in JudgeLevel]
 
 #
 # Get one judge
@@ -28,10 +38,9 @@ async def list():
     "/{id}",
     response_description="Get a Judge",
     response_model=Judge,
-    dependencies=[Depends(auth)]
 )
-async def get(id: str):
-    judge = await Judge.get(id)
+async def get(id: str, deleted: bool = False):
+    judge = await Judge.get(id, deleted)
     if judge is None:
         raise HTTPException(status_code=404, detail=f"Judge {id} not found")
     logger.debug(judge)
