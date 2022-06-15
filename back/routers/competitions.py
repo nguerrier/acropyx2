@@ -1,12 +1,16 @@
 import logging
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, Body, HTTPException
+from typing import List
+from fastapi.responses import Response
+
 from core.security import auth
+
 from models.competitions import Competition, CompetitionNew, CompetitionState
 from models.competition_configs import CompetitionConfig
 from models.runs import Run
-from typing import List
-from fastapi.responses import Response
+from models.final_marks import FinalMark
+from models.flights import Flight, FlightNew
 
 logger = logging.getLogger(__name__)
 competitions = APIRouter()
@@ -429,6 +433,23 @@ async def run_reopen(id: str, i: int):
         comp = await Competition.get(id)
         if comp is not None:
             await comp.run_reopen(i)
+    except Exception as e:
+        raise  HTTPException(status_code=400, detail=str(e))
+
+    if comp is None:
+        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+
+@competitions.post(
+    "/{id}/runs/{i}/flights/{civlid}/simulate/",
+    response_description="Simulate a run and get the detail score",
+    response_model=FinalMark,
+    dependencies=[Depends(auth)],
+)
+async def flight_simulate(id: str, i: int, civlid: int, flight: FlightNew = Body(...)):
+    try:
+        comp = await Competition.get(id)
+        if comp is not None:
+            return await comp.flight_simulate(i, civlid, flight)
     except Exception as e:
         raise  HTTPException(status_code=400, detail=str(e))
 

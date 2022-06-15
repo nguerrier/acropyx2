@@ -18,7 +18,11 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 class Flight(BaseModel):
-    pilot: str
+    pilot: int
     tricks: List[UniqueTrick]
     marks: List[JudgeMark]
     final_marks: Optional[FinalMark]
+
+class FlightNew(BaseModel):
+    tricks: List[str]
+    marks: List[JudgeMark]

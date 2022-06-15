@@ -1,6 +1,7 @@
 import logging
 import itertools
 from models.tricks import Trick, Bonus
+from models.unique_tricks import UniqueTrick
 from core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ def generate_trick(trick: Trick, combination: [Bonus]):
     post_name = ""
     post_acronym = ""
     overall_bonus = 0.0
+    bonus_types = []
 
     for bonus in combination:
         b = next(d for d in settings.tricks.available_bonuses if d['name'] == bonus.name)
@@ -67,6 +69,9 @@ def generate_trick(trick: Trick, combination: [Bonus]):
             else:
                 post_name = bonus.name
 
+        if b.get('type') not in bonus_types:
+            bonus_types.append(b.get('type'))
+
     name = f"%s{trick.name}"
     if pre_name:
         name = f"{pre_name} {name}"
@@ -81,23 +86,24 @@ def generate_trick(trick: Trick, combination: [Bonus]):
 
     if len(trick.directions) == 0:
 
-        trick.tricks.append({
-            "name": (name % ""),
-            "acronym": (acronym % ""),
-            "technical_coefficient": trick.technical_coefficient,
-            "bonus": overall_bonus
-        })
+        trick.tricks.append(UniqueTrick(
+            name = (name % ""),
+            acronym = (acronym % ""),
+            technical_coefficient = trick.technical_coefficient,
+            bonus = overall_bonus,
+            bonus_types = bonus_types
+        ))
     else:
         for direction in trick.directions:
             direction_acronym = next(d['acronym'] for d in settings.tricks.available_directions if d['name'] == direction)
 
-            trick.tricks.append({
-                "name": (name % f"{direction} "),
-                "acronym": (acronym % direction_acronym),
-                "technical_coefficient": trick.technical_coefficient,
-                "bonus": overall_bonus
-            })
-            
+            trick.tricks.append(UniqueTrick(
+                name = (name % f"{direction} "),
+                acronym = (acronym % direction_acronym),
+                technical_coefficient = trick.technical_coefficient,
+                bonus = overall_bonus,
+                bonus_types = bonus_types
+            ))
 
     return
 

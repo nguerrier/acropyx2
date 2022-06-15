@@ -42,15 +42,15 @@ class Settings(BaseSettings):
 
     class tricks:
         available_bonuses = [
-            {"name": "reverse", "post_acronym": "R"},
-            {"name": "twisted", "pre_acronym": "/"},
-            {"name": "twisted exit", "post_acronym": "/"},
-            {"name": "full twisted", "post_acronym": "\\"},
-            {"name": "devil twist", "post_acronym": "X"},
-            {"name": "to twisted sat", "post_acronym": "S"},
-            {"name": "flip", "post_acronym": "F"},
-            {"name": "double flip", "post_acronym": "FF"},
-            {"name": "wing touch", "post_acronym": "T"},
+            {"name": "reverse", "post_acronym": "R", "type": "reverse"},
+            {"name": "twisted", "pre_acronym": "/", "type": "twist"},
+            {"name": "twisted exit", "post_acronym": "/", "type": "twist"},
+            {"name": "full twisted", "post_acronym": "\\", "type": "twist"},
+            {"name": "devil twist", "post_acronym": "X", "type": "twist"},
+            {"name": "to twisted sat", "post_acronym": "S", "type": "twist"},
+            {"name": "flip", "post_acronym": "F", "type": "flip"},
+            {"name": "double flip", "post_acronym": "FF", "type": "flip"},
+            {"name": "wing touch", "post_acronym": "T", "type": "other"},
         ]
 
         available_directions = [
@@ -95,12 +95,12 @@ class Settings(BaseSettings):
         judges_weight_trainee : int = 20
         mark_percentage_solo_technical : int = 40
         mark_percentage_solo_choreography : int = 40
-        mark_percentage_solo_technical : int = 40
+        mark_percentage_solo_landing : int = 20
         mark_percentage_synchro_technical : int = 25
         mark_percentage_synchro_choreography : int = 25
-        mark_percentage_synchro_technical : int = 25
-        mark_percentage_synchro_technical : int = 25
-        max_bonus_twisted_per_run : int = 5
+        mark_percentage_synchro_landing : int = 25
+        mark_percentage_synchro_synchro : int = 25
+        max_bonus_twist_per_run : int = 5
         max_bonus_reverse_per_run : int = 3
         max_bonus_flip_per_run : int = 2
 

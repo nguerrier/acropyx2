@@ -4,9 +4,8 @@ from core.security import auth
 from core.config import settings
 
 from controllers.scores import calculate_score, simulate_score
+from models.flights import Flight, FlightNew
 from models.final_marks import FinalMark
-from models.flights import Flight
-from models.simple_flights import SimpleFlight
 from models.competitions import CompetitionType
 
 logger = logging.getLogger(__name__)
@@ -17,7 +16,8 @@ scores= APIRouter()
     response_model=FinalMark,
     dependencies=[Depends(auth)]
 )
-async def simulate(t: CompetitionType, flight: SimpleFlight = Body(...)):
+async def simulate(t: CompetitionType, flight: FlightNew = Body(...)):
+    return await simulate_score(flight, t)
     try:
         return await simulate_score(flight, t)
     except Exception as e:

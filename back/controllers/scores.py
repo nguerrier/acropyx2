@@ -8,19 +8,20 @@ import re
 from fastapi.concurrency import run_in_threadpool
 from random import shuffle
 from typing import List
+from datetime import date
 
 from core.config import settings
-from core.utils import average
-from models.flights import Flight
-from models.simple_flights import SimpleFlight
+from core.utils import average, weight_average
+from models.flights import Flight, FlightNew
 from models.final_marks import FinalMark
 from models.judge_marks import JudgeMark
-from models.competitions import CompetitionType
+from models.competitions import Competition, CompetitionType, CompetitionConfig, CompetitionState
 from models.tricks import Trick
+from models.judges import Judge
 
 logger = logging.getLogger(__name__)
 
-async def simulate_score(flight: SimpleFlight, type: CompetitionType) -> FinalMark:
+async def simulate_score(flight: FlightNew, type: CompetitionType) -> FinalMark:
     logger.debug(flight)
 
     tricks = []
@@ -41,22 +42,24 @@ async def simulate_score(flight: SimpleFlight, type: CompetitionType) -> FinalMa
 
     logger.debug(tricks)
     f = Flight(
-        pilot = "Jerry the Pilot",
+        pilot = 0,
         tricks=tricks,
-        marks=[
-            JudgeMark(
-                judge="Jerry the Judge",
-                technical=flight.mark.technical,
-                choreography=flight.mark.choreography,
-                landing=flight.mark.landing,
-                synchro=flight.mark.synchro,
-            )
-        ]
+        marks=flight.marks
     )
 
-    return calculate_score(f, type)
+    comp = Competition(
+        name="Simulated comp",
+        start_date = date.today(),
+        end_date = date.today(),
+        state = CompetitionState.open,
+        config = CompetitionConfig(),
+        type = type,
+        runs = []
+    )
 
-def calculate_score(flight: Flight, type: CompetitionType) -> FinalMark:
+    return await calculate_score(f, comp)
+
+async def calculate_score(flight: Flight, competition: Competition, run_i: int = -1) -> FinalMark:
     mark = FinalMark(
         judges_mark = JudgeMark(
             judge = "Average of judges marks",
@@ -73,47 +76,112 @@ def calculate_score(flight: Flight, type: CompetitionType) -> FinalMark:
         synchro=0,
         bonus=0,
         score=0,
+        warnings=0,
     )
 
+    if run_i < 0:
+        run = None
+    else:
+        try:
+            run = competition.runs[run_i]
+        except IndexError:
+            run = None
+
+    if run is None:
+        config = competition.config
+    else:
+        config = run.config
+
+
+    #
+    # count previous warnings and check if not previous DSQ
+    #
+    if run_i>0 and run is not None:
+        warnings = 0
+
+        # loop over all previous runs
+        for i in range(len(compt.runs)):
+            if i >= run_i:
+                break
+            r = comp.runs[i]
+            for f in r.flights:
+                if f.pilot == f.pilot:
+                    warnings += f.warnings
+                    break
+        if warnings >= config.warnings_to_dsq:
+            raise Exception("Can't calculate a score for a DSQ pilot")
+    #
+    # end of checking warning to DSQ
+    #
+    
+
+    # calculate the average of judges marks
+    # using the weight of each judge level
     technicals = []
     choreographies = []
     landings = []
     synchros = []
     for m in flight.marks:
-        technicals.append(m.technical)
-        choreographies.append(m.choreography)
-        landings.append(m.landing)
-        if type == CompetitionType.synchro:
+        judge = await Judge.get(m.judge)
+        if judge is None:
+            raise Exception(f"judge '{m.judge}' not found")
+        weight = dict(config.judge_weights)[judge.level.value]
+        technicals.append((m.technical, weight))
+        choreographies.append((m.choreography, weight))
+        landings.append((m.landing, weight))
+        if competition.type == CompetitionType.synchro:
             if m.synchro is None:
-                raise Exception(f"synchro mark is missing. It is mandatory for {type} runs")
-            synchros.append(m.synchro)
+                raise Exception(f"synchro mark is missing. It is mandatory for {competition.type} runs")
+            synchros.append((m.synchro, weight))
 
-    mark.judges_mark.technical = average(technicals)
-    mark.judges_mark.choreography = average(choreographies)
-    mark.judges_mark.landing = average(landings)
-    if type == CompetitionType.synchro:
-        mark.judges_mark.synchro = average(synchros)
-    logger.debug(f"{mark.judges_mark}")
+    mark.judges_mark.technical = weight_average(technicals)
+    mark.judges_mark.choreography = weight_average(choreographies)
+    mark.judges_mark.landing = weight_average(landings)
+    if competition.type == CompetitionType.synchro:
+        mark.judges_mark.synchro = weight_average(synchros)
+    #
+    # endof calculating the weight average of the judges marks
+    #
+
+
+    #
+    # ignore trick with bonus higher than the maximum bonus tricks allowed
+    #
+    tricks = [] # the list of tricks that will be used to calculate the scores
+    n_bonuses = {}
+    i = 0
+    logger.debug(config.max_bonus_per_run)
+    for trick in flight.tricks:
+        i += 1
+        ignoring = False
+        for bonus_type in trick.bonus_types:
+            if bonus_type not in n_bonuses:
+                n_bonuses[bonus_type] = 0
+
+            n_bonuses[bonus_type] += 1
+
+            max = dict(config.max_bonus_per_run)[bonus_type]
+
+            if n_bonuses[bonus_type] > max:
+                logger.warning(f"Ignoring trick #{i} ({trick}) because already {max} tricks have been flown")
+                mark.notes.append(f"trick number #{i} ({trick.name}) has been ignored because more than {max} {bonus_type} tricks have been flown")
+                ignoring = True
+                break
+
+        if not ignoring:
+            tricks.append(trick)
 
 
     technicals = []
     bonuses = []
-    for trick in flight.tricks:
-        logger.debug(f"got trick {trick}")
+    for trick in tricks:
 
 
         # calculate the bonus of the run as stated in 7B
         # §6.6.1 Twisted manoeuvres bonus
-        # During each run, up to 5 manoeuvres can be performed twisted.
         if trick.bonus > 0:
-            if len(bonuses) > settings.competitions.max_bonus_trick_per_run:
-                logger.debug(f"ignoring trick {trick.name} as there are already {settings.competitions.max_bonus_trick_per_run} tricks with bonus in this run")
-                next
-
             bonuses.append(trick.bonus)
 
-        # append technical after bonus as the previous loop
-        # can call next to ignore a trick if more than 5 bonus tricks are flown
         # as stated in 7B §
         # If more than 5 manoeuvres are flown twisted, the extra manoeuvres will not
         # be scored and their coefficients not taken into account for the
@@ -132,14 +200,15 @@ def calculate_score(flight: Flight, type: CompetitionType) -> FinalMark:
     # -> it is implied that the bonus is the sum of the bonuses limited to 5
     mark.bonus_percentage = sum(bonuses)
 
-    mark.technical = mark.technicity * mark.judges_mark.technical * settings.competitions.marks_repartition[type]['technical'] / 100
+    mark_percentage = dict(config.mark_percentages)[competition.type.value]
+    mark.technical = mark.technicity * mark.judges_mark.technical * mark_percentage.technical / 100
 
-    mark.choreography = mark.judges_mark.choreography * settings.competitions.marks_repartition[type]['choreography'] / 100
+    mark.choreography = mark.judges_mark.choreography * mark_percentage.choreography / 100
 
-    mark.landing = mark.judges_mark.landing * settings.competitions.marks_repartition[type]['landing'] / 100
+    mark.landing = mark.judges_mark.landing * mark_percentage.landing / 100
 
     if type == CompetitionType.synchro:
-        mark.synchro = mark.judges_mark.synchro * settings.competitions.marks_repartition[type]['synchro'] / 100
+        mark.synchro = mark.judges_mark.synchro * mark_percentage.synchro / 100
 
     mark.bonus = (mark.technical + mark.choreography) * mark.bonus_percentage / 100
 

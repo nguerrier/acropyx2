@@ -12,6 +12,8 @@ from models.teams import Team
 from models.judges import Judge
 from models.runs import Run, RunState
 from models.tricks import Trick
+from models.flights import Flight, FlightNew
+from models.final_marks import FinalMark
 from models.competition_configs import CompetitionConfig
 
 from core.database import db, PyObjectId
@@ -309,6 +311,9 @@ class Competition(CompetitionNew):
         run.state = RunState.open
         self.runs[i] = run
         await self.save()
+
+    async def flight_simulate(self, i: int, civlid: int, flight: FlightNew) -> FinalMark:
+        return None
 
 #
 #

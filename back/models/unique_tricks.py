@@ -1,5 +1,6 @@
 import logging
 from pydantic import BaseModel
+from typing import List
 logger = logging.getLogger(__name__)
 
 class UniqueTrick(BaseModel):
@@ -7,6 +8,7 @@ class UniqueTrick(BaseModel):
     acronym: str
     technical_coefficient: float
     bonus: float
+    bonus_types: List[str]
 
     class Config:
         schema_extra = {
@@ -14,6 +16,7 @@ class UniqueTrick(BaseModel):
                 "name": "twisted left Misty to Helicopter reverse",
                 "acronym": "/LMHR",
                 "technical_coefficient": 1.75,
-                "bonus": 6
+                "bonus": 6,
+                "bonus_types": ["twist", "reverse"]
             }
         }
