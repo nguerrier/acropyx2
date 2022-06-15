@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Misty SAT",
   "description": "Misty + transition to SAT",
   "minimum": "45° climb before rotation",

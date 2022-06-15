@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Tumbling entry. 1 rotation only, stopped during the dive. Exit with high energy connected to a Helicopter to the same side + SAT to Helicopter connection",
   "criterias": {
     "normal": "energy on entry, timing, flow, energy on exit, angle, connection to Helicopter (fluidity, rapidity). Only 1 Tumbling rotation",

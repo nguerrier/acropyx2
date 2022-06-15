@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "1 turn (360°) Mac Twist rotation (half a Mac Twist) followed by a high Tumbling",
   "criterias": {
     "normal": "energy on entry, timing, flow",

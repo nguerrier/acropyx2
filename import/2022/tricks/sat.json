@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Evenly balanced SAT rotation",
   "minimum": "2 rotations",
   "criterias": {

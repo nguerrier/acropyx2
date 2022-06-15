@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": true,
   "description": "Series of pendulum turns with change of direction each time",
   "minimum": "twice to one side, twice to the other side, 135° angle",
   "criterias": {

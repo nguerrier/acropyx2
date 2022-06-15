@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "description": "Combination of a Synchro Spiral and Half Pipe Combo",
   "minimum": null,
   "criterias": {

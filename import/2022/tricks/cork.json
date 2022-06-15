@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Cork",
   "description": "Spin during the entry over the glider into a Helicopter",
   "minimum": "120°",

@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Asymmetric or inversion entry, perfect pitch movement",
   "minimum": "1 rotation, 135° angle",
   "criterias": {

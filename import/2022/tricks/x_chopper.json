@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Entry with high energy, constant & rapid climb, spin, strong dive, exit",
   "minimums": "90° climb, 360° spin dive not more than 270° from the direction of entry",
   "criterias": {

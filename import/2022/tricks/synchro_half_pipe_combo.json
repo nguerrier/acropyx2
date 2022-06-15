@@ -4,6 +4,7 @@
   "directions": [],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "description": "Straight entry, minimum 45° climb before rotation & 180° spin, straight horizontal dive, exit 180° from the direction of entry, in transition use the exit energy of the first Half Pipe for the next one. Direction must be changed",
   "criterias": {
     "normal": "importance of pitch on entry, 180° rotation, maintenance of shape, strong dive, no rotation on entry and exit",

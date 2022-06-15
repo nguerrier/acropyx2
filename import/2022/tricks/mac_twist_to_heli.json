@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Mac Heli",
   "description": "Mac Twist with the spiral maintained to Helicopter",
   "minimum": "same as Mac Twist and Helicopter",

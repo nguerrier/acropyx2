@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Misty chained with another misty on the other side using the exit energy of the first one",
   "criterias": {
     "normal": "same criteria as of Misty Flip",

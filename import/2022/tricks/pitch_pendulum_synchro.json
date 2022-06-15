@@ -4,6 +4,7 @@
   "directions": [],
   "solo": false,
   "synchro": true,
+  "repeatable": true,
   "name_short": "Pitch Pendulum",
   "name_alt": "Molineti",
   "description": null,

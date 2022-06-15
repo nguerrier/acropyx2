@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Fusion Heli",
   "description": "Start from Fusion position into Helicopter",
   "minimum": "1 rotation",

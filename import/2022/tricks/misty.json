@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Misty",
   "description": "Straight entry & climb, 360° spin, straight horizontal dive, exit not more than 180° from the direction of entry",
   "criterias": {

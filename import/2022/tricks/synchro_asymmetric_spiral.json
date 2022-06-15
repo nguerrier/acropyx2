@@ -1,13 +1,13 @@
 {
-  "name": "Synchro Spiral",
-  "acronym": "S36",
+  "name": "Synchro Asymmetric Spiral",
+  "acronym": "SA3",
   "directions": ["left", "right", "mirror", "opposite"],
   "solo": false,
   "synchro": true,
   "repeatable": false,
-  "minimum": "2 revolutions and a maximum distance of one paraglider line length between (approx. 10 metres)",
+  "minimum": "Series of pendulum turns in the same time and direction during a synchro spiral, twice to the same side",
   "criterias": {},
-  "technical_coefficient": 1.8,
+  "technical_coefficient": 1.65,
   "bonuses": [
   ],
   "first_trick": 0,

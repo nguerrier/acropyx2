@@ -4,6 +4,7 @@
   "directions": [],
   "solo": false,
   "synchro": true,
+  "repeatable": true,
   "description": "Series of pendulum turns with change of direction each time",
   "minimum": "twice to one side, twice to the other side with high angle (minimum 135°) the pilots perform the turns to the opposite direction of each other",
   "criterias": {

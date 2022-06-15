@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Tail Slide to Infinity",
   "description": "Tail Slide or Deep Stall directly connected into an Infinite Tumbling. The Tail Slide/Deep Stall must not necessarily be long but shall be entered from either straight flying or from the exit of another trick.",
   "minimum": "entry + 3 rotation",

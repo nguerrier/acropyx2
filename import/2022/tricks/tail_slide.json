@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": true,
   "description": "Stabilised backward flying with open glider",
   "minimum": "5 seconds",
   "criterias": {

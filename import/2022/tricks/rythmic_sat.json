@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Rythmic",
   "description": "Entry without pitch, constant progression until reaching 180° + 1 straight rotation at the end",
   "minimum": "135° in the best rotation",

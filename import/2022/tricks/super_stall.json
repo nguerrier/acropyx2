@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": true,
   "description": "Straight climb>=90° + stall",
   "minimum": "90° backwards pitch",
   "criterias": {

@@ -4,6 +4,7 @@
   "directions": ["left", "right", "opposite"],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "description": "Rodeo SAT + connection to Rodeo SAT with pilots replacing each other",
   "minimum": "2 spiral revolutions around the SAT at the same altitude for each pilot",
   "criterias": {

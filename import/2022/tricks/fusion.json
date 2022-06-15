@@ -4,6 +4,7 @@
   "directions": [],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "description": "Start from Bro Hook Lateral position. Both pilots spin the wings into deep stall with the leading edge facing each other",
   "minimum": "4 seconds",
   "criterias": {

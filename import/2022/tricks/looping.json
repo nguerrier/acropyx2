@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_alt": "Inversion",
   "description": "Entry from asymmetric spiral or a normal spiral. Reversal of a revolution that makes the pilot turn around the wing in a roll movement",
   "minimum": "135° angle",

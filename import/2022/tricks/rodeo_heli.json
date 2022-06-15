@@ -4,6 +4,7 @@
   "directions": ["left", "right", "opposite"],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Rodeo Heli",
   "description": "One pilot is performing a Helicopter while the other is spiralling around",
   "minimum": "2 spiral revolutions around the helicopter at the same altitude",

@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": true,
   "alt_name": "Dynamic Full Stall",
   "description": "Optional straight climb <90° + stall",
   "criterias": {

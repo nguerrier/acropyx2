@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Misty Flip to dive to Helicopter",
   "minimum": "45° climb before rotation",
   "criterias": {

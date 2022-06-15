@@ -4,6 +4,7 @@
   "directions": [],
   "solo": false,
   "synchro": true,
+  "repeatable": true,
   "description": "One pilot flies straight, the other pilot approaches from behind and connects",
   "minimum": "4 seconds connected",
   "criterias": {},

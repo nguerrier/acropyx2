@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "SAT to Heli",
   "description": "Several SAT rotation + connection to helicopter",
   "minimum": "2 SAT rotations, 3 helicopter rotations",

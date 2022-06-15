@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Flat Stall to Infinity",
   "description": "Full Stall directly connected into an Infinite Tumbling. The Full Stall must not necessarily be high but shall be perfectly straight. The pilot must not take any energy before the stall. It must come from a straight flying scenario, no pitch before the stall",
   "minimum": "entry\\ + 3 rotation",

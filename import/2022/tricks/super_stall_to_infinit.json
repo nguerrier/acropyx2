@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Stall to Infinity",
   "description": "Super Stall directly connected into an Infinite Tumbling. The Full Stall must not necessarily be high but shall be perfectly straight",
   "minimum": "entry\\ + 3 rotations",

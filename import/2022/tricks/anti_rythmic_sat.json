@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "name_short": "Anti-Rythmic",
   "description": "Entry by Tumbling, 180° in the first rotation for maximum points + 1 SAT rotation at the end",
   "minimum": "135° angle for the first rotation",

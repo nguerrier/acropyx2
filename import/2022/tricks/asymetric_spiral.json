@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Series of pendulum turns in the same direction each time",
   "criterias": {
     "normal": "rhythm, flow, trajectory, angle (135° for maximum score\\ –\\ the higher the better)",

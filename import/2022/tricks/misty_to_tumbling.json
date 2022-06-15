@@ -4,6 +4,7 @@
   "directions": ["left", "right"],
   "solo": true,
   "synchro": true,
+  "repeatable": false,
   "description": "Misty Flip (360° spin rotation) followed by a high Tumbling using the dive from the Misty Flip",
   "criterias": {
     "normal": "energy on entry, timing, flow",

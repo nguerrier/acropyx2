@@ -4,6 +4,7 @@
   "directions": ["left", "right", "opposite"],
   "solo": false,
   "synchro": true,
+  "repeatable": false,
   "description": "One pilot is performing a SAT while the other is spiralling around",
   "minimum": "2 revolutions around the SAT at the same altitude",
   "criterias": {

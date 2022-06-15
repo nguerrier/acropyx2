@@ -4,6 +4,7 @@
   "directions": [],
   "solo": true,
   "synchro": true,
+  "repeatable": true,
   "description": "Same as Wingover Opposite but the pilots must cross each other during the manoeuvre",
   "minimum": null,
   "criterias": {
