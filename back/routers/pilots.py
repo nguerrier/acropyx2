@@ -5,7 +5,7 @@ from typing import List
 
 from core.security import auth
 from models.pilots import Pilot, collection
-from controllers.pilots import update_pilot, update_pilots, isTaskRunning
+from controllers.pilots import update_pilot, update_pilots
 
 logger = logging.getLogger(__name__)
 pilots = APIRouter()
@@ -48,10 +48,8 @@ async def get(civlid: int):
     response_class=Response,
     dependencies=[Depends(auth)],
 )
-async def sync(background_tasks: BackgroundTasks):
-    if isTaskRunning():
-        raise HTTPException(status_code=400, detail="an update task is already running ...")
-    background_tasks.add_task(update_pilots)
+async def sync():
+    await update_pilots()
 
 #
 # Create a new Pilot
