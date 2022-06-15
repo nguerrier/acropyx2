@@ -1,5 +1,8 @@
 default:
 	echo "Default target, doing nothing"
 
-deploy:
+deploy-preprod:
+	cd .. && make $@
+
+deploy-prod:
 	cd .. && make $@
