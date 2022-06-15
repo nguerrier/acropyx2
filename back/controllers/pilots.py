@@ -33,6 +33,8 @@ async def update_pilots():
     try:
         taskRunning = True
 
+        logger.debug("starting background task")
+
         # fetch the excel
         async with httpx.AsyncClient() as client:
             ret = await client.get(settings.pilots.civl_link_all_pilots)
