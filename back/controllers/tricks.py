@@ -22,9 +22,9 @@ def generate_tricks(trick: Trick):
                     if pair == constraint:
                         logger.debug(f"[{trick.name}] ignoring combination of bonuses ({pair}) because of constraint")
                         ignore = True
-                        next
+                        continue
                 if ignore:
-                    next
+                    continue
 
             if not ignore:
                 combinations.append(list(combination))
@@ -43,6 +43,8 @@ def generate_tricks(trick: Trick):
         logger.debug(t)
 
 def generate_trick(trick: Trick, combination: [Bonus]):
+
+    logger.debug(combination)
 
     pre_name = ""
     pre_acronym = ""
@@ -84,14 +86,20 @@ def generate_trick(trick: Trick, combination: [Bonus]):
     if post_acronym:
         acronym = f"{acronym}{post_acronym}"
 
-    if len(trick.directions) == 0:
 
+    uniqueness = []
+    if "reverse" in bonus_types:
+        uniqueness.append("reverse")
+
+    if len(trick.directions) == 0:
         trick.tricks.append(UniqueTrick(
             name = (name % ""),
             acronym = (acronym % ""),
             technical_coefficient = trick.technical_coefficient,
             bonus = overall_bonus,
-            bonus_types = bonus_types
+            bonus_types = bonus_types,
+            base_trick = trick.name,
+            uniqueness = uniqueness,
         ))
     else:
         for direction in trick.directions:
@@ -102,7 +110,9 @@ def generate_trick(trick: Trick, combination: [Bonus]):
                 acronym = (acronym % direction_acronym),
                 technical_coefficient = trick.technical_coefficient,
                 bonus = overall_bonus,
-                bonus_types = bonus_types
+                bonus_types = bonus_types,
+                base_trick = trick.name,
+                uniqueness = uniqueness + [direction],
             ))
 
     return

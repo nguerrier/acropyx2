@@ -9,6 +9,8 @@ class UniqueTrick(BaseModel):
     technical_coefficient: float
     bonus: float
     bonus_types: List[str]
+    base_trick: str
+    uniqueness: List[str]
 
     class Config:
         schema_extra = {
@@ -17,6 +19,8 @@ class UniqueTrick(BaseModel):
                 "acronym": "/LMHR",
                 "technical_coefficient": 1.75,
                 "bonus": 6,
-                "bonus_types": ["twist", "reverse"]
+                "bonus_types": ["twist", "reverse"],
+                "uniqueness": ["left", "reverse"],
+                "base_trick": "Misty To Helicoper",
             }
         }

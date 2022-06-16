@@ -23,6 +23,7 @@ class FinalMark(BaseModel):
     bonus: float = Field(..., ge=0)
     score: float = Field(..., ge=0)
     warnings: int = Field(..., ge=0)
+    malus: float = Field(..., ge=0)
     notes: List[str] = []
 
     _technicity = validator('technicity', allow_reuse=True)(float3digits)

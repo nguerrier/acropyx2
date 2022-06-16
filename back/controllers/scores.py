@@ -15,7 +15,7 @@ from core.utils import average, weight_average
 from models.flights import Flight, FlightNew
 from models.final_marks import FinalMark
 from models.judge_marks import JudgeMark
-from models.competitions import Competition, CompetitionType, CompetitionConfig, CompetitionState
+from models.competitions import Competition, CompetitionNew, CompetitionType, CompetitionConfig, CompetitionState
 from models.tricks import Trick
 from models.judges import Judge
 
@@ -47,17 +47,22 @@ async def simulate_score(flight: FlightNew, type: CompetitionType) -> FinalMark:
         marks=flight.marks
     )
 
-    comp = Competition(
+    competition = Competition(
         name="Simulated comp",
         start_date = date.today(),
         end_date = date.today(),
-        state = CompetitionState.open,
-        config = CompetitionConfig(),
         type = type,
-        runs = []
+        state = CompetitionState.init,
+        config = CompetitionConfig(),
+        repeatable_tricks = [str(trick.id) for trick in await Trick.getall(repeatable=True)],
+        pilots = [],
+        teams = [],
+        judges = [],
+        runs = [],
+        deleted = None,
     )
 
-    return await calculate_score(f, comp)
+    return await calculate_score(f, competition)
 
 async def calculate_score(flight: Flight, competition: Competition, run_i: int = -1) -> FinalMark:
     mark = FinalMark(
@@ -77,6 +82,7 @@ async def calculate_score(flight: Flight, competition: Competition, run_i: int =
         bonus=0,
         score=0,
         warnings=0,
+        malus=0,
     )
 
     if run_i < 0:
@@ -100,12 +106,12 @@ async def calculate_score(flight: Flight, competition: Competition, run_i: int =
         warnings = 0
 
         # loop over all previous runs
-        for i in range(len(compt.runs)):
+        for i in range(len(competition.runs)):
             if i >= run_i:
                 break
-            r = comp.runs[i]
+            r = competition.runs[i]
             for f in r.flights:
-                if f.pilot == f.pilot:
+                if flight.pilot == f.pilot:
                     warnings += f.warnings
                     break
         if warnings >= config.warnings_to_dsq:
@@ -150,7 +156,6 @@ async def calculate_score(flight: Flight, competition: Competition, run_i: int =
     tricks = [] # the list of tricks that will be used to calculate the scores
     n_bonuses = {}
     i = 0
-    logger.debug(config.max_bonus_per_run)
     for trick in flight.tricks:
         i += 1
         ignoring = False
@@ -166,17 +171,81 @@ async def calculate_score(flight: Flight, competition: Competition, run_i: int =
                 logger.warning(f"Ignoring trick #{i} ({trick}) because already {max} tricks have been flown")
                 mark.notes.append(f"trick number #{i} ({trick.name}) has been ignored because more than {max} {bonus_type} tricks have been flown")
                 ignoring = True
-                break
 
         if not ignoring:
             tricks.append(trick)
+    #
+    # endof ignore tricks max_bonus_per_run
+    #
+
+
+    #
+    # search for repetitions
+    # §6.5.1 from 7B
+    # each trick can be performed left/right and reversed without malus
+    # during the same competition
+    # search in the previous runs
+    # and in the current un from the previous tricks flown
+    #
+
+    repeatable_tricks=[]
+    for trick in competition.repeatable_tricks:
+        trick = await Trick.get(trick)
+        if trick is not None:
+            repeatable_tricks.append(trick.name)
+
+    if len(competition.runs) > 0 and run_i > 0:
+        trick_i = 0
+        for trick in tricks: # for each trick detect repetition before
+            trick_i += 1
+            if trick.base_trick in repeatable_tricks:
+                continue
+            # loop over all previous runs
+            for i in range(len(competition.runs)):
+                if i >= run_i:
+                    break
+                r = competition.runs[i]
+                broke = False
+                for f in r.flights:
+                    if flight.pilot != f.pilot:
+                        continue
+                    for t in f.tricks:
+                        logger.log(f"-> {t}")
+                        if t.base_trick == trick.base_trick and t.uniqueness == trick.uniqueness:
+                            mark.malus += config.malus_repetition
+                            mark.notes.append(f"trick number #{trick_i} ({trick.name}) has already been performed in a previous run. Adding a {config.malus_repetition}% malus.")
+                            broke = True
+                            break
+                if broke:
+                    break
+
+    trick_i = 0
+    for trick in tricks: # for each trick detect repetition before
+        trick_i += 1
+        if trick.base_trick in repeatable_tricks:
+            continue
+        t_i = 0
+        for t in tricks:
+            t_i += 1
+            if t_i >= trick_i:
+                break
+            if t.base_trick == trick.base_trick and t.uniqueness == trick.uniqueness:
+                mark.malus += config.malus_repetition
+                mark.notes.append(f"trick number #{trick_i} ({trick.name}) has already been performed in this run. Adding a {config.malus_repetition}% malus.")
+                break
+
+    if mark.malus >= 100:
+        mark.judges_mark.choreography = 0
+    else:
+        mark.judges_mark.choreography = mark.judges_mark.choreography * (100-mark.malus)/100
+    #
+    # endof search for repetitions
+    #
 
 
     technicals = []
     bonuses = []
     for trick in tricks:
-
-
         # calculate the bonus of the run as stated in 7B
         # §6.6.1 Twisted manoeuvres bonus
         if trick.bonus > 0:

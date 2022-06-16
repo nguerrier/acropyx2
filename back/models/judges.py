@@ -65,20 +65,17 @@ class Judge(BaseModel):
 
     @staticmethod
     async def get(id, deleted: bool = False):
-        logger.debug("get(%s)", id)
         if deleted:
             search = {"_id": id}
         else:
             search = {"_id": id, "deleted": None}
         judge = await collection.find_one(search)
         if judge is not None:
-            logger.debug(f"get find_one -> {judge}")
             return Judge.parse_obj(judge)
         return None
 
     @staticmethod
     async def getall(deleted: bool = False):
-        logger.debug("getall()")
         if deleted:
             search = {}
         else:
@@ -94,7 +91,6 @@ class Judge(BaseModel):
         if judge is None:
             return None
 
-        logger.debug(f"got judge: {judge}")
         judge_update.id = judge.id
         return await judge_update.save()
 
@@ -113,5 +109,4 @@ class Judge(BaseModel):
         else:
             judge.deleted = datetime.now()
             action = "deleting"
-        logger.debug(f"{action} Judge {judge}")
         return await judge.save()

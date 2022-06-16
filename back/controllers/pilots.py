@@ -44,7 +44,7 @@ async def update_pilots():
             logger.debug("GOT cell %s: %d", cell.coordinate, civlid)
         except:
             logger.debug('skipping cell %s because of invalid CIVLID "%s"', cell.coordinate, cell.value)
-            next
+            continue
     # loop over each civlids found and create or update pilot
     shuffle(civlids)
     for civlid in civlids:
