@@ -21,8 +21,13 @@ class Flight(BaseModel):
     pilot: int
     tricks: List[UniqueTrick]
     marks: List[JudgeMark]
+    did_not_start: bool = False
     final_marks: Optional[FinalMark]
+    published: bool = False
+    warnings: List[str]
 
 class FlightNew(BaseModel):
     tricks: List[str]
     marks: List[JudgeMark]
+    did_not_start: bool = False
+    warnings: List[str] = []

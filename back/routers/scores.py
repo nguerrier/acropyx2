@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Body, HTTPException
 from core.security import auth
 from core.config import settings
 
-from controllers.scores import calculate_score, simulate_score
+from controllers.scores import simulate_score
 from models.flights import Flight, FlightNew
 from models.final_marks import FinalMark
 from models.competitions import CompetitionType

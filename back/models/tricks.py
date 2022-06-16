@@ -98,7 +98,6 @@ class Trick(BaseModel):
             trick = jsonable_encoder(self)
             res = await collection.insert_one(trick)
             self.id = res.inserted_id
-            logger.debug("trick %s created with id %s", self.name, self.id)
             return self
         except pymongo.errors.DuplicateKeyError:
             raise Exception(f"Trick '{self.name}' already exists")
@@ -117,7 +116,6 @@ class Trick(BaseModel):
 
     @staticmethod
     async def get(id, deleted: bool = False):
-        logger.debug("get(%s)", id)
         if deleted:
             search = {"_id": id}
         else:
@@ -129,7 +127,6 @@ class Trick(BaseModel):
 
     @staticmethod
     async def get_scores(solo: bool, synchro: bool) -> List[UniqueTrick]:
-        logger.debug(f"get_scores({solo}, {synchro})")
         if not solo and not synchro:
             return []
         tricks = []
@@ -153,7 +150,6 @@ class Trick(BaseModel):
 
     @staticmethod
     async def getall(deleted: bool = False, repeatable: bool = None):
-        logger.debug("getall()")
         tricks = []
         if deleted:
             search = {}
@@ -173,7 +169,6 @@ class Trick(BaseModel):
         if trick is None:
             return None
 
-        logger.debug(f"got trick: {trick}")
         trick_update.id = trick.id
         return await trick_update.save()
 
@@ -192,5 +187,4 @@ class Trick(BaseModel):
         else:
             trick.deleted = datetime.now()
             action = "deleting"
-        logger.debug(f"{action} trick {trick}")
         return await trick.save()

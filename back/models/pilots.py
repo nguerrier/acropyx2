@@ -72,10 +72,8 @@ class Pilot(BaseModel):
     async def save(self):
         self.last_update = datetime.now()
         pilot = jsonable_encoder(self)
-        logger.debug(pilot)
         try:
             res = await collection.insert_one(pilot)
-            logger.debug(f"inservet_id={res.inserted_id}")
             action = "created"
         except pymongo.errors.DuplicateKeyError:
             await collection.update_one({"_id": self.id}, {"$set": pilot})
@@ -87,7 +85,6 @@ class Pilot(BaseModel):
 
     @staticmethod
     async def get(id: int):
-        logger.debug(id)
         pilot = await collection.find_one({ "$or": [
             {"_id": id},
             {"name": id},

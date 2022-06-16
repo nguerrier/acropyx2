@@ -440,21 +440,23 @@ async def run_reopen(id: str, i: int):
         raise HTTPException(status_code=404, detail=f"Competition {id} not found")
 
 @competitions.post(
-    "/{id}/runs/{i}/flights/{civlid}/simulate/",
+    "/{id}/runs/{i}/flights/{civlid}/",
     response_description="Simulate a run and get the detail score",
     response_model=FinalMark,
     dependencies=[Depends(auth)],
 )
-async def flight_simulate(id: str, i: int, civlid: int, flight: FlightNew = Body(...)):
+async def flight_save(id: str, i: int, civlid: int, save: bool, published:bool = False, flight: FlightNew = Body(...)):
     try:
         comp = await Competition.get(id)
-        if comp is not None:
-            return await comp.flight_simulate(i, civlid, flight)
     except Exception as e:
         raise  HTTPException(status_code=400, detail=str(e))
 
+    if comp is not None:
+        return await comp.flight_save(run_i=i, civlid=civlid, flight=flight, save=save, published=published)
+
     if comp is None:
         raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+
 
 
 @competitions.get(

@@ -22,7 +22,7 @@ class FinalMark(BaseModel):
     synchro: float = Field(..., ge=0)
     bonus: float = Field(..., ge=0)
     score: float = Field(..., ge=0)
-    warnings: int = Field(..., ge=0)
+    warnings: list[str]
     malus: float = Field(..., ge=0)
     notes: List[str] = []
 

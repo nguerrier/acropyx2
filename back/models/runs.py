@@ -21,7 +21,7 @@ class RunState(str, Enum):
 
 class Run(BaseModel):
     state: RunState
-    pilots: List[str] = Field(..., min_len=1)
+    pilots: List[int] = Field(..., min_len=1)
     teams: List[str] = Field(..., min_len=1)
     judges: List[str] = Field(..., min_len=1)
     repeatable_tricks: List[str]
