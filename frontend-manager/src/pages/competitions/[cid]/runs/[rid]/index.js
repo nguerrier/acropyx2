@@ -1,4 +1,3 @@
-
 // ** React Imports
 import { useState } from 'react'
 import { useRouter } from 'next/router'
@@ -22,15 +21,13 @@ import MuiTab from '@mui/material/Tab'
 
 // ** Icons Imports
 import AccountOutline from 'mdi-material-ui/AccountOutline'
-import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
 import InformationOutline from 'mdi-material-ui/InformationOutline'
 
 // ** Demo Tabs Imports
 import TabPilots from 'src/views/runs/TabPilots'
 import TabJudges from 'src/views/runs/TabJudges'
 import TabTeams from 'src/views/runs/TabTeams'
-import TabTricks from 'src/views/runs/TabReapeatableTricks' 
-
+import TabTricks from 'src/views/runs/TabReapeatableTricks'
 
 // ** Third Party Styles Imports
 import 'react-datepicker/dist/react-datepicker.css'
@@ -119,7 +116,7 @@ const Post = ({ data }) => {
                   </Box>
                 }
               />
-               <Tab
+              <Tab
                 value='teams'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -158,16 +155,16 @@ const Post = ({ data }) => {
             </TabList>
 
             <TabPanel sx={{ p: 0 }} value='pilots'>
-              <TabPilots pilots={data.pilots}/>
+              <TabPilots pilots={data.pilots} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='judges'>
-              <TabJudges judges={data.judges}/>
+              <TabJudges judges={data.judges} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='teams'>
-              <TabTeams teams={data.teams}/>
+              <TabTeams teams={data.teams} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='repeatable_tricks'>
-              <TabTricks tricks={data.repeatable_tricks}/>
+              <TabTricks tricks={data.repeatable_tricks} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='flights'>
               <TabJudges />

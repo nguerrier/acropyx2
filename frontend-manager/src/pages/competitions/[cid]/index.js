@@ -203,7 +203,7 @@ const Post = ({ data, results }) => {
               <TabReapeatableTricks tricks={data.repeatable_tricks} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='settings'>
-              <TabSettings competition={data}/>
+              <TabSettings competition={data} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
               <TabResults results={results} />
@@ -218,8 +218,7 @@ const Post = ({ data, results }) => {
 // This gets called on every request
 export async function getServerSideProps({ params }) {
   let data = await getCompetitions(params.cid)
-  let results = []// await getCompetitionResults(params.cid)
-  
+  let results = [] // await getCompetitionResults(params.cid)
 
   console.log(data)
   console.log(results)

@@ -6,8 +6,6 @@ import { useRouter } from 'next/router'
 import Grid from '@mui/material/Grid'
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
-import AddIcon from '@mui/icons-material/Add'
 
 function createData(id, name, state) {
   return {
