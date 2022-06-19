@@ -1,5 +1,5 @@
 // ** React Imports
-import { forwardRef, useState } from 'react'
+import { useState } from 'react'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
@@ -37,7 +37,7 @@ const TabTeams = ({ teams }) => {
   return (
     <CardContent>
       <Grid container spacing={7}>
-      <Grid item xs={12} sm={12} container>
+        <Grid item xs={12} sm={12} container>
           <Button variant='contained' startIcon={<AddIcon />}>
             {' '}
             Add team

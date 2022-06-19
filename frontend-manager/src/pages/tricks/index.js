@@ -17,59 +17,59 @@ const headCells = [
     id: 'name',
     numeric: false,
     disablePadding: false,
-    label: 'Name',
+    label: 'Name'
   },
   {
     id: 'acronym',
     numeric: false,
     disablePadding: false,
-    label: 'Acronym',
+    label: 'Acronym'
   },
   {
     id: 'technical_coefficient',
     numeric: false,
     disablePadding: false,
-    label: 'Technical Coefficient',
+    label: 'Technical Coefficient'
   },
   {
     id: 'solo',
     numeric: false,
     type: 'BOOLEAN',
     disablePadding: false,
-    label: 'Solo',
+    label: 'Solo'
   },
   {
     id: 'synchro',
     numeric: false,
     type: 'BOOLEAN',
     disablePadding: false,
-    label: 'Synchro',
+    label: 'Synchro'
   },
   {
     id: 'first_maneuver',
     numeric: false,
     disablePadding: false,
-    label: 'First maneuver',
+    label: 'First maneuver'
   },
   {
     id: 'no_first_maneuver',
     numeric: false,
     disablePadding: false,
-    label: 'No first maneuver',
+    label: 'No first maneuver'
   },
   {
     id: 'last_maneuver',
     numeric: false,
     disablePadding: false,
-    label: 'Last maneuver',
+    label: 'Last maneuver'
   },
   {
     id: 'no_last_maneuver',
     numeric: false,
     disablePadding: false,
-    label: 'No last maneuver',
-  },
-];
+    label: 'No last maneuver'
+  }
+]
 
 const TeamsPage = ({ data }) => {
   return (
@@ -84,7 +84,7 @@ const TeamsPage = ({ data }) => {
       </Grid>
       <Grid item xs={12}>
         <Card>
-          <EnhancedTable rows={data} headCells={headCells} orderById="name"/>
+          <EnhancedTable rows={data} headCells={headCells} orderById='name' />
         </Card>
       </Grid>
     </Grid>
@@ -93,8 +93,8 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get("tricks")
-  
+  let data = await get('tricks')
+
   // Pass data to the page via props
   return { props: { data } }
 }

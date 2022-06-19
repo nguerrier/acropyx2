@@ -6,7 +6,6 @@ import Grid from '@mui/material/Grid'
 
 // ** Demo Components Imports
 import Typography from '@mui/material/Typography'
-import Link from '@mui/material/Link'
 import Card from '@mui/material/Card'
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import { get } from 'src/util/backend'
