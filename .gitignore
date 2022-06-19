@@ -2,3 +2,4 @@ mongo/
 back/.venv-docker/
 __pycache__/
 *.py[cod]
+.DS_Store
