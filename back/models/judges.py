@@ -7,9 +7,13 @@ from typing import Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
 from datetime import datetime
+from fastapi import HTTPException
 
 from core.database import db, PyObjectId
-logger = logging.getLogger(__name__)
+
+from models.pilots import Pilot
+
+log = logging.getLogger(__name__)
 collection = db.judges
 
 def check_country(cls, v):
@@ -21,12 +25,12 @@ class JudgeLevel(Enum):
     certified = "certified"
     senior = "senior"
 
-
 class Judge(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(..., description="The full name of the judge")
     country: str = Field(..., description="The country of the judge using the 3 letter acronym of the country")
     level: JudgeLevel = Field(..., description="The level of the judge")
+    civlid: Optional[int] = Field(None, description="The CIVL ID if any (must be registered in the pilot database")
     deleted: Optional[datetime]
 
     _normalize_country = validator('country', allow_reuse=True)(check_country)
@@ -37,13 +41,22 @@ class Judge(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "name": "John Doe",
+                "name": "Jerry The Judge",
                 "country": "fra",
                 "level": "certified",
+                "civlid": 1234,
             }
         }
 
+    async def check(self):
+        if self.civlid is not None:
+            try:
+                Pilots.get(self.civlid)
+            except:
+                raise HTTPException(400, f"CIVL ID #{self.civlid} is not known in Pilot Database. First add it to the database from the pilots page.")
+
     async def create(self):
+        await self.check()
         try:
             judge = jsonable_encoder(self)
             judge['deleted'] = None
@@ -51,17 +64,19 @@ class Judge(BaseModel):
             self.id = res.inserted_id
             return self
         except pymongo.errors.DuplicateKeyError:
-            raise Exception(f"Judge '{self.name}' already exists")
+            raise HTTPException(400, f"Judge '{self.name}' already exists")
 
     async def save(self):
+        await self.check()
         judge = jsonable_encoder(self)
         res =  await collection.update_one({"_id": str(self.id)}, {"$set": judge})
-        return res.modified_count == 1
+        if res.modified_count != 1:
+            raise HTTPException(400, f"Error while saving judge {self.id}, 1 item should have been saved, got {res.modified_count}")
 
     @staticmethod
     def createIndexes():
         collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
-        logger.debug('index created on "name,deleted"')
+        log.debug('index created on "name,deleted"')
 
     @staticmethod
     async def get(id, deleted: bool = False):
@@ -70,9 +85,9 @@ class Judge(BaseModel):
         else:
             search = {"_id": id, "deleted": None}
         judge = await collection.find_one(search)
-        if judge is not None:
-            return Judge.parse_obj(judge)
-        return None
+        if judge is None:
+            raise HTTPException(404, f"Judge {id} not found")
+        return Judge.parse_obj(judge)
 
     @staticmethod
     async def getall(deleted: bool = False):
@@ -88,25 +103,21 @@ class Judge(BaseModel):
     @staticmethod
     async def update(id: str, judge_update):
         judge = await Judge.get(id)
-        if judge is None:
-            return None
-
         judge_update.id = judge.id
-        return await judge_update.save()
+        await judge_update.save()
 
     @staticmethod
     async def delete(id: str, restore: bool = False):
         judge = await Judge.get(id, True)
-        if judge is None:
-            return None
 
         if restore ^ (judge.deleted is not None):
-            return False
+            if restore:
+                raise HTTPException(400, f"Can't restore Judge {id} as it's not deleted")
+            else:
+                raise HTTPException(400, f"Can't delete Judge {id} as it's already deleted")
 
         if restore:
             judge.deleted = None
-            action = "restoring"
         else:
             judge.deleted = datetime.now()
-            action = "deleting"
-        return await judge.save()
+        await judge.save()

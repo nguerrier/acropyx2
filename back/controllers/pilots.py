@@ -12,135 +12,124 @@ from core.database import PyObjectId
 from core.config import settings
 from models.pilots import Pilot
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
-def fetch_and_load_pilots_list(body: bytes):
-    with NamedTemporaryFile(suffix=".xlsx") as f:
-        f.write(body)
-        xls = load_workbook(f.name)
-    return xls
+class PilotCtrl:
+    @staticmethod
+    def start():
+        Pilot.createIndexes()
 
-async def update_pilots():
-    # fetch the excel
-    async with httpx.AsyncClient() as client:
-        ret = await client.get(settings.pilots.civl_link_all_pilots)
+    @staticmethod
+    def fetch_and_load_pilots_list(body: bytes):
+        with NamedTemporaryFile(suffix=".xlsx") as f:
+            f.write(body)
+            xls = load_workbook(f.name)
+        return xls
 
-    if ret.status_code != HTTPStatus.OK:
-        logger.error("unable to update pilots from %s, code=%d", settings.pilots.civl_link_all_pilots, res.status_code)
-        return
+    @staticmethod
+    async def update_pilots():
+        # fetch the excel
+        async with httpx.AsyncClient() as client:
+            ret = await client.get(settings.pilots.civl_link_all_pilots)
 
-    # write the excel to a temporary file and read it
-    xls = await run_in_threadpool(lambda: fetch_and_load_pilots_list(ret.content))
-    sheet = xls.active # get the first and only sheet
-    # loop over each cells of column B (where the CIVL id are)
-    # and extract civlids
-    civlids = []
-    for cell in sheet['B']:
-        try:
-            # convert the cell content to int
-            # if conversion can be made we assume it's a CIVLID
-            civlid = int(cell.value or '')
-            civlids.append(civlid)
-            logger.debug("GOT cell %s: %d", cell.coordinate, civlid)
-        except:
-            logger.debug('skipping cell %s because of invalid CIVLID "%s"', cell.coordinate, cell.value)
-            continue
-    # loop over each civlids found and create or update pilot
-    shuffle(civlids)
-    for civlid in civlids:
-        try:
-            await update_pilot(civlid)
-        except Exception as e:
-            logger.exception("Exception while updating pilot with CIVL ID #%d", civlid)
-
-
-def pilots_start():
-    Pilot.createIndexes()
-
-async def update_pilot(civlid: int):
-    async with httpx.AsyncClient() as client:
-        link = settings.pilots.civl_link_one_pilot + str(civlid)
-        logger.debug(link)
-
-        ret = await client.get(link)
-
-        logger.debug(ret.status_code)
-        if ret.status_code == HTTPStatus.NOT_FOUND:
-            raise HTTPException(status_code=404, detail=f"Pilot not found in CIVL database")
         if ret.status_code != HTTPStatus.OK:
-            raise HTTPException(status_code=500, detail=f"Problem while fetch pilot information from CIVL database")
+            log.error("unable to update pilots from %s, code=%d", settings.pilots.civl_link_all_pilots, res.status_code)
+            return
 
-    html = lxml.html.fromstring(ret.text)
+        # write the excel to a temporary file and read it
+        xls = await run_in_threadpool(lambda: fetch_and_load_pilots_list(ret.content))
+        sheet = xls.active # get the first and only sheet
+        # loop over each cells of column B (where the CIVL id are)
+        # and extract civlids
+        civlids = []
+        for cell in sheet['B']:
+            try:
+                # convert the cell content to int
+                # if conversion can be made we assume it's a CIVLID
+                civlid = int(cell.value or '')
+                civlids.append(civlid)
+            except:
+                continue
+        # loop over each civlids found and create or update pilot
+        shuffle(civlids)
+        for civlid in civlids:
+            try:
+                await update_pilot(civlid)
+            except Exception as e:
+                log.exception("Exception while updating pilot with CIVL ID #%d", civlid)
 
-    logger.debug(link)
+    @staticmethod
+    async def update_pilot(civlid: int):
+        async with httpx.AsyncClient() as client:
+            link = settings.pilots.civl_link_one_pilot + str(civlid)
 
-    name = html.cssselect('h1.title-pilot')[0].text_content()
-    logger.debug(name)
+            ret = await client.get(link)
 
-    i = html.cssselect('div.country-place i')[0]
-    i.classes.discard('flag')
-    country = re.sub(r'^flag-', '', i.get('class'))
-    logger.debug(country)
+            if ret.status_code == HTTPStatus.NOT_FOUND:
+                raise HTTPException(status_code=404, detail=f"Pilot not found in CIVL database")
+            if ret.status_code != HTTPStatus.OK:
+                raise HTTPException(status_code=500, detail=f"Problem while fetch pilot information from CIVL database")
 
-    about = ''
-    for e in html.cssselect('article#info p'):
-        about += ''.join(e.itertext()).replace('\n', ' ')
-    logger.debug(about)
+        html = lxml.html.fromstring(ret.text)
 
-    links = []
-    for e in html.cssselect('a.social-link'):
-        e.classes.discard('social-link')
-        links.append({
-            "name":e.get('class'),
-            "link":e.get('href')
-        })
+        name = html.cssselect('h1.title-pilot')[0].text_content()
 
-    for e in html.cssselect('article.links-block a'):
-        text = ''.join(e.itertext()).replace('\n', ' ')
-        links.append({
-            "name":text,
-            "link":e.get('href')
-        })
-    logger.debug(links)
+        i = html.cssselect('div.country-place i')[0]
+        i.classes.discard('flag')
+        country = re.sub(r'^flag-', '', i.get('class'))
 
-    sponsors = []
-    for e in html.cssselect('aside.sponsors-wrapper a'):
-        sponsors.append({
-            "name": e.get('alt'),
-            "link": e.get('href'),
-            "img": e.cssselect('img')[0].get('src'),
-        })
-    logger.debug(sponsors)
+        about = ''
+        for e in html.cssselect('article#info p'):
+            about += ''.join(e.itertext()).replace('\n', ' ')
 
-    photo = html.cssselect('.photo-pilot img')[0].get('src')
-    logger.debug(photo)
+        links = []
+        for e in html.cssselect('a.social-link'):
+            e.classes.discard('social-link')
+            links.append({
+                "name":e.get('class'),
+                "link":e.get('href')
+            })
 
-    background_picture = html.cssselect('.image-fon img')[0].get('src')
-    logger.debug(background_picture)
+        for e in html.cssselect('article.links-block a'):
+            text = ''.join(e.itertext()).replace('\n', ' ')
+            links.append({
+                "name":text,
+                "link":e.get('href')
+            })
 
-    rank = 9999
-    try:
-        r = html.cssselect('.paragliding-aerobatics + div')
-        if len(r) > 0:
-            r = r[0].cssselect('td')
-            if len(r) >= 2:
-                rank = int(r[1].text)
-    except:
-        pass
+        sponsors = []
+        for e in html.cssselect('aside.sponsors-wrapper a'):
+            sponsors.append({
+                "name": e.get('alt'),
+                "link": e.get('href'),
+                "img": e.cssselect('img')[0].get('src'),
+            })
 
-    logger.debug(rank)
+        photo = html.cssselect('.photo-pilot img')[0].get('src')
 
-    pilot = Pilot(
-        id=civlid,
-        civlid=civlid,
-        name=name,
-        country=country,
-        about=about,
-        link=link,
-        links=links,
-        sponsors=sponsors,
-        photo=photo,
-        background_picture=background_picture,
-        rank = rank,
-    )
-    return await pilot.save()
+        background_picture = html.cssselect('.image-fon img')[0].get('src')
+
+        rank = 9999
+        try:
+            r = html.cssselect('.paragliding-aerobatics + div')
+            if len(r) > 0:
+                r = r[0].cssselect('td')
+                if len(r) >= 2:
+                    rank = int(r[1].text)
+        except:
+            pass
+
+        pilot = Pilot(
+            id=civlid,
+            civlid=civlid,
+            name=name,
+            country=country,
+            about=about,
+            link=link,
+            links=links,
+            sponsors=sponsors,
+            photo=photo,
+            background_picture=background_picture,
+            rank = rank,
+        )
+        return await pilot.save()

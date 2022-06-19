@@ -9,11 +9,14 @@ services:
     volumes:
         - ./back:/app
     tty: true
-#    environment:
-#      DEBUG_COLORS: "true"
-#      TERM: xterm-256color
-#      COLORTERM: truecolor
 
+  back-test:
+    build: ./back
+    environment: 
+      - MONGODB_URL=mongodb://mongo:mongo@mongodb
+      - DATABASE=acropyx2-testing
+    volumes:
+        - ./back:/app
 
   mongodb:
     image: mongo:5.0

@@ -10,18 +10,18 @@ from datetime import date, datetime
 from models.pilots import Pilot
 from models.teams import Team
 from models.judges import Judge
-from models.runs import Run, RunState
+from models.runs import Run, RunState, RunExport
 from models.tricks import Trick
 from models.flights import Flight, FlightNew
-from models.final_marks import FinalMark
+from models.marks import JudgeMark, FinalMark
 from models.competition_configs import CompetitionConfig
-from models.judge_marks import JudgeMark
+from models.results import RunResults, CompetitionResults, CompetitionPilotResults, RunResultSummary
 
 from core.database import db, PyObjectId
 from core.config import settings
 from core.utils import weight_average, average
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 collection = db.competitions
 
 class CompetitionType(str, Enum):
@@ -32,6 +32,19 @@ class CompetitionState(str, Enum):
     init = 'init'
     open = 'open'
     closed = 'closed'
+
+class CompetitionExport(BaseModel):
+    id: str = Field(alias="_id")
+    pilots: List[Pilot] 
+    teams: List[Team]
+    judges: List[Judge]
+    repeatable_tricks: List[Trick]
+    state: CompetitionState
+    config: CompetitionConfig
+    runs: List[RunExport]
+
+    class Config:
+        json_encoders = {ObjectId: str}
 
 class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
@@ -83,29 +96,29 @@ class Competition(CompetitionNew):
             for id in self.pilots:
                 pilot = await Pilot.get(id)
                 if pilot is None:
-                    raise Exception(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
+                    raise ValueError(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
 
         if self.type == CompetitionType.synchro:
             for id in self.teams:
                 team = await Team.get(id)
                 if team is None:
-                    raise Exception(f"Team '{id}' is unknown, only known teams can take part of a competition")
+                    raise ValueError(f"Team '{id}' is unknown, only known teams can take part of a competition")
 
         for id in self.judges:
             judge = await Judge.get(id)
             if judge is None:
-                raise Exception(f"Judge '{id}' is unknown, only known judges can take part of a competition")
+                raise ValueError(f"Judge '{id}' is unknown, only known judges can take part of a competition")
 
         if self.state != CompetitionState.init:
             if self.type == CompetitionType.solo and len(self.pilots) < 2:
-                raise Exception("At least 2 pilots are needed to open a competition")
+                raise ValueError("At least 2 pilots are needed to open a competition")
             if self.type == CompetitionType.synchro and len(self.teams) < 2:
-                raise Exception("At least 2 pilots are needed to open a competition")
+                raise ValueError("At least 2 pilots are needed to open a competition")
             if len(self.judges) < 2:
-                raise Exception("At least 2 judges are needed to open a competition")
+                raise ValueError("At least 2 judges are needed to open a competition")
 
         if self.start_date > self.end_date:
-            raise Exception("End date must be higher than start date")
+            raise ValueError("End date must be higher than start date")
 
     async def create(self):
         try:
@@ -117,13 +130,48 @@ class Competition(CompetitionNew):
             self.id = res.inserted_id
             return self
         except pymongo.errors.DuplicateKeyError:
-            raise Exception(f"Competition '{self.name}' already exists")
+            raise HTTPException(400, f"Competition '{self.name}' already exists")
 
     async def save(self):
         await self.check()
         competition = jsonable_encoder(self)
         res = await collection.update_one({"_id": str(self.id)}, {"$set": competition})
-        return res.modified_count == 1
+        if res.modified_count != 1:
+            raise HTTPException(400, f"Error while saving Competition {self.id}, 1 item should have been saved, got {res.modified_count}")
+
+    async def export(self) -> CompetitionExport:
+
+        pilots = []
+        for pilot in self.pilots:
+            pilots.append(await Pilot.get(pilot))
+
+        teams = []
+        for team in self.teams:
+            team = await Team.get(team)
+            teams.append(await team.export())
+
+        judges = []
+        for judge in self.judges:
+            judges.append(await Judge.get(judge))
+
+        repeatable_tricks = []
+        for trick in self.repeatable_tricks:
+            repeatable_tricks.append(await Trick.get(trick))
+
+        runs = []
+        for run in self.runs:
+            runs.append(await run.export())
+
+        return CompetitionExport(
+            _id = str(self.id),
+            pilots = pilots,
+            teams = teams,
+            judges = judges,
+            repeatable_tricks = repeatable_tricks,
+            state = self.state,
+            config = self.config,
+            runs = runs
+        )
 
 #    async def sort_pilots(self):
 #        if len(self.pilots) == 0:
@@ -140,19 +188,19 @@ class Competition(CompetitionNew):
         self.start_date = updated_comp.start_date
         self.end_date = updated_comp.end_date
         if self.type != updated_comp.type and self.state != CompetitionState.init:
-            raise Exception("Can't change the type of an already open or closed competition")
+            raise HTTPException(400, "Can't change the type of an already open or closed competition")
         self.type = updated_comp.type
         await self.save()
 
     async def update_pilots(self, pilots: List[int]):
         if self.type != CompetitionType.solo:
-            raise Exception("Pilot's list can only be changed on a solo competition")
+            raise Exception(400, "Pilot's list can only be changed on a solo competition")
         self.pilots = pilots
         await self.save()
 
     async def update_teams(self, teams: List[str]):
         if self.type != CompetitionType.synchro:
-            raise Exception("Team's list can only be changed on a synchro competition")
+            raise Exception(400, "Team's list can only be changed on a synchro competition")
         self.teams = teams
         await self.save()
 
@@ -170,28 +218,28 @@ class Competition(CompetitionNew):
 
     async def open(self):
         if self.state != CompetitionState.init:
-            raise Exception("Can't open a comp which is not in state 'init'")
+            raise HTTPException(400, "Can't open a comp which is not in state 'init'")
 
         self.state = CompetitionState.open
         await self.save()
 
     async def close(self):
         if self.state != CompetitionState.open:
-            raise Exception("Can't close a comp which is not in state 'open'")
+            raise HTTPException(400, "Can't close a comp which is not in state 'open'")
 
         self.state = CompetitionState.closed
         await self.save()
 
     async def reopen(self):
         if self.state != CompetitionState.closed:
-            raise Exception("Can't reopen a comp which is not in state 'closed'")
+            raise HTTPException(400, "Can't reopen a comp which is not in state 'closed'")
 
         self.state = CompetitionState.open
         await self.save()
 
     async def new_run(self, pilots_to_qualify: int = 0):
         if self.state != CompetitionState.open:
-            raise Exception("Competition must be 'open' to create a new run")
+            raise HTTPException(400, "Competition must be 'open' to create a new run")
 
 
         pilots = []
@@ -237,59 +285,47 @@ class Competition(CompetitionNew):
         try:
             return self.runs[i]
         except IndexError:
-            return None
+            raise HTTPException(404, "Run #{i} not found in comp {self.id}")
 
     async def run_update_pilots(self, i: int, pilots: List[int]):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
         if self.type != CompetitionType.solo:
-            raise Exception("Pilot's list can only be changed on a solo run")
+            raise HTTPException(400, "Pilot's list can only be changed on a solo run")
         run.pilots = pilots
         self.runs[i] = run
         await self.save()
 
     async def run_update_teams(self, i: int, teams: List[str]):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
         if self.type != CompetitionType.synchro:
-            raise Exception("Team's list can only be changed on a synchro run")
+            raise HTTPException(400, "Team's list can only be changed on a synchro run")
         run.teams = teams
         self.runs[i] = run
         await self.save()
 
     async def run_update_judges(self, i: int, judges: List[str]):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
         run.judges = judges
         self.runs[i] = run
         await self.save()
 
     async def run_update_repeatable_tricks(self, i: int, repeatable_tricks: List[str]):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
         run.repeatable_tricks = repeatable_tricks
         self.runs[i] = run
         await self.save()
 
     async def run_update_config(self, i: int, config: CompetitionConfig):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
         run.config = config
         self.runs[i] = run
         await self.save()
 
     async def run_open(self, i: int):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
 
         if run.state != RunState.init:
-            raise Exception("Can't open a run which is not in state 'init'")
+            raise HTTPException(400, "Can't open a run which is not in state 'init'")
 
         run.state = RunState.open
         self.runs[i] = run
@@ -297,11 +333,9 @@ class Competition(CompetitionNew):
 
     async def run_close(self, i: int):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
 
         if run.state != RunState.open:
-            raise Exception("Can't close a run which is not in state 'open'")
+            raise HTTPException(400, "Can't close a run which is not in state 'open'")
 
         run.state = RunState.closed
         self.runs[i] = run
@@ -309,15 +343,31 @@ class Competition(CompetitionNew):
 
     async def run_reopen(self, i: int):
         run = await self.run_get(i)
-        if run is None:
-            raise Exception(f"run #{i} not found")
 
         if run.state != RunState.closed:
-            raise Exception("Can't reopen a run which is not in state 'close'")
+            raise HTTPException(400, "Can't reopen a run which is not in state 'close'")
 
         run.state = RunState.open
         self.runs[i] = run
         await self.save()
+
+    async def run_results(self, run_i: int) -> RunResults:
+        run = await self.run_get(run_i)
+
+        flights = []
+        all_published=True
+        for flight in run.flights:
+            if not flight.published:
+                all_published=False
+                continue
+            flights.append(flight)
+
+        flights.sort(key=lambda e: e.final_marks.score)
+
+        return RunResults(
+            results = flights,
+            final = (run.state == RunState.closed) and all_published
+        )
 
 
     async def flight_convert(self, civlid: int, flight: FlightNew) -> Flight:
@@ -335,7 +385,7 @@ class Competition(CompetitionNew):
 
         if len(errors) > 0:
             errors = ' '.join(errors)
-            raise Exception(f"Unknown trick(s): {errors}")
+            raise HTTPException(400, f"Unknown trick(s): {errors}")
 
 
         return Flight(
@@ -347,20 +397,16 @@ class Competition(CompetitionNew):
         )
 
     async def flight_save(self, run_i: int, civlid: int, flight: FlightNew, save: bool=False, published: bool=False) -> FinalMark:
-        try:
-            run = self.runs[run_i]
-        except IndexError:
-            raise Exception(f"Run number #{i} not found in this comp ({self.name})")
+        run = await self.get_run(run_i)
 
         if civlid not in run.pilots:
-            raise Exception(f"Pilot #{civlid} does not participate in the run number #{i} of the comp ({self.name})")
+            raise HTTPException(400, f"Pilot #{civlid} does not participate in the run number #{i} of the comp ({self.name})")
 
         if civlid not in self.pilots:
-            raise Exception(f"Pilot #{civlid} does not participate in this comp ({self.name})")
+            raise HTTPException(400, f"Pilot #{civlid} does not participate in this comp ({self.name})")
 
         new_flight = await self.flight_convert(civlid, flight)
         mark = await self.calculate_score(flight=new_flight, run_i=run_i)
-        logger.debug(mark)
         if not save:
             return mark
 
@@ -369,17 +415,55 @@ class Competition(CompetitionNew):
 
         for i, f in enumerate(self.runs[run_i].flights):
             if f.pilot == new_flight.pilot:
-                logger.debug(f"replace existing for {civlid}")
                 self.runs[run_i].flights[i] = new_flight
                 await self.save()
                 return mark
 
-        logger.debug(f"Adding new flight for {civlid}")
         self.runs[run_i].flights.append(new_flight)
         await self.save()
         return mark
 
+    async def results(self) -> CompetitionResults:
+        final = (self.state == CompetitionState.closed)
+        overall_results = []
+        runs_results = []
 
+        overall = {}
+
+        for i, run in enumerate(self.runs):
+            run_result = await self.run_results(i)
+            runs_results.append(run_result)
+            if not run_result.final:
+                final = False
+
+            for j, result in enumerate(run_result.results):
+
+                run_result_summary = RunResultSummary(
+                    rank = j+1,
+                    score = result.final_marks.score
+                )
+
+                if result.pilot not in overall:
+                    overall[result.pilot] = CompetitionPilotResults(
+                        pilot=result.pilot,
+                        score=0,
+                        result_per_run=[]
+                    )
+
+                overall[result.pilot].score += result.final_marks.score
+                overall[result.pilot].result_per_run.append(run_result_summary)
+
+
+        overall_results = list(overall.values())
+        overall_results.sort(key=lambda e: e.score)
+
+        return CompetitionResults(
+            final = final,
+            overall_results = overall_results,
+            runs_results = runs_results,
+        )
+
+    
     #
     #
     #   Static methods
@@ -388,7 +472,7 @@ class Competition(CompetitionNew):
     @staticmethod
     def createIndexes():
         collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
-        logger.debug('index created on "name,deleted"')
+        log.debug('index created on "name,deleted"')
 
     @staticmethod
     async def get(id: str, deleted: bool = False):
@@ -397,9 +481,9 @@ class Competition(CompetitionNew):
         else:
             search = {"_id": id, "deleted": None}
         competition = await collection.find_one(search)
-        if competition is not None:
-            return Competition.parse_obj(competition)
-        return None
+        if competition is None:
+            raise HTTPException(404, f"Competition {id} not found")
+        return Competition.parse_obj(competition)
 
     @staticmethod
     async def getall():
@@ -415,14 +499,15 @@ class Competition(CompetitionNew):
             return None
 
         if restore ^ (competition.deleted is not None):
-            return False
+            if restore:
+                raise HTTPException(400, f"Can't restore Competition {id} as it's not deleted")
+            else:
+                raise HTTPException(400, f"Can't delete Competition {id} as it's already deleted")
 
         if restore:
             competition.deleted = None
-            action = "restoring"
         else:
             competition.deleted = datetime.now()
-            action = "deleting"
         return await competition.save()
 
 
@@ -433,7 +518,7 @@ class Competition(CompetitionNew):
     async def calculate_score(self, flight: Flight, run_i: int = -1) -> FinalMark:
         mark = FinalMark(
             judges_mark = JudgeMark(
-                judge = "Average of judges marks",
+                judge = "",
                 technical = 0,
                 choreography = 0,
                 landing = 0,
@@ -506,14 +591,14 @@ class Competition(CompetitionNew):
         for m in flight.marks:
             judge = await Judge.get(m.judge)
             if judge is None:
-                raise Exception(f"judge '{m.judge}' not found")
+                raise HTTPException(400, f"judge '{m.judge}' not found")
             weight = dict(config.judge_weights)[judge.level.value]
             technicals.append((m.technical, weight))
             choreographies.append((m.choreography, weight))
             landings.append((m.landing, weight))
             if self.type == CompetitionType.synchro:
                 if m.synchro is None:
-                    raise Exception(f"synchro mark is missing. It is mandatory for {self.type} runs")
+                    raise HTTPException(400, f"synchro mark is missing. It is mandatory for {self.type} runs")
                 synchros.append((m.synchro, weight))
 
         mark.judges_mark.technical = weight_average(technicals)
@@ -544,7 +629,7 @@ class Competition(CompetitionNew):
                 max = dict(config.max_bonus_per_run)[bonus_type]
 
                 if n_bonuses[bonus_type] > max:
-                    logger.warning(f"Ignoring trick #{i} ({trick}) because already {max} tricks have been flown")
+                    log.warning(f"Ignoring trick #{i} ({trick}) because already {max} tricks have been flown")
                     mark.notes.append(f"trick number #{i} ({trick.name}) has been ignored because more than {max} {bonus_type} tricks have been flown")
                     ignoring = True
 
@@ -586,7 +671,7 @@ class Competition(CompetitionNew):
                         if flight.pilot != f.pilot:
                             continue
                         for t in f.tricks:
-                            logger.log(f"-> {t}")
+                            log.log(f"-> {t}")
                             if t.base_trick == trick.base_trick and t.uniqueness == trick.uniqueness:
                                 mark.malus += config.malus_repetition
                                 mark.notes.append(f"trick number #{trick_i} ({trick.name}) has already been performed in a previous run. Adding a {config.malus_repetition}% malus.")

@@ -1,7 +1,9 @@
 import logging
 from models.teams import Team
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
-def teams_start():
-    Team.createIndexes()
+class TeamCtrl:
+    @staticmethod
+    def start():
+        Team.createIndexes()

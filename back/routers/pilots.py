@@ -5,9 +5,9 @@ from typing import List
 
 from core.security import auth
 from models.pilots import Pilot, collection
-from controllers.pilots import update_pilot, update_pilots
+from controllers.pilots import PilotCtrl
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 pilots = APIRouter()
 
 #
@@ -19,7 +19,6 @@ pilots = APIRouter()
     response_model=List[Pilot],
 )
 async def list():
-    logger.debug("list()")
     return await Pilot.getall()
 
 #
@@ -31,12 +30,7 @@ async def list():
     response_model=Pilot,
 )
 async def get(civlid: int):
-    logger.debug("get(%s)", civlid)
-
-    pilot = await Pilot.get(civlid)
-    if pilot is None:
-        raise HTTPException(status_code=404, detail=f"Pilot {civlid} not found")
-    return pilot
+    return await Pilot.get(civlid)
 
 #
 # Create all pilots from CIVL database
@@ -49,7 +43,7 @@ async def get(civlid: int):
     dependencies=[Depends(auth)],
 )
 async def sync():
-    await update_pilots()
+    await PilotCtrl.update_pilots()
 
 #
 # Create a new Pilot
@@ -62,5 +56,4 @@ async def sync():
     dependencies=[Depends(auth)],
 )
 async def create(civlid: int):
-    logger.debug("create or update pilot with civlid %d", civlid)
-    return await update_pilot(civlid)
+    return await PilotCtrl.update_pilot(civlid)

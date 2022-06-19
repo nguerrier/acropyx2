@@ -29,3 +29,5 @@ lxml
 cssselect
 python-multipart
 python-jose[cryptography]
+pytest
+requests

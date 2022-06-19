@@ -6,7 +6,7 @@ from models.judges import Judge, JudgeLevel
 from typing import List
 from fastapi.responses import Response
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 judges = APIRouter()
 
 #
@@ -40,11 +40,7 @@ def get_levels():
     response_model=Judge,
 )
 async def get(id: str, deleted: bool = False):
-    judge = await Judge.get(id, deleted)
-    if judge is None:
-        raise HTTPException(status_code=404, detail=f"Judge {id} not found")
-    logger.debug(judge)
-    return judge
+    return await Judge.get(id, deleted)
 
 #
 # Create a new Judge
@@ -57,10 +53,7 @@ async def get(id: str, deleted: bool = False):
     dependencies=[Depends(auth)],
 )
 async def create(judge: Judge = Body(...)):
-    try:
-        return await judge.create()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return await judge.create()
 
 #
 # Update an existing Judge
@@ -73,13 +66,7 @@ async def create(judge: Judge = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def update(id: str, judge: Judge = Body(...)):
-    try:
-        res = await Judge.update(id, judge)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    if res is None:
-        raise HTTPException(status_code=404, detail=f"Judge {id} not found")
+    await Judge.update(id, judge)
 
 #
 # Delete a Judge
@@ -92,16 +79,4 @@ async def update(id: str, judge: Judge = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def delete(id: str, restore: bool = False):
-    try:
-        res = await Judge.delete(id, restore)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    if res is None:
-        raise HTTPException(status_code=404, detail=f"Judge {id} not found")
-
-    if res is False:
-        if restore:
-            raise HTTPException(status_code=409, detail=f"Judge {id} is not marked as deleted")
-        else:
-            raise HTTPException(status_code=409, detail=f"Judge {id} is already marked as deleted")
+    res = await Judge.delete(id, restore)

@@ -6,3 +6,6 @@ deploy-preprod:
 
 deploy-prod:
 	cd .. && make $@
+
+test:
+	(cd .. && docker-compose exec back /app/.venv-docker/bin/python -m pytest)

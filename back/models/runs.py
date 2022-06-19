@@ -7,17 +7,30 @@ import pymongo
 from enum import Enum
 from datetime import datetime
 
-from models.flights import Flight
+from models.flights import Flight, FlightExport
 from models.competition_configs import CompetitionConfig
+from models.pilots import Pilot
+from models.teams import Team, TeamExport
+from models.judges import Judge
+from models.tricks import Trick
 
 from core.config import settings
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 class RunState(str, Enum):
     init = 'init'
     open = 'open'
     closed = 'closed'
+
+class RunExport(BaseModel):
+    state: RunState
+    pilots: List[Pilot]
+    teams: List[TeamExport]
+    judges: List[Judge]
+    repeatable_tricks: List[Trick]
+    config: CompetitionConfig
+    flights: List[FlightExport]
 
 class Run(BaseModel):
     state: RunState
@@ -33,12 +46,47 @@ class Run(BaseModel):
             "example": {
                 "state": "init",
                 "pilots": [1234, 4567],
+                "teams": [],
                 "judges": ["bb1726576153281283", "ba789798798798798798"],
-                "flights": [],
-                "competitionConfig": {
+                "repeatable_tricks": [],
+                "config": {
                     "warning": 0.5,
                     "malus_repetition": 13
-                }
+                },
+                "flights": []
             }
         }
 
+    async def export(self) -> RunExport:
+
+        pilots = []
+        for pilot in self.pilots:
+            pilots.append(await Pilot.get(pilot))
+
+        teams = []
+        for team in self.teams:
+            team = await Team.get(team)
+            teams.append(await team.export())
+
+        judges = []
+        for judge in self.judges:
+            log.debug(judge)
+            judges.append(await Judge.get(judge))
+
+        repeatable_tricks = []
+        for trick in self.repeatable_tricks:
+            repeatable_tricks.append(await Trick.get(trick))
+
+        flights = []
+        for flight in self.flights:
+            flights.append(await flight.export())
+
+        return RunExport(
+            state=self.state,
+            pilots=pilots,
+            teams=teams,
+            judges=judges,
+            repeatable_tricks=repeatable_tricks,
+            config=self.config,
+            flights=flights,
+        )

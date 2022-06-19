@@ -1,18 +1,19 @@
-import core.logging
 import logging
+import core.logging
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 import time
 
 from core.config import settings
+from core.database import clean_database
 from routers.api import router
-from controllers.judges import judges_start
-from controllers.pilots import pilots_start
-from controllers.teams import teams_start
-from controllers.tricks import tricks_start
-from controllers.competitions import competitions_start
+from controllers.judges import JudgeCtrl
+from controllers.pilots import PilotCtrl
+from controllers.teams import TeamCtrl
+from controllers.tricks import TrickCtrl
+from controllers.competitions import CompCtrl
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -45,12 +46,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    logger.debug("starup_event()")
-    judges_start()
-    pilots_start()
-    teams_start()
-    tricks_start()
-    competitions_start()
+    log.debug("starup_event()")
+    if "test" in settings.DATABASE:
+        log.debug(f"Using a testing database")
+        await clean_database()
+
+    JudgeCtrl.start()
+    PilotCtrl.start()
+    TeamCtrl.start()
+    TrickCtrl.start()
+    CompCtrl.start()
 
 # add a X-Process-Time header
 @app.middleware("http")

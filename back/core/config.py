@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl, BaseSettings, validator
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "acropyx"
+    PROJECT_NAME: str = "acropyx2 API"
     PROJECT_DESCRIPTION: str = "Manage Paragliding Aerobatics competitions"
     VERSION: str = "2.0.1"
     JWT_SECRET: str = "TEST_SECRET_DO_NOT_USE_IN_PROD"
@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     MONGODB_URL: str = 'mongodb://mongo:mongo@127.0.0.1/?retryWrites=true&w=majority'
     DATABASE: str = 'acropyx2'
+    TESTDB: str = None
     # no auth by default
     ADMIN_USER: str = 'admin'
     ADMIN_PASS: str = None

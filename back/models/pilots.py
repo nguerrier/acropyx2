@@ -1,16 +1,17 @@
 import logging
 from pydantic import BaseModel, Field, validator, HttpUrl
-from core.database import PyObjectId
 from bson import ObjectId
 from enum import Enum
 from pycountry import countries
 from typing import Optional, List
 from datetime import datetime
-from core.database import db
 from fastapi.encoders import jsonable_encoder
 import pymongo
+from fastapi import HTTPException
 
-logger = logging.getLogger(__name__)
+from core.database import db, PyObjectId
+
+log = logging.getLogger(__name__)
 collection = db.pilots
 
 class Link(BaseModel):
@@ -73,14 +74,10 @@ class Pilot(BaseModel):
         self.last_update = datetime.now()
         pilot = jsonable_encoder(self)
         try:
-            res = await collection.insert_one(pilot)
-            action = "created"
+            await collection.insert_one(pilot)
         except pymongo.errors.DuplicateKeyError:
             await collection.update_one({"_id": self.id}, {"$set": pilot})
-            res = await collection.find_one({"name": self.name})
-            action = "updated"
 
-        logger.debug("pilot %s %s (CIVL ID=%d, id=%s)", self.name, action, self.civlid, self.id)
         return self
 
     @staticmethod
@@ -89,9 +86,11 @@ class Pilot(BaseModel):
             {"_id": id},
             {"name": id},
         ]})
-        if pilot is not None:
-            return Pilot.parse_obj(pilot)
-        return None
+
+        if pilot is None:
+            raise HTTPException(status_code=404, detail=f"Pilot {id} not found")
+
+        return Pilot.parse_obj(pilot)
 
     @staticmethod
     async def getall(list:List[str] = []):
@@ -112,4 +111,4 @@ class Pilot(BaseModel):
     def createIndexes():
         collection.create_index('civlid', unique=True)
         collection.create_index('name', unique=True)
-        logger.debug('indexes created on "civlid" and "name"')
+        log.debug('indexes created on "civlid" and "name"')

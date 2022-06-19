@@ -6,15 +6,56 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
 from datetime import datetime
+from fastapi import HTTPException
 
 from core.config import settings
 
-from models.bonus import Bonus
-from models.unique_tricks import UniqueTrick
-
 from core.database import db, PyObjectId
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 collection = db.tricks
+
+class Bonus(BaseModel):
+    name: str = Field(..., min_length=1)
+    bonus: float = Field(..., ge=0.0)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "twisted",
+                "bonus": 2.5
+            }
+        }
+
+
+    @validator('name')
+    def check_name(cls, v):
+        bonuses = list(map(lambda x: x['name'], settings.tricks.available_bonuses))
+        if v not in bonuses:
+            bonuses = ", ".join(bonuses)
+            raise ValueError(f"Invalid bonus ({v}), must be one of: {bonuses}")
+        return v
+
+class UniqueTrick(BaseModel):
+    name: str
+    acronym: str
+    technical_coefficient: float
+    bonus: float
+    bonus_types: List[str]
+    base_trick: str
+    uniqueness: List[str]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "twisted left Misty to Helicopter reverse",
+                "acronym": "/LMHR",
+                "technical_coefficient": 1.75,
+                "bonus": 6,
+                "bonus_types": ["twist", "reverse"],
+                "uniqueness": ["left", "reverse"],
+                "base_trick": "Misty To Helicoper",
+            }
+        }
 
 class Trick(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -55,6 +96,7 @@ class Trick(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "_id": "bababababaabababababab",
                 "name": "Misty to Helicopter",
                 "acronym": "MH",
                 "solo": True,
@@ -79,8 +121,7 @@ class Trick(BaseModel):
                     {      "name": "right Misty to Helicopter reverse",      "acronym": "RMHR",      "technical_coefficient": 1.75,      "bonus": 3    },
                     {      "name": "twisted left Misty to Helicopter reverse",      "acronym": "/LMHR",      "technical_coefficient": 1.75,      "bonus": 6    },
                     {      "name": "twisted right Misty to Helicopter reverse",      "acronym": "/RMHR",      "technical_coefficient": 1.75,      "bonus": 6    }
-                ],
-                "deleted": "2022-06-06 10:00:00",
+                ]
             }
         }
 
@@ -88,7 +129,7 @@ class Trick(BaseModel):
 #        for id in self.pilots:
 #            pilot = await Pilot.get(id)
 #            if pilot is None:
-#                raise Exception(f"Pilot '{id}' is unknown, only known pilots can be part of a trick")
+#                raise ValueError(f"Pilot '{id}' is unknown, only known pilots can be part of a trick")
         return
 
     async def create(self):
@@ -100,19 +141,20 @@ class Trick(BaseModel):
             self.id = res.inserted_id
             return self
         except pymongo.errors.DuplicateKeyError:
-            raise Exception(f"Trick '{self.name}' already exists")
+            raise HTTPException(400, f"Trick '{self.name}' already exists")
 
     async def save(self):
         await self.check()
         trick = jsonable_encoder(self)
         res = await collection.update_one({"_id": str(self.id)}, {"$set": trick})
-        return res.modified_count == 1
+        if res.modified_count != 1:
+            raise HTTPException(400, f"Error while saving Trick {self.id}, 1 item should have been saved, got {res.modified_count}")
 
     @staticmethod
     def createIndexes():
         collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
         collection.create_index([('acronym', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
-        logger.debug('index created on "name,deleted" and "acronym,deleted"')
+        log.debug('index created on "name,deleted" and "acronym,deleted"')
 
     @staticmethod
     async def get(id, deleted: bool = False):
@@ -121,9 +163,9 @@ class Trick(BaseModel):
         else:
             search = {"_id": id, "deleted": None}
         trick = await collection.find_one(search)
-        if trick is not None:
-            return Trick.parse_obj(trick)
-        return None
+        if trick is None:
+            raise HTTPException(404, f"Trick {id} not found")
+        return Trick.parse_obj(trick)
 
     @staticmethod
     async def get_scores(solo: bool, synchro: bool) -> List[UniqueTrick]:
@@ -170,7 +212,7 @@ class Trick(BaseModel):
             return None
 
         trick_update.id = trick.id
-        return await trick_update.save()
+        await trick_update.save()
 
     @staticmethod
     async def delete(id: str, restore: bool = False):
@@ -179,12 +221,13 @@ class Trick(BaseModel):
             return None
 
         if restore ^ (trick.deleted is not None):
-            return False
+            if restore:
+                raise HTTPException(400, f"Can't restore Trick {id} as it's not deleted")
+            else:
+                raise HTTPException(400, f"Can't delete Trick {id} as it's already deleted")
 
         if restore:
             trick.deleted = None
-            action = "restoring"
         else:
             trick.deleted = datetime.now()
-            action = "deleting"
-        return await trick.save()
+        await trick.save()

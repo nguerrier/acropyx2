@@ -1,18 +1,19 @@
 import logging
 from http import HTTPStatus
-from fastapi import APIRouter, Depends, Body, HTTPException
+from fastapi import APIRouter, Depends, Body, HTTPException, Request
 from typing import List
-from fastapi.responses import Response
+from fastapi.responses import Response, HTMLResponse
 
 from core.security import auth
 
-from models.competitions import Competition, CompetitionNew, CompetitionState
+from models.competitions import Competition, CompetitionExport, CompetitionNew, CompetitionState
 from models.competition_configs import CompetitionConfig
-from models.runs import Run
-from models.final_marks import FinalMark
+from models.runs import Run, RunExport
+from models.marks import FinalMark, FinalMarkExport
 from models.flights import Flight, FlightNew
+from models.results import RunResults, CompetitionResults, CompetitionResultsExport, RunResultsExport
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 competitions = APIRouter()
 
 #
@@ -21,11 +22,16 @@ competitions = APIRouter()
 @competitions.get(
     "/",
     response_description="List all competitions",
-    response_model=List[Competition],
+    response_model=List[CompetitionExport],
     dependencies=[Depends(auth)]
 )
 async def list():
-    return await Competition.getall()
+    comps = []
+    for comp in await Competition.getall():
+        comp = await comp.export()
+        log.debug(comp)
+        comps.append(comp)
+    return comps
 
 #
 # Get one competition
@@ -33,14 +39,12 @@ async def list():
 @competitions.get(
     "/{id}",
     response_description="Get a Competition",
-    response_model=Competition,
+    response_model=CompetitionExport,
     dependencies=[Depends(auth)]
 )
 async def get_by_id(id: str, deleted: bool = False):
     comp = await Competition.get(id, deleted)
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition '{id}' not found")
-    return comp
+    return await comp.export()
 
 #
 # Create a new Competition
@@ -49,14 +53,12 @@ async def get_by_id(id: str, deleted: bool = False):
     "/",
     status_code=201,
     response_description="Add new Competition",
-    response_model=Competition,
+    response_model=CompetitionExport,
     dependencies=[Depends(auth)],
 )
 async def create(competition: CompetitionNew = Body(...)):
-    try:
-        return await competition.create()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    comp = await competition.create()
+    return await comp.export()
 
 #
 # Update a Competition
@@ -69,15 +71,8 @@ async def create(competition: CompetitionNew = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def update(id: str, updated_comp: CompetitionNew = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update(updated_comp)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update(updated_comp)
 
 #
 # Update Pilot list
@@ -90,15 +85,8 @@ async def update(id: str, updated_comp: CompetitionNew = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_pilots(id: str, pilots: List[int] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update_pilots(pilots)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update_pilots(pilots)
 
 #
 # Update Teams list
@@ -111,15 +99,8 @@ async def patch_pilots(id: str, pilots: List[int] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_teams(id: str, teams: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update_teams(teams)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update_teams(teams)
 
 #
 # Update Judges list
@@ -132,15 +113,8 @@ async def patch_teams(id: str, teams: List[str] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_judges(id: str, judges: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update_judges(judges)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update_judges(judges)
 
 #
 # Update Repeatable Tricks list
@@ -153,15 +127,8 @@ async def patch_judges(id: str, judges: List[str] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_repeatable_tricks(id: str, repeatable_tricks: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update_repeatable_tricks(repeatable_tricks)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update_repeatable_tricks(repeatable_tricks)
 
 
 #
@@ -175,15 +142,8 @@ async def patch_repeatable_tricks(id: str, repeatable_tricks: List[str] = Body(.
     dependencies=[Depends(auth)],
 )
 async def patch_config(id: str, config: CompetitionConfig = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.update_config(config)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.update_config(config)
 
 @competitions.delete(
     "/{id}",
@@ -193,19 +153,7 @@ async def patch_config(id: str, config: CompetitionConfig = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def delete(id: str, restore: bool = False):
-    try:
-        res = await Competition.delete(id, restore)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    if res is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
-
-    if res is False:
-        if restore:
-            raise HTTPException(status_code=409, detail=f"Competition {id} is not marked as deleted")
-        else:
-            raise HTTPException(status_code=409, detail=f"Competition {id} is already marked as deleted")
+    await Competition.delete(id, restore)
 
 @competitions.post(
     "/{id}/open",
@@ -215,15 +163,8 @@ async def delete(id: str, restore: bool = False):
     dependencies=[Depends(auth)],
 )
 async def open(id: str):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.open()
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.open()
 
 @competitions.post(
     "/{id}/close",
@@ -233,15 +174,8 @@ async def open(id: str):
     dependencies=[Depends(auth)],
 )
 async def close(id: str):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.close()
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.close()
 
 @competitions.post(
     "/{id}/reopen",
@@ -251,33 +185,20 @@ async def close(id: str):
     dependencies=[Depends(auth)],
 )
 async def close(id: str):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.reopen()
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.reopen()
 
 @competitions.post(
     "/{id}/runs/",
     status_code=201,
     response_description="Create a new run for a competition",
-    response_model=Run,
+    response_model=RunExport,
     dependencies=[Depends(auth)],
 )
 async def new_run(id: str, pilots_to_qualify: int = 0):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            return await comp.new_run(pilots_to_qualify)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    run = await comp.new_run(pilots_to_qualify)
+    return await run.export()
 
 #
 # Update Run Pilot list
@@ -290,15 +211,8 @@ async def new_run(id: str, pilots_to_qualify: int = 0):
     dependencies=[Depends(auth)],
 )
 async def patch_run_pilots(id: str, i: int, pilots: List[int] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_update_pilots(i, pilots)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_update_pilots(i, pilots)
 
 #
 # Update Teams list
@@ -311,15 +225,8 @@ async def patch_run_pilots(id: str, i: int, pilots: List[int] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_run_teams(id: str, i: int, teams: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_update_teams(i, teams)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_update_teams(i, teams)
 
 #
 # Update Judges list
@@ -332,15 +239,8 @@ async def patch_run_teams(id: str, i: int, teams: List[str] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_run_judges(id: str, i: int, judges: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_update_judges(i, judges)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_update_judges(i, judges)
 
 #
 # Update Repeatable Tricks list
@@ -353,15 +253,8 @@ async def patch_run_judges(id: str, i: int, judges: List[str] = Body(...)):
     dependencies=[Depends(auth)],
 )
 async def patch_run_repeatable_tricks(id: str, i: int, repeatable_tricks: List[str] = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_update_repeatable_tricks(i, repeatable_tricks)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_update_repeatable_tricks(i, repeatable_tricks)
 
 
 #
@@ -375,15 +268,8 @@ async def patch_run_repeatable_tricks(id: str, i: int, repeatable_tricks: List[s
     dependencies=[Depends(auth)],
 )
 async def patch_run_config(id: str, i: int, config: CompetitionConfig = Body(...)):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_update_config(i, config)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_update_config(i, config)
 
 @competitions.post(
     "/{id}/runs/{i}/open",
@@ -393,15 +279,8 @@ async def patch_run_config(id: str, i: int, config: CompetitionConfig = Body(...
     dependencies=[Depends(auth)],
 )
 async def run_open(id: str, i: int):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_open(i)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_open(i)
 
 @competitions.post(
     "/{id}/runs/{i}/close",
@@ -411,15 +290,8 @@ async def run_open(id: str, i: int):
     dependencies=[Depends(auth)],
 )
 async def run_close(id: str, i: int):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_close(i)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_close(i)
 
 @competitions.post(
     "/{id}/runs/{i}/reopen",
@@ -429,54 +301,40 @@ async def run_close(id: str, i: int):
     dependencies=[Depends(auth)],
 )
 async def run_reopen(id: str, i: int):
-    try:
-        comp = await Competition.get(id)
-        if comp is not None:
-            await comp.run_reopen(i)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
+    comp = await Competition.get(id)
+    await comp.run_reopen(i)
 
 @competitions.post(
     "/{id}/runs/{i}/flights/{civlid}/",
     response_description="Simulate a run and get the detail score",
-    response_model=FinalMark,
+    response_model=FinalMarkExport,
     dependencies=[Depends(auth)],
 )
 async def flight_save(id: str, i: int, civlid: int, save: bool, published:bool = False, flight: FlightNew = Body(...)):
-    try:
-        comp = await Competition.get(id)
-    except Exception as e:
-        raise  HTTPException(status_code=400, detail=str(e))
-
-    if comp is not None:
-        return await comp.flight_save(run_i=i, civlid=civlid, flight=flight, save=save, published=published)
-
-    if comp is None:
-        raise HTTPException(status_code=404, detail=f"Competition {id} not found")
-
-
+    comp = await Competition.get(id)
+    flight = await comp.flight_save(run_i=i, civlid=civlid, flight=flight, save=save, published=published)
+    return flight.export()
 
 @competitions.get(
     "/{id}/results",
-    status_code=204,
-    response_description="Download a PDF of the results of the competition",
-    response_class=Response,
+    status_code=200,
+    response_description="Rietrieve the results of the competition",
+    response_model=CompetitionResultsExport,
     dependencies=[Depends(auth)],
 )
 async def get_all_results(id: str):
-    #TODO
-    pass
+    comp = await Competition.get(id)
+    res = await comp.results()
+    return await res.export()
 
 @competitions.get(
-    "/{id}/results/{num}",
-    status_code=204,
-    response_description="Download a PDF of the results of a specific run of competition",
-    response_class=Response,
+    "/{id}/results/{i}",
+    status_code=200,
+    response_description="Retrieve the results of a specific run of competition",
+    response_model=RunResultsExport,
     dependencies=[Depends(auth)],
 )
-async def get_all_results(id: str, num: int):
-    #TODO
-    pass
+async def run_get_results(id: str, i: int):
+    comp = await Competition.get(id)
+    res = await comp.run_results(run_i=i)
+    return await res.export()
