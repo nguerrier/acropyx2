@@ -2,7 +2,6 @@
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 
-
 // ** Styled Component Import
 import ApexChartWrapper from 'src/@core/styles/libs/react-apexcharts'
 
