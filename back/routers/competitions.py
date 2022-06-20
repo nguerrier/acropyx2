@@ -29,7 +29,6 @@ async def list():
     comps = []
     for comp in await Competition.getall():
         comp = await comp.export()
-        log.debug(comp)
         comps.append(comp)
     return comps
 
