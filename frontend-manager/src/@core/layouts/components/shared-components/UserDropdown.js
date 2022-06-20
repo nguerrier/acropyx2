@@ -113,6 +113,7 @@ const UserDropdown = () => {
           </Box>
         </Box>
         <Divider sx={{ mt: 0, mb: 1 }} />
+{/*
         <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
           <Box sx={styles}>
             <AccountOutline sx={{ marginRight: 2 }} />
@@ -151,6 +152,7 @@ const UserDropdown = () => {
           </Box>
         </MenuItem>
         <Divider />
+*/}
         <MenuItem sx={{ py: 2 }} onClick={() => window.location = '/api/auth/logout'}>
           <LogoutVariant sx={{ marginRight: 2, fontSize: '1.375rem', color: 'text.secondary' }} />
           Logout
