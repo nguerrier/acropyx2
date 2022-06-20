@@ -10,13 +10,31 @@ services:
         - ./back:/app
     tty: true
 
-  back-test:
-    build: ./back
-    environment: 
-      - MONGODB_URL=mongodb://mongo:mongo@mongodb
-      - DATABASE=acropyx2-testing
+#  back-test:
+#    build: ./back
+#    environment:
+#      - MONGODB_URL=mongodb://mongo:mongo@mongodb
+#      - DATABASE=acropyx2-testing
+#    volumes:
+#      - ./back:/app
+
+  public:
+    image: node:18-alpine
+    command: sh -c "npm ci && npm run dev"
+    working_dir: /app
+    ports:
+      - 3000:3000
     volumes:
-        - ./back:/app
+      - ./frontend-public:/app
+
+  manager:
+    image: node:18-alpine
+    command: sh -c "npm ci && npm run dev"
+    working_dir: /app
+    ports:
+      - 3001:3001
+    volumes:
+      - ./frontend-manager:/app
 
   mongodb:
     image: mongo:5.0
