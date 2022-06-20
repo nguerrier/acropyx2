@@ -35,6 +35,10 @@ class CompetitionState(str, Enum):
 
 class CompetitionExport(BaseModel):
     id: str = Field(alias="_id")
+    name: str
+    start_date: date
+    end_date: date
+    type: CompetitionType
     pilots: List[Pilot] 
     teams: List[Team]
     judges: List[Judge]
@@ -164,6 +168,10 @@ class Competition(CompetitionNew):
 
         return CompetitionExport(
             _id = str(self.id),
+            name = self.name,
+            start_date = self.start_date,
+            end_date = self.end_date,
+            type = self.type,
             pilots = pilots,
             teams = teams,
             judges = judges,
