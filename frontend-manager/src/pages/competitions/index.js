@@ -135,7 +135,7 @@ const CompetitionsPage = ({ data }) => {
               <CardContent>
                 <Grid container spacing={5}>
                   <Grid item xs={12}>
-                    <TextField fullWidth label='Name' placeholder='Lery Pose - French Championship' />
+                    <TextField fullWidth label='Name' placeholder='Competition Name with Location and Type' />
                   </Grid>
                   <Grid item xs={4}>
                     <TextField fullWidth type='date' label='Start' InputLabelProps={{ shrink: true }} />
@@ -193,9 +193,7 @@ const CompetitionsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('competitions')
-
-  console.log(data[0])
+  let data = await get('/competitions/')
 
   // Pass data to the page via props
   return { props: { data } }
