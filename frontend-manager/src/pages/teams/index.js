@@ -12,35 +12,16 @@ import { get } from 'src/util/backend'
 
 const headCells = [
   {
-    id: 'civlid',
-    numeric: false,
-    disablePadding: true,
-    label: 'CIVL ID'
-  },
-  {
-    id: 'rank',
-    numeric: false,
-    disablePadding: false,
-    label: 'Rank'
-  },
-  {
     id: 'name',
     numeric: false,
     disablePadding: false,
     label: 'Name'
   },
   {
-    id: 'country',
+    id: 'pilots',
     numeric: false,
     disablePadding: false,
-    label: 'Country'
-  },
-  {
-    id: 'link',
-    numeric: false,
-    link: true,
-    disablePadding: false,
-    label: 'Link'
+    label: 'Pilots'
   }
 ]
 
@@ -62,8 +43,15 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('teams')
-
+  let data = await get('/teams/')
+  data = data.map((team) => {return {
+      id: team._id,
+      name: team.name,
+      pilots: [
+        team.pilots[0].name,
+        team.pilots[1].name
+      ]
+  };})
   // Pass data to the page via props
   return { props: { data } }
 }
