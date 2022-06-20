@@ -1,54 +1,48 @@
 export async function getAuthToken() {
-  // Fetch data from external API
-  var paramsString = 'grant_type=&username=admin&password=PimeQcXLGGB&scope=&client_id=&client_secret='
-  var searchParams = new URLSearchParams(paramsString)
-  const resToken = await fetch('https://preprod-api-acropyx2.herokuapp.com/auth/login', {
-    method: 'POST',
-    body: searchParams
+  if (process.env.BACKEND_API_USERNAME && process.env.BACKEND_API_PASSWORD) {
+      // Fetch data from external API
+      var paramsString = 'grant_type=&username=' + process.env.BACKEND_API_USERNAME + '&password=' + process.env.BACKEND_API_PASSWORD + '&scope=&client_id=&client_secret='
+      var searchParams = new URLSearchParams(paramsString)
+      const url = new URL('/auth/login', process.env.BACKEND_API_URL)
+      const res = await fetch(url, {
+        method: 'POST',
+        body: searchParams
+      })
+      return res.json()
+  }
+  return null
+}
+
+export async function request(method, route, body) {
+  const token = await getAuthToken()
+  var myHeaders = new Headers({})
+  if (token) {
+    myHeaders = new Headers({
+      Authorization: 'Bearer ' + token.access_token
+    })
+  }
+  const url = new URL(route, process.env.BACKEND_API_URL)
+  const res = await fetch(url, {
+    method: method,
+    headers: myHeaders,
+    body: body
   })
-  return resToken.json()
+
+  return res.json()
 }
 
 export async function get(route) {
-  const token = await getAuthToken()
-  var myHeaders = new Headers({
-    Authorization: 'Bearer ' + token.access_token
-  })
-  const resPilots = await fetch('https://preprod-api-acropyx2.herokuapp.com/' + route, {
-    method: 'GET',
-    headers: myHeaders
-  })
+    return await request('GET', route, null)
+}
 
-  return resPilots.json()
+export async function post(route, body) {
+    return await request('POST', route, body)
 }
 
 export async function getCompetitions(id) {
-  const token = await getAuthToken()
-  var myHeaders = new Headers({
-    Authorization: 'Bearer ' + token.access_token
-  })
-  console.log(id)
-  const resPilots = await fetch(
-    'https://preprod-api-acropyx2.herokuapp.com/competitions/62aaed96085eeaf2a9f0a997?deleted=false',
-    {
-      method: 'GET',
-      headers: myHeaders
-    }
-  )
-  return resPilots.json()
+  return await get('/competitions/' + id)
 }
 
 export async function getCompetitionResults(id) {
-  const token = await getAuthToken()
-  var myHeaders = new Headers({
-    Authorization: 'Bearer ' + token.access_token
-  })
-  const res = await fetch(
-    'https://preprod-api-acropyx2.herokuapp.com/competitions/62aaed96085eeaf2a9f0a997/results',
-    {
-      method: 'GET',
-      headers: myHeaders
-    }
-  )
-  return res.json()
+  return await get('/competitions/' + id + '/results')
 }

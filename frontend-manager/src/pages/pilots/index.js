@@ -81,9 +81,9 @@ const PilotsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('pilots')
+  let data = await get('/pilots/')
 
-  console.log(data[0])
+  console.log(data)
 
   // Pass data to the page via props
   return { props: { data } }
