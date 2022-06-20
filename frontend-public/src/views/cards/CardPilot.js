@@ -1,7 +1,7 @@
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
-import Button from '@mui/material/Button'
+import Link from '@mui/material/Link'
 import Avatar from '@mui/material/Avatar'
 import CardMedia from '@mui/material/CardMedia'
 import Typography from '@mui/material/Typography'
@@ -38,7 +38,7 @@ const CardUser = ({ pilot }) => {
         >
           <Box sx={{ mr: 2, mb: 1, display: 'flex', flexDirection: 'column' }}>
             <Typography variant='h6'>
-              {pilot.name}{' '}
+              <Link href={pilot.link} target="_blank" rel="noopener,noreferrer">{pilot.name}</Link>{' '}
               <ReactCountryFlag
                 countryCode={countriesQuery.convertAlphaCode(pilot.country)}
                 svg
@@ -48,14 +48,6 @@ const CardUser = ({ pilot }) => {
             <Typography variant='caption'>CIVL ID: {pilot.civlid}</Typography>
             <Typography variant='caption'>Rank: #{pilot.rank}</Typography>
           </Box>
-          <Button
-            variant='contained'
-            onClick={() => {
-              window.open(pilot.link, '_blank')
-            }}
-          >
-            Update pilot
-          </Button>
         </Box>
       </CardContent>
     </Card>
