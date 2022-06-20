@@ -27,7 +27,13 @@ const headCells = [
     id: 'level',
     numeric: false,
     disablePadding: false,
-    label: 'Link'
+    label: 'Level'
+  },
+  {
+    id: 'civlid',
+    numeric: true,
+    disablePadding: false,
+    label: 'CIVL ID'
   }
 ]
 
@@ -49,7 +55,8 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('judges')
+  let data = await get('/judges/')
+    console.log(data)
 
   // Pass data to the page via props
   return { props: { data } }
