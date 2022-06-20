@@ -70,7 +70,6 @@ class Run(BaseModel):
 
         judges = []
         for judge in self.judges:
-            log.debug(judge)
             judges.append(await Judge.get(judge))
 
         repeatable_tricks = []
