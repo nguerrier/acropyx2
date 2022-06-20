@@ -53,7 +53,9 @@ const PilotsPage = ({ data }) => {
         <Typography variant='h5'>Pilots</Typography>
       </Grid>
       <Grid item xs={6} sm={6}>
+{/*
         <TextField fullWidth id='outlined-basic' label='Search pilot' variant='outlined' />
+*/}
       </Grid>
       <Grid item xs={6} sm={6} container direction='row' justifyContent='flex-end'>
         <Button
