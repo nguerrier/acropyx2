@@ -76,15 +76,13 @@ const TeamsPage = ({ data }) => {
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Typography variant='h5'>
-          <Link href='https://mui.com/components/tables/' target='_blank'>
             Tricks
-          </Link>
         </Typography>
         <Typography variant='body2'>Tables display sets of teams.</Typography>
       </Grid>
       <Grid item xs={12}>
         <Card>
-          <EnhancedTable rows={data} headCells={headCells} orderById='name' />
+          <EnhancedTable rows={data} headCells={headCells} orderById='technical_coefficient' />
         </Card>
       </Grid>
     </Grid>
@@ -93,7 +91,7 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('tricks')
+  let data = await get('/tricks/')
 
   // Pass data to the page via props
   return { props: { data } }
