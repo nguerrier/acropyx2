@@ -178,7 +178,7 @@ const Post = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps({ params }) {
-  let data = await getCompetitions(params.cid)
+  let [status, data] = await getCompetitions(params.cid)
 
   // // TODO en attente du endpoint rest retournant un run par id
   // let data = competitions.runs[0]

@@ -22,6 +22,12 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     label: 'Pilots'
+  },
+  {
+    id: 'delete',
+    type: 'ACTION',
+    path: 'team/delete',
+    label: 'Delete'
   }
 ]
 
@@ -43,11 +49,12 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('/teams/')
+  let [status, data] = await get('/teams/')
   data = data.map((team) => {return {
       id: team._id,
       name: team.name,
       pilots: team.pilots.map( p => {return p.name}).sort().join(', '),
+      delete: 'delete'
   };})
   // Pass data to the page via props
   return { props: { data } }

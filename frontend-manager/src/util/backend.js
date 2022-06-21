@@ -30,7 +30,7 @@ export async function request(method, route, body) {
     body: body
   })
 
-  return res.json()
+  return [res.status, await res.json()]
 }
 
 export async function get(route) {

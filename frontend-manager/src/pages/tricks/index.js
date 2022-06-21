@@ -91,7 +91,7 @@ const TeamsPage = ({ data }) => {
 
 // This gets called on every request
 export async function getServerSideProps() {
-  let data = await get('/tricks/')
+  let [status, data] = await get('/tricks/')
 
   // Pass data to the page via props
   return { props: { data } }

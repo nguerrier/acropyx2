@@ -217,7 +217,7 @@ const Post = ({ data, results }) => {
 
 // This gets called on every request
 export async function getServerSideProps({ params }) {
-  let data = await getCompetitions(params.cid)
+  let [status, data] = await getCompetitions(params.cid)
   let results = [] // await getCompetitionResults(params.cid)
 
   console.log(data)
