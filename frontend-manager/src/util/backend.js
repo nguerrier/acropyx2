@@ -1,12 +1,14 @@
 export async function getAuthToken() {
   if (process.env.BACKEND_API_USERNAME && process.env.BACKEND_API_PASSWORD) {
       // Fetch data from external API
-      var paramsString = 'grant_type=&username=' + process.env.BACKEND_API_USERNAME + '&password=' + process.env.BACKEND_API_PASSWORD + '&scope=&client_id=&client_secret='
-      var searchParams = new URLSearchParams(paramsString)
+      var params = new URLSearchParams()
+      params.append('grand__type', 'password')
+      params.append('username', process.env.BACKEND_API_USERNAME)
+      params.append('password', process.env.BACKEND_API_PASSWORD)
       const url = new URL('/auth/login', process.env.BACKEND_API_URL)
       const res = await fetch(url, {
         method: 'POST',
-        body: searchParams
+        body: params
       })
       return res.json()
   }
