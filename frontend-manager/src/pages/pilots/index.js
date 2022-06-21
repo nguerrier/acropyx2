@@ -52,16 +52,24 @@ const PilotsPage = ({ data }) => {
       <Grid item xs={12} sx={{ paddingBottom: 4 }}>
         <Typography variant='h5'>Pilots</Typography>
       </Grid>
-      <Grid item xs={6} sm={6}>
+      <Grid item xs={4} sm={4}>
 {/*
         <TextField fullWidth id='outlined-basic' label='Search pilot' variant='outlined' />
 */}
       </Grid>
-      <Grid item xs={6} sm={6} container direction='row' justifyContent='flex-end'>
+      <Grid item xs={2} sm={2}>
+        <TextField id='civlid' label='CIVL ID' />
+      </Grid>
+      <Grid item xs={2} sm={2}>
+        <Button>
+            Add or Update pilot
+        </Button>
+      </Grid>
+      <Grid item xs={4} sm={4} container direction='row' justifyContent='flex-end'>
         <Button
           variant='outlined'
           onClick={() => {
-            window.open(pilot.link, '_blank')
+              alert('Not yet implemented, please use the API directly')
           }}
           startIcon={<RefreshIcon />}
         >

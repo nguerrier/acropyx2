@@ -49,16 +49,14 @@ const CardPilot = ({ pilot }) => {
             <Typography variant='caption'>CIVL ID: {pilot.civlid}</Typography>
             <Typography variant='caption'>Rank: #{pilot.rank}</Typography>
           </Box>
-{/*
           <Button
             variant='contained'
             onClick={() => {
-              window.open(pilot.link, '_blank')
+              alert('Not yet implemented, use common action on top of the page')
             }}
           >
             Update pilot
           </Button>
-*/}
         </Box>
       </CardContent>
     </Card>
