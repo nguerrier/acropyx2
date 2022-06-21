@@ -47,10 +47,7 @@ export async function getServerSideProps() {
   data = data.map((team) => {return {
       id: team._id,
       name: team.name,
-      pilots: [
-        team.pilots[0].name,
-        team.pilots[1].name
-      ]
+      pilots: team.pilots.map( p => {return p.name}).sort().join(', '),
   };})
   // Pass data to the page via props
   return { props: { data } }
