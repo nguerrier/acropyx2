@@ -730,19 +730,13 @@ class Competition(CompetitionNew):
 
         # calculate the bonus of the run as stated in 7B
         # §6.6.1 Twisted manoeuvres bonus
-        # -> it is implied that the bonus is the sum of the bonuses limited to 5
-        mark.bonus_percentage = sum(bonuses)
+        # -> it is implied that the bonus is the sum of the bonuses limited to 5,3or 2
+        #    minus the malus
+        mark.bonus_percentage = sum(bonuses) - malus
 
         mark_percentage = dict(config.mark_percentages)[self.type.value]
         mark.technical = mark.technicity * mark.judges_mark.technical * mark_percentage.technical / 100
-
-
         mark.choreography = mark.judges_mark.choreography * mark_percentage.choreography / 100 
-        if mark.malus >= 100:
-            mark.choreography = 0
-        else:
-            mark.choreography = mark.choreography * (100 - mark.malus) / 100
-
         mark.landing = mark.judges_mark.landing * mark_percentage.landing / 100
 
         if type == CompetitionType.synchro:
