@@ -12,6 +12,9 @@ import Button from '@mui/material/Button'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import TextField from '@mui/material/TextField'
 
+//
+import Router from 'next/router'
+
 const headCells = [
   {
     id: 'civlid',
@@ -47,6 +50,23 @@ const headCells = [
 ]
 
 const PilotsPage = ({ data }) => {
+  const APIUpdatePilot = async () => {
+      const civlid = parseInt(document.getElementById('civlid').value)
+      if (civlid < 1 || isNaN(civlid)) return
+      const res = await fetch('/api/acropyx/pilots/' + civlid, {
+          method: 'POST'
+      })
+      if (res.status == 201) {
+        Router.reload(window.location.pathname)
+      }
+  };
+
+  const APIUpdatePilotEnter = async (e) => {
+    if (e.keyCode == 13) {
+      await APIUpdatePilot()
+    }
+  };
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12} sx={{ paddingBottom: 4 }}>
@@ -58,20 +78,20 @@ const PilotsPage = ({ data }) => {
 */}
       </Grid>
       <Grid item xs={2} sm={2}>
-        <TextField id='civlid' label='CIVL ID' />
+        <TextField id='civlid' label='CIVL ID' onKeyDown={APIUpdatePilotEnter} />
       </Grid>
       <Grid item xs={2} sm={2}>
-        <Button>
+        <Button onClick={APIUpdatePilot}>
             Add or Update pilot
         </Button>
       </Grid>
       <Grid item xs={4} sm={4} container direction='row' justifyContent='flex-end'>
         <Button
           variant='outlined'
+          startIcon={<RefreshIcon />}
           onClick={() => {
               alert('Not yet implemented, please use the API directly')
           }}
-          startIcon={<RefreshIcon />}
         >
           {' '}
           Synchronize from CIVL
