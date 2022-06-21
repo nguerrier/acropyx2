@@ -12,6 +12,8 @@ import GoogleCirclesExtended from 'mdi-material-ui/GoogleCirclesExtended'
 import Account from 'mdi-material-ui/Account'
 import AccountCowboyHat from 'mdi-material-ui/AccountCowboyHat'
 import AccountGroup from 'mdi-material-ui/AccountGroup'
+import ScriptText from 'mdi-material-ui/ScriptText'
+import ScriptTextOutline from 'mdi-material-ui/ScriptTextOutline'
 
 const navigation = () => {
   return [
@@ -45,8 +47,13 @@ const navigation = () => {
     },
     {
       title: 'Tricks',
-      icon: FormatLetterCase,
+      icon: ScriptTextOutline,
       path: '/tricks'
+    },
+    {
+      title: 'UniqueTricks',
+      icon: ScriptText,
+      path: '/unique-tricks'
     },
   ]
 }
