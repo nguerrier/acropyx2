@@ -37,7 +37,7 @@ class PilotCtrl:
             return
 
         # write the excel to a temporary file and read it
-        xls = await run_in_threadpool(lambda: fetch_and_load_pilots_list(ret.content))
+        xls = await run_in_threadpool(lambda: PilotCtrl.fetch_and_load_pilots_list(ret.content))
         sheet = xls.active # get the first and only sheet
         # loop over each cells of column B (where the CIVL id are)
         # and extract civlids
@@ -54,12 +54,13 @@ class PilotCtrl:
         shuffle(civlids)
         for civlid in civlids:
             try:
-                await update_pilot(civlid)
+                await PilotCtrl.update_pilot(civlid)
             except Exception as e:
                 log.exception("Exception while updating pilot with CIVL ID #%d", civlid)
 
     @staticmethod
     async def update_pilot(civlid: int):
+        log.debug(f"Updating pilot #{civlid}")
         async with httpx.AsyncClient() as client:
             link = settings.pilots.civl_link_one_pilot + str(civlid)
 
