@@ -36,7 +36,7 @@ async def get(civlid: int):
 # Create all pilots from CIVL database
 #
 @pilots.post(
-    "/",
+    "/update_all",
     status_code=201,
     response_description="Create all missing pilots from CIVL database",
     response_class=Response,

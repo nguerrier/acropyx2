@@ -49,7 +49,7 @@ async def get_by_id(id: str, deleted: bool = False):
 # Create a new Competition
 #
 @competitions.post(
-    "/",
+    "/new",
     status_code=201,
     response_description="Add new Competition",
     response_model=CompetitionExport,
@@ -188,7 +188,7 @@ async def close(id: str):
     await comp.reopen()
 
 @competitions.post(
-    "/{id}/runs/",
+    "/{id}/runs/new",
     status_code=201,
     response_description="Create a new run for a competition",
     response_model=RunExport,
@@ -304,7 +304,7 @@ async def run_reopen(id: str, i: int):
     await comp.run_reopen(i)
 
 @competitions.post(
-    "/{id}/runs/{i}/flights/{civlid}/",
+    "/{id}/runs/{i}/flights/{civlid}/new",
     response_description="Simulate a run and get the detail score",
     response_model=FinalMarkExport,
     dependencies=[Depends(auth)],

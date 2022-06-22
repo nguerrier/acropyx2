@@ -40,7 +40,7 @@ async def get(id: str, deleted: bool = False):
 # Create a new Team
 #
 @teams.post(
-    "/",
+    "/new",
     status_code=201,
     response_description="Add new Team",
     response_model=TeamExport,

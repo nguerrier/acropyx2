@@ -59,7 +59,7 @@ async def get(id: str, deleted: bool = False):
 # Create a new Trick
 #
 @tricks.post(
-    "/",
+    "/new",
     status_code=201,
     response_description="Add new Trick",
     response_model=Trick,
