@@ -24,7 +24,7 @@ async def list(deleted: bool = False):
 # get Judges levels
 #
 @judges.get(
-    "/levels/",
+    "/levels",
     response_description="Get list of judges levels",
     response_model=List[JudgeLevel],
 )

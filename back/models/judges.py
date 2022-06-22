@@ -27,7 +27,7 @@ class JudgeLevel(Enum):
 
 class Judge(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    name: str = Field(..., description="The full name of the judge")
+    name: str = Field(..., description="The full name of the judge", min_length=2)
     country: str = Field(..., description="The country of the judge using the 3 letter acronym of the country")
     level: JudgeLevel = Field(..., description="The level of the judge")
     civlid: Optional[int] = Field(None, description="The CIVL ID if any (must be registered in the pilot database")
