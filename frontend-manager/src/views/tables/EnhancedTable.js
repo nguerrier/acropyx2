@@ -20,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import { visuallyHidden } from '@mui/utils'
 import Link from '@mui/material/Link'
+import Button from '@mui/material/Button'
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -228,32 +229,43 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                           case 'BOOLEAN':
                             if (row[h.id]) {
                               return (
-                                <TableCell align='left'>
+                                <TableCell align='left' key={index}>
                                   <Checkbox disabled checked />
                                 </TableCell>
                               )
                             }
                             return (
-                              <TableCell align='left'>
+                              <TableCell align='left' key={index}>
                                 <Checkbox disabled />
                               </TableCell>
                             )
                           case 'LINK':
                             return (
-                              <TableCell align='left'>
+                              <TableCell align='left' key={index}>
                                 <a target='_blank' rel='noopener noreferrer' href={row[h.id]}>
                                   link
                                 </a>
                               </TableCell>
                             )
                           case 'ACTION':
-                            return (
-                              <TableCell align='left'>
-                                <Link href={h.path + '/' + row.id}>{row[h.id]}</Link>
-                              </TableCell>
-                            )
+                            if (h.path) {
+                                return (
+                                  <TableCell align='left' key={index}>
+                                    <Link href={h.path + '/' + row.id}>{row[h.id]}</Link>
+                                  </TableCell>
+                                )
+                            }
+                            if (h.func) {
+                                return (
+                                  <TableCell align='left' key={index}>
+                                    <Button onClick={h.func} data-id={row.id}>
+                                      {row[h.id]}
+                                    </Button>
+                                  </TableCell>
+                                )
+                            }
                           default:
-                            return <TableCell align={h.numeric ? 'right' : 'left'}>{row[h.id]}</TableCell>
+                            return <TableCell align={h.numeric ? 'right' : 'left'} key={index}>{row[h.id]}</TableCell>
                           // }
                         }
                       })}
