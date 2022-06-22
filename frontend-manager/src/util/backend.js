@@ -37,7 +37,13 @@ export async function request(method, route, body) {
     body: body
   })
 
-  return [res.status, await res.json()]
+  var response_body = null
+  const contentType = res.headers.get('content-type')
+  if (contentType && contentType.includes('application/json')) {
+    response_body = await res.json()
+  }
+
+  return [res.status, response_body]
 }
 
 export async function get(route) {
