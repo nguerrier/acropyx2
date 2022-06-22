@@ -6,43 +6,314 @@ import Grid from '@mui/material/Grid'
 
 // ** Demo Components Imports
 import Typography from '@mui/material/Typography'
-import Card from '@mui/material/Card'
+import Button from '@mui/material/Button'
+import Modal from '@mui/material/Modal'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import TextField from '@mui/material/TextField'
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Link from '@mui/material/Link'
+import AddIcon from '@mui/icons-material/Add'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import CardActions from '@mui/material/CardActions'
+import Breadcrumbs from '@mui/material/Breadcrumbs'
+import Autocomplete from '@mui/material/Autocomplete';
+import { useSnackbar } from 'notistack';
+
 import EnhancedTable from 'src/views/tables/EnhancedTable'
-import { get } from 'src/util/backend'
+import CardPilot from 'src/views/cards/CardPilot'
 
-const headCells = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name'
-  },
-  {
-    id: 'country',
-    numeric: false,
-    disablePadding: false,
-    label: 'Country'
-  },
-  {
-    id: 'level',
-    numeric: false,
-    disablePadding: false,
-    label: 'Level'
-  },
-  {
-    id: 'civlid',
-    numeric: true,
-    disablePadding: false,
-    label: 'CIVL ID'
+//
+import Router from 'next/router'
+import { useState, useEffect } from 'react';
+import { countryListAllIsoData } from 'src/util/countries'
+import { getNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '600px',
+  bgcolor: 'background.paper',
+
+  boxShadow: 24,
+  p: 4
+}
+
+const JudgesPage = () => {
+  // ** notification messages
+  const [success, info, warning, error] = getNotifications()
+
+  const [data, setData] = useState([])
+  const [fullData, setFullData] = useState([])
+  const [levels, setLevels] = useState([])
+  const [isLoading, setLoading] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalTitle, setModalTitle] = useState('')
+  const [newJudge, setNewJudge] = useState({})
+
+  const loadJudges = async () => {
+    setLoading(true)
+
+    const [err, data, headers] = await APIRequest('/judges', {expect_json: true})
+
+    if (err) {
+        setData(false)
+        setFullData(false)
+        error(`Error while retrieving judges list: ${err}`)
+        return
+    }
+
+    data = data.map(j => {
+      j.delete = 'delete'
+      j.update = 'update'
+      j.id = j._id
+      return j
+    })
+
+    setData(data)
+    setFullData(data)
+    setLoading(false)
   }
-]
 
-const TeamsPage = ({ data }) => {
+  const loadLevels = async () => {
+    const [err, data, headers] = await APIRequest('/judges/levels', {expect_json: true})
+
+    if (err) {
+        setLevels(false)
+        error(`Error while retrieving judge levels: ${err}`)
+        return
+    }
+    setLevels(data)
+  }
+
+  const createOrUpdateJudge = async(event) => {
+    event.preventDefault()
+
+    var route = '/judges/new'
+    var method = 'POST'
+    var expected_status = 201
+
+    if (newJudge._id) {
+      route = `/judges/${newJudge._id}`
+      method = 'PUT'
+      expected_status = 204
+    }
+
+    const [err, data, headers] = await APIRequest(route, {
+      expected_status: expected_status,
+      method: method,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(newJudge),
+    })
+
+    if (err) {
+        if (newJudge._id) {
+            error(`error while updating judge ${newJudge._id}: ${err}`)
+        } else {
+            error(`error while creating new judge: ${err}`)
+        }
+        return
+    }
+
+    setModalOpen(false)
+    loadJudges()
+  }
+
+  const deleteJudge = async (e) => {
+      const id = e.target.dataset.id
+      if (!confirm(`Are you sure you want to delete Judge ${name} (${id}) ?`)) return
+
+      setLoading(true)
+    const [err, data, headers] = await APIRequest(`/judges/${id}`, {method: "DELETE", expected_status: 204})
+    if (err) {
+      error(`Error while deleting Judge ${id}: ${err}`)
+    } else {
+      success(`Judge ${id} successfully deleted`)
+    }
+    loadJudges()
+  }
+
+  const openCreateModal = () => {
+    setModalTitle('New judge')
+    setNewJudge({})
+    setModalOpen(true)
+  }
+
+  const openUpdateModal = (e) => {
+    const id = e.target.dataset.id
+    const judge = data.find(j => j._id == id)
+    setModalTitle(`Updating judge ${id}`)
+    setNewJudge(judge)
+    setModalOpen(true)
+  }
+
+  const updateSearch = async(e) => {
+    const s = e.target.value
+    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+    // to compare ignoring accents
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const r = new RegExp(s, "i");
+    const d = fullData.filter(judge => judge.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r))
+    setData(d)
+    info(`${d.length} judges filtered over ${fullData.length}`)
+  }
+
+  const headCells = [
+    {
+      id: 'name',
+      numeric: false,
+      disablePadding: false,
+      label: 'Name'
+    },
+    {
+      id: 'country',
+      numeric: false,
+      disablePadding: false,
+      label: 'Country'
+    },
+    {
+      id: 'level',
+      numeric: false,
+      disablePadding: false,
+      label: 'Level'
+    },
+    {
+      id: 'civlid',
+      numeric: false,
+      disablePadding: false,
+      label: 'cilvid'
+    },
+    {
+      id: 'update',
+      type: 'ACTION',
+      func: openUpdateModal,
+      label: 'Update'
+    },
+    {
+      id: 'delete',
+      type: 'ACTION',
+      func: deleteJudge,
+      label: 'Delete'
+    }
+  ]
+
+  useEffect(() => {
+      loadJudges()
+      loadLevels()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        <LinearProgress />
+        Loading
+      </Box>
+    )
+  }
+
+  if (!data) {
+    error("Empty or invalid data")
+    return ''
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>Judges</Typography>
-        <Typography variant='body2'>Tables display sets of teams.</Typography>
+        <Typography variant='h5'>Judges<RefreshIcon onClick={loadJudges} /></Typography>
+      </Grid>
+      <Grid item xs={4} sm={4}>
+        <TextField fullWidth id='outlined-basic' label='Search judge' variant='outlined' onChange={updateSearch} />
+      </Grid>
+      <Grid item xs={8} sm={8} container>
+        <Button
+          variant='contained'
+          onClick={openCreateModal}
+          startIcon={<AddIcon />}
+        >new judge</Button>
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          aria-labelledby='modal-modal-title'
+          aria-describedby='modal-modal-description'
+        >
+          <Card sx={modalStyle}>
+            <form onSubmit={createOrUpdateJudge}>
+              <CardHeader
+                title={modalTitle}
+                titleTypographyProps={{ variant: 'h6' }}
+              />
+              <CardContent>
+                <Grid container spacing={5}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth name="name" label='Name' placeholder='Judge name' defaultValue={newJudge.name ?? ""}
+                      onChange={(e) => {
+                        newJudge.name = e.target.value
+                        setNewJudge(newJudge)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      disablePortal
+                      id="autocomplete-level"
+                      options={levels}
+                      defaultValue={newJudge.level}
+                      renderInput={(params) => <TextField {...params} name="level" label="Level" />}
+                      onChange={(e, v) => {
+                        newJudge.level = v
+                        setNewJudge(newJudge)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      disablePortal
+                      id="autocomplete-country"
+                      options={countryListAllIsoData}
+                      getOptionLabel={c => `${c.name} (${c.code3})`}
+                      defaultValue={countryListAllIsoData.find(c => c.code3.toLowerCase() == newJudge.country)}
+                      renderInput={(params) => <TextField {...params} name="country" label="Country" />}
+                      onChange={(e, v) => {
+                        newJudge.country = v.code3.toLowerCase()
+                        setNewJudge(newJudge)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth name="civlid" label='CIVLD ID' placeholder='CIVL ID (optional)' defaultValue={ newJudge.civlid ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        if (v == "") v = null
+                        newJudge.civlid = v
+                        setNewJudge(newJudge)
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+              <CardActions>
+                <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
+                  Submit
+                </Button>
+                <Button size='large' color='secondary' variant='outlined' onClick={() => setModalOpen(false)}>
+                  Cancel
+                </Button>
+              </CardActions>
+            </form>
+          </Card>
+        </Modal>
       </Grid>
       <Grid item xs={12}>
         <Card>
@@ -53,13 +324,4 @@ const TeamsPage = ({ data }) => {
   )
 }
 
-// This gets called on every request
-export async function getServerSideProps() {
-  let [status, data] = await get('/judges/')
-    console.log(data)
-
-  // Pass data to the page via props
-  return { props: { data } }
-}
-
-export default withPageAuthRequired(TeamsPage)
+export default withPageAuthRequired(JudgesPage)
