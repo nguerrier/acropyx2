@@ -63,6 +63,7 @@ const PilotsPage = () => {
   const [isUpdatingPilot, setUpdatingPilot] = useState(0)
 
   const loadPilots = () => {
+    setMessage('')
     setLoading(true)
     fetch('/api/acropyx/pilots')
       .then((res) => {
@@ -169,7 +170,7 @@ const PilotsPage = () => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12} sx={{ paddingBottom: 4 }}>
-        <Typography variant='h5'>Pilots</Typography>
+        <Typography variant='h5'>Pilots<RefreshIcon onClick={loadPilots} /></Typography>
         { message }
       </Grid>
       <Grid item xs={4} sm={4}>
