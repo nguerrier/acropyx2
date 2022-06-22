@@ -8,7 +8,13 @@ export default withApiAuthRequired(async function handler(req, res) {
         request_body = req.body
     }
 
-    const [status, response_body] = await request(req.method, route, request_body)
+    var headers = new Headers({})
+    const contentType = req.headers['content-type']
+    if (contentType) {
+        headers.append('Content-Type', contentType)
+    }
+
+    const [status, response_body] = await request(req.method, route, request_body, headers)
 
     res.status(status)
     if (response_body) {

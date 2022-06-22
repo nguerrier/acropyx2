@@ -18,8 +18,10 @@ export async function getAuthToken() {
   return true
 }
 
-export async function request(method, route, body) {
-  var myHeaders = new Headers({})
+export async function request(method, route, body, headers) {
+  if (headers == null) {
+    headers = new Headers({})
+  }
   const token = await getAuthToken()
 
   if (token == false) {
@@ -27,13 +29,17 @@ export async function request(method, route, body) {
   }
 
   if (token.constructor == Object) {
-    myHeaders.append('Authorization', 'Bearer ' + token.access_token)
+    headers.append('Authorization', 'Bearer ' + token.access_token)
+  }
+
+  if (headers.get('Content-Type') == 'application/json' && typeof(body) === 'object' && body != null) {
+      body = JSON.stringify(body)
   }
 
   const url = new URL(route, process.env.BACKEND_API_URL)
   const res = await fetch(url, {
     method: method,
-    headers: myHeaders,
+    headers: headers,
     body: body
   })
 
