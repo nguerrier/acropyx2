@@ -6,58 +6,298 @@ import Grid from '@mui/material/Grid'
 
 // ** Demo Components Imports
 import Typography from '@mui/material/Typography'
-import Card from '@mui/material/Card'
+import Button from '@mui/material/Button'
+import Modal from '@mui/material/Modal'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import TextField from '@mui/material/TextField'
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Link from '@mui/material/Link'
+import AddIcon from '@mui/icons-material/Add'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import CardActions from '@mui/material/CardActions'
+import Breadcrumbs from '@mui/material/Breadcrumbs'
+import Autocomplete from '@mui/material/Autocomplete';
+import { useSnackbar } from 'notistack';
+
 import EnhancedTable from 'src/views/tables/EnhancedTable'
-import { get } from 'src/util/backend'
+import CardPilot from 'src/views/cards/CardPilot'
 
-const headCells = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name'
-  },
-  {
-    id: 'pilots',
-    numeric: false,
-    disablePadding: false,
-    label: 'Pilots'
-  },
-  {
-    id: 'delete',
-    type: 'ACTION',
-    path: 'team/delete',
-    label: 'Delete'
+//
+import Router from 'next/router'
+import { useState, useEffect } from 'react';
+import { countryListAllIsoData } from 'src/util/countries'
+import { getNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '600px',
+  bgcolor: 'background.paper',
+
+  boxShadow: 24,
+  p: 4
+}
+
+const TeamsPage = () => {
+  // ** notification messages
+  const [success, info, warning, error] = getNotifications()
+
+  const [data, setData] = useState([])
+  const [fullData, setFullData] = useState([])
+  const [pilots, setPilots] = useState([])
+  const [isLoading, setLoading] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalTitle, setModalTitle] = useState('')
+  const [newTeam, setNewTeam] = useState({})
+
+  const loadTeams = async () => {
+    setLoading(true)
+
+    const [err, data, headers] = await APIRequest('/teams', {expect_json: true})
+
+    if (err) {
+        setData(false)
+        setFullData(false)
+        error(`Error while retrieving teams list: ${err}`)
+        return
+    }
+
+    data = data.map(j => {
+      j.delete = 'delete'
+      j.update = 'update'
+      j.id = j._id
+      return j
+    })
+
+    setData(data)
+    setFullData(data)
+    setLoading(false)
   }
-]
 
-const TeamsPage = ({ data }) => {
+  const loadPilots = async () => {
+    const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
+
+    if (err) {
+        setPilots([])
+        error(`Error while retrieving judge levels: ${err}`)
+        return
+    }
+    setPilots(data)
+  }
+
+
+  const createOrUpdateTeam = async(event) => {
+    event.preventDefault()
+
+    var route = '/teams/new'
+    var method = 'POST'
+    var expected_status = 201
+
+    if (newTeam._id) {
+      route = `/teams/${newTeam._id}`
+      method = 'PUT'
+      expected_status = 204
+    }
+
+    newTeam.pilots = newTeam.pilots ?? []
+    newTeam.pilots = newTeam.pilots.map(p => p.civlid)
+    console.log(newTeam)
+    const [err, data, headers] = await APIRequest(route, {
+      expected_status: expected_status,
+      method: method,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(newTeam),
+    })
+
+    if (err) {
+        if (newTeam._id) {
+            error(`error while updating team ${newTeam._id}: ${err}`)
+        } else {
+            error(`error while creating new team: ${err}`)
+        }
+        return
+    }
+
+    setModalOpen(false)
+    loadTeams()
+  }
+
+  const deleteTeam = async (e) => {
+      const id = e.target.dataset.id
+      if (!confirm(`Are you sure you want to delete Team ${name} (${id}) ?`)) return
+
+      setLoading(true)
+    const [err, data, headers] = await APIRequest(`/teams/${id}`, {method: "DELETE", expected_status: 204})
+    if (err) {
+      error(`Error while deleting Team ${id}: ${err}`)
+    } else {
+      success(`Team ${id} successfully deleted`)
+    }
+    loadTeams()
+  }
+
+  const openCreateModal = () => {
+    setModalTitle('New team')
+    setNewTeam({})
+    setModalOpen(true)
+  }
+
+  const openUpdateModal = (e) => {
+    const id = e.target.dataset.id
+    const team = data.find(j => j._id == id)
+    setModalTitle(`Updating team ${id}`)
+    setNewTeam(team)
+    setModalOpen(true)
+  }
+
+  const updateSearch = async(e) => {
+    const s = e.target.value
+    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+    // to compare ignoring accents
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const r = new RegExp(s, "i");
+    const d = fullData.filter(team => team.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r))
+    setData(d)
+    info(`${d.length} teams filtered over ${fullData.length}`)
+  }
+
+  const headCells = [
+    {
+      id: 'name',
+      numeric: false,
+      disablePadding: false,
+      label: 'Name'
+    },
+    {
+      id: 'pilots',
+      numeric: false,
+      disablePadding: false,
+      label: 'Pilots',
+      rewrite: (v) => {
+        return v.map((p) => p.name).sort().join(', ')
+      },
+    },
+    {
+      id: 'update',
+      type: 'ACTION',
+      func: openUpdateModal,
+      label: 'Update'
+    },
+    {
+      id: 'delete',
+      type: 'ACTION',
+      func: deleteTeam,
+      label: 'Delete'
+    }
+  ]
+
+  useEffect(() => {
+      loadTeams()
+      loadPilots()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        <LinearProgress />
+        Loading
+      </Box>
+    )
+  }
+
+  if (!data) {
+    error("Empty or invalid data")
+    return ''
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>Teams</Typography>
-        <Typography variant='body2'>Tables display sets of teams.</Typography>
+        <Typography variant='h5'>Teams<RefreshIcon onClick={loadTeams} /></Typography>
+      </Grid>
+      <Grid item xs={4} sm={4}>
+        <TextField fullWidth id='outlined-basic' label='Search team' variant='outlined' onChange={updateSearch} />
+      </Grid>
+      <Grid item xs={8} sm={8} container>
+        <Button
+          variant='contained'
+          onClick={openCreateModal}
+          startIcon={<AddIcon />}
+        >new team</Button>
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          aria-labelledby='modal-modal-title'
+          aria-describedby='modal-modal-description'
+        >
+          <Card sx={modalStyle}>
+            <form onSubmit={createOrUpdateTeam}>
+              <CardHeader
+                title={modalTitle}
+                titleTypographyProps={{ variant: 'h6' }}
+              />
+              <CardContent>
+                <Grid container spacing={5}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth name="name" label='Name' placeholder='Team name' defaultValue={newTeam.name ?? ""}
+                      onChange={(e) => {
+                        newTeam.name = e.target.value
+                        setNewTeam(newTeam)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      disablePortal
+                      multiple
+                      id="autocomplete-pilots"
+                      options={pilots}
+                      getOptionLabel={(p) => `${p.name} (${p.civlid})`}
+                      defaultValue={pilots.filter(p => {
+                          if (!newTeam.pilots) return false
+                          return newTeam.pilots.find((p2) => p2.civlid == p.civlid)
+                      })}
+                      renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" />}
+                      onChange={(e, v) => {
+                        newTeam.pilots = v
+                        console.log("change pilots:", newTeam)
+                        setNewTeam(newTeam)
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+              <CardActions>
+                <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
+                  Submit
+                </Button>
+                <Button size='large' color='secondary' variant='outlined' onClick={() => setModalOpen(false)}>
+                  Cancel
+                </Button>
+              </CardActions>
+            </form>
+          </Card>
+        </Modal>
       </Grid>
       <Grid item xs={12}>
         <Card>
-          <EnhancedTable rows={data} headCells={headCells} orderById='rank' />
+          <EnhancedTable rows={data} headCells={headCells} orderById='name' />
         </Card>
       </Grid>
     </Grid>
   )
-}
-
-// This gets called on every request
-export async function getServerSideProps() {
-  let [status, data] = await get('/teams/')
-  data = data.map((team) => {return {
-      id: team._id,
-      name: team.name,
-      pilots: team.pilots.map( p => {return p.name}).sort().join(', '),
-      delete: 'delete'
-  };})
-  // Pass data to the page via props
-  return { props: { data } }
 }
 
 export default withPageAuthRequired(TeamsPage)
