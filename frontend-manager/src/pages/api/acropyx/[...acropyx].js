@@ -10,6 +10,9 @@ export default withApiAuthRequired(async function handler(req, res) {
 
     const [status, response_body] = await request(req.method, route, request_body)
 
-    res.status(status).json(response_body)
+    res.status(status)
+    if (response_body) {
+        res.json(response_body)
+    }
     res.end()
 });

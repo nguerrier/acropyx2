@@ -10,7 +10,9 @@ import CardContent from '@mui/material/CardContent'
 import ReactCountryFlag from 'react-country-flag'
 import countriesQuery from 'countries-code'
 
-const CardPilot = ({ pilot }) => {
+const CardPilot = (props) => {
+  const pilot = props.pilot
+
   return (
     <Card sx={{ position: 'relative' }}>
       <CardMedia sx={{ height: '12.625rem' }} image={pilot.background_picture} />
@@ -49,12 +51,7 @@ const CardPilot = ({ pilot }) => {
             <Typography variant='caption'>CIVL ID: {pilot.civlid}</Typography>
             <Typography variant='caption'>Rank: #{pilot.rank}</Typography>
           </Box>
-          <Button
-            variant='contained'
-            onClick={() => {
-              alert('Not yet implemented, use common action on top of the page')
-            }}
-          >
+          <Button variant='contained' onClick={() => props.updatePilot(pilot.civlid)} >
             Update pilot
           </Button>
         </Box>

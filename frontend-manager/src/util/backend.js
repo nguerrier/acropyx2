@@ -10,19 +10,26 @@ export async function getAuthToken() {
         method: 'POST',
         body: params
       })
+      if (res.status != 200) {
+          return false
+      }
       return res.json()
   }
-  return null
+  return true
 }
 
 export async function request(method, route, body) {
-  const token = await getAuthToken()
   var myHeaders = new Headers({})
-  if (token) {
-    myHeaders = new Headers({
-      Authorization: 'Bearer ' + token.access_token
-    })
+  const token = await getAuthToken()
+
+  if (token == false) {
+      return [401, null]
   }
+
+  if (token.constructor == Object) {
+    myHeaders.append('Authorization', 'Bearer ' + token.access_token)
+  }
+
   const url = new URL(route, process.env.BACKEND_API_URL)
   const res = await fetch(url, {
     method: method,
