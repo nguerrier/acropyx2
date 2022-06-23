@@ -6,6 +6,7 @@ from models.tricks import Trick, UniqueTrick
 from typing import List
 from fastapi.responses import Response
 from controllers.tricks import TrickCtrl
+from core.config import settings
 
 log = logging.getLogger(__name__)
 tricks = APIRouter()
@@ -31,6 +32,30 @@ async def list(deleted: bool = False, repeatable: bool = None):
 )
 async def get_scores(solo: bool=True, synchro: bool=True):
     return await Trick.get_scores(solo, synchro)
+
+#
+# Get available bonuses
+#
+@tricks.get(
+    "/bonuses",
+    response_description="Get available bonuses",
+    response_model=List[dict],
+    dependencies=[Depends(auth)],
+)
+async def get_bonuses():
+    return settings.tricks.available_bonuses
+
+#
+# Get available directions
+#
+@tricks.get(
+    "/directions",
+    response_description="Get available directions",
+    response_model=List[dict],
+    dependencies=[Depends(auth)],
+)
+async def get_directions():
+    return settings.tricks.available_directions
 
 
 #
