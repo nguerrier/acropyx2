@@ -34,10 +34,10 @@ class TrickCtrl:
         trick.tricks = []
 
         # add standard trick (without bonus)
-        generate_trick(trick, [])
+        TrickCtrl.generate_trick(trick, [])
 
         for combination in combinations:
-            generate_trick(trick, combination)
+            Trick.Ctrl.generate_trick(trick, combination)
 
     @staticmethod
     def generate_trick(trick: Trick, combination: [Bonus]):
