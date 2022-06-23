@@ -17,37 +17,31 @@ const headCells = [
     id: 'name',
     numeric: false,
     disablePadding: false,
-    label: 'Name'
   },
   {
     id: 'acronym',
     numeric: false,
     disablePadding: false,
-    label: 'Acronym'
   },
   {
     id: 'technical_coefficient',
     numeric: true,
     disablePadding: false,
-    label: 'Technical Coefficient'
   },
   {
     id: 'bonus',
     numeric: true,
     disablePadding: false,
-    label: 'Bonus'
   },
   {
     id: 'bonus_types',
     numeric: false,
     disablePadding: false,
-    label: 'Bonus Types'
   },
   {
     id: 'base_trick',
     numeric: false,
     disablePadding: false,
-    label: 'Base Trick'
   }
 ]
 

@@ -195,87 +195,73 @@ const TricksPage = () => {
       id: 'name',
       numeric: false,
       disablePadding: false,
-      label: 'Name'
     },
     {
       id: 'acronym',
       numeric: false,
       disablePadding: false,
-      label: 'Acronym'
     },
     {
       id: 'directions',
       numeric: false,
       disablePadding: false,
       rewrite: (directions) => { return directions.join(', ')},
-      label: 'Directions'
     },
     {
       id: 'technical_coefficient',
       numeric: false,
       disablePadding: false,
-      label: 'Technical Coefficient'
     },
     {
       id: 'solo',
       type: 'BOOLEAN',
       disablePadding: false,
-      label: 'solo'
     },
     {
       id: 'repeatable',
       type: 'BOOLEAN',
       disablePadding: false,
-      label: 'Repeatable'
     },
     {
       id: 'bonuses',
       numeric: false,
       disablePadding: false,
       rewrite: (bonuses) => { return bonuses.map(b => `${b.name} (${b.bonus})`).join(', ') },
-      label: 'Bonuses'
     },
     {
       id: 'synchro',
       type: 'BOOLEAN',
       disablePadding: false,
-      label: 'solo'
     },
     {
       id: 'first_maneuver',
       numeric: false,
       disablePadding: false,
-      label: 'First Maneuver'
     },
     {
       id: 'no_first_maneuver',
       numeric: false,
       disablePadding: false,
-      label: 'No First Maneuver'
     },
     {
       id: 'last_maneuver',
       numeric: false,
       disablePadding: false,
-      label: 'Last Maneuver'
     },
     {
       id: 'no_last_maneuver',
       numeric: false,
       disablePadding: false,
-      label: 'No Last Maneuver'
     },
     {
       id: 'update',
       type: 'ACTION',
       func: openUpdateModal,
-      label: 'Update'
     },
     {
       id: 'delete',
       type: 'ACTION',
       func: deleteTrick,
-      label: 'Delete'
     }
   ]
 

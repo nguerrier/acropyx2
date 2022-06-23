@@ -173,37 +173,31 @@ const JudgesPage = () => {
       id: 'name',
       numeric: false,
       disablePadding: false,
-      label: 'Name'
     },
     {
       id: 'country',
       numeric: false,
       disablePadding: false,
-      label: 'Country'
     },
     {
       id: 'level',
       numeric: false,
       disablePadding: false,
-      label: 'Level'
     },
     {
       id: 'civlid',
       numeric: false,
       disablePadding: false,
-      label: 'cilvid'
     },
     {
       id: 'update',
       type: 'ACTION',
       func: openUpdateModal,
-      label: 'Update'
     },
     {
       id: 'delete',
       type: 'ACTION',
       func: deleteJudge,
-      label: 'Delete'
     }
   ]
 

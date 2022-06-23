@@ -177,13 +177,11 @@ const TeamsPage = () => {
       id: 'name',
       numeric: false,
       disablePadding: false,
-      label: 'Name'
     },
     {
       id: 'pilots',
       numeric: false,
       disablePadding: false,
-      label: 'Pilots',
       rewrite: (v) => {
         return v.map((p) => p.name).sort().join(', ')
       },
@@ -192,13 +190,11 @@ const TeamsPage = () => {
       id: 'update',
       type: 'ACTION',
       func: openUpdateModal,
-      label: 'Update'
     },
     {
       id: 'delete',
       type: 'ACTION',
       func: deleteTeam,
-      label: 'Delete'
     }
   ]
 
