@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 import lxml.html
 import re
 from fastapi.concurrency import run_in_threadpool
+from fastapi import HTTPException
 from random import shuffle
 from core.database import PyObjectId
 
@@ -64,7 +65,10 @@ class PilotCtrl:
         async with httpx.AsyncClient() as client:
             link = settings.pilots.civl_link_one_pilot + str(civlid)
 
-            ret = await client.get(link)
+            try:
+                ret = await client.get(link)
+            except httpx.HTTPError as exc:
+                raise HTTPException(status_code=500, detail=f"Connection failed to CIVL website")
 
             if ret.status_code == HTTPStatus.NOT_FOUND:
                 raise HTTPException(status_code=404, detail=f"Pilot not found in CIVL database")
