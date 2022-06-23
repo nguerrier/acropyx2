@@ -6,79 +6,465 @@ import Grid from '@mui/material/Grid'
 
 // ** Demo Components Imports
 import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Modal from '@mui/material/Modal'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import TextField from '@mui/material/TextField'
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Link from '@mui/material/Link'
+import AddIcon from '@mui/icons-material/Add'
 import CardHeader from '@mui/material/CardHeader'
-import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import CardActions from '@mui/material/CardActions'
+import Breadcrumbs from '@mui/material/Breadcrumbs'
+import Autocomplete from '@mui/material/Autocomplete';
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { useSnackbar } from 'notistack';
+
 import EnhancedTable from 'src/views/tables/EnhancedTable'
-import { get } from 'src/util/backend'
+import CardPilot from 'src/views/cards/CardPilot'
 
-const headCells = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name'
-  },
-  {
-    id: 'acronym',
-    numeric: false,
-    disablePadding: false,
-    label: 'Acronym'
-  },
-  {
-    id: 'technical_coefficient',
-    numeric: false,
-    disablePadding: false,
-    label: 'Technical Coefficient'
-  },
-  {
-    id: 'solo',
-    numeric: false,
-    type: 'BOOLEAN',
-    disablePadding: false,
-    label: 'Solo'
-  },
-  {
-    id: 'synchro',
-    numeric: false,
-    type: 'BOOLEAN',
-    disablePadding: false,
-    label: 'Synchro'
-  },
-  {
-    id: 'first_maneuver',
-    numeric: false,
-    disablePadding: false,
-    label: 'First maneuver'
-  },
-  {
-    id: 'no_first_maneuver',
-    numeric: false,
-    disablePadding: false,
-    label: 'No first maneuver'
-  },
-  {
-    id: 'last_maneuver',
-    numeric: false,
-    disablePadding: false,
-    label: 'Last maneuver'
-  },
-  {
-    id: 'no_last_maneuver',
-    numeric: false,
-    disablePadding: false,
-    label: 'No last maneuver'
+//
+import Router from 'next/router'
+import { useState, useEffect } from 'react';
+import { countryListAllIsoData } from 'src/util/countries'
+import { getNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '600px',
+  bgcolor: 'background.paper',
+
+  boxShadow: 24,
+  p: 4
+}
+
+const TricksPage = () => {
+  // ** notification messages
+  const [success, info, warning, error] = getNotifications()
+
+  const [data, setData] = useState([])
+  const [fullData, setFullData] = useState([])
+  const [bonuses, setBonuses] = useState([])
+  const [directions, setDirections] = useState([])
+  const [isLoading, setLoading] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalTitle, setModalTitle] = useState('')
+  const [newTrick, setNewTrick] = useState({})
+
+  const loadTricks = async () => {
+    setLoading(true)
+
+    const [err, data, headers] = await APIRequest('/tricks', {expect_json: true})
+
+    if (err) {
+        setData(false)
+        setFullData(false)
+        error(`Error while retrieving tricks list: ${err}`)
+        return
+    }
+
+    data = data.map(j => {
+      j.delete = 'delete'
+      j.update = 'update'
+      j.id = j._id
+      return j
+    })
+
+    setData(data)
+    setFullData(data)
+    setLoading(false)
   }
-]
 
-const TeamsPage = ({ data }) => {
+  const loadBonuses = async () => {
+    const [err, data, headers] = await APIRequest('/tricks/bonuses', {expect_json: true})
+
+    if (err) {
+        setBonuses([])
+        error(`Error while retrieving trick available bonusess: ${err}`)
+        return
+    }
+    setBonuses(data)
+  }
+
+  const loadDirections = async () => {
+    const [err, data, headers] = await APIRequest('/tricks/directions', {expect_json: true})
+
+    if (err) {
+        setDirections([])
+        error(`Error while retrieving trick available directions: ${err}`)
+        return
+    }
+    data = data.map(d => d.name)
+    setDirections(data)
+    console.log(data)
+  }
+
+  const createOrUpdateTrick = async(event) => {
+    event.preventDefault()
+
+    var route = '/tricks/new'
+    var method = 'POST'
+    var expected_status = 201
+
+    if (newTrick._id) {
+      route = `/tricks/${newTrick._id}`
+      method = 'PUT'
+      expected_status = 204
+    }
+
+    newTrick.directions = newTrick.directions ?? []
+    newTrick.bonuses = newTrick.bonuses ?? []
+    newTrick.solo = newTrick.solo ?? true
+    newTrick.synchro = newTrick.synchro ?? true
+    newTrick.repeatable = newTrick.repeatable ?? false
+
+    const [err, data, headers] = await APIRequest(route, {
+      expected_status: expected_status,
+      method: method,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(newTrick),
+    })
+
+    if (err) {
+        if (newTrick._id) {
+            error(`error while updating trick ${newTrick._id}: ${err}`)
+        } else {
+            error(`error while creating new trick: ${err}`)
+        }
+        return
+    }
+
+    setModalOpen(false)
+    loadTricks()
+  }
+
+  const deleteTrick = async (e) => {
+      const id = e.target.dataset.id
+      if (!confirm(`Are you sure you want to delete Trick ${name} (${id}) ?`)) return
+
+      setLoading(true)
+    const [err, data, headers] = await APIRequest(`/tricks/${id}`, {method: "DELETE", expected_status: 204})
+    if (err) {
+      error(`Error while deleting Trick ${id}: ${err}`)
+    } else {
+      success(`Trick ${id} successfully deleted`)
+    }
+    loadTricks()
+  }
+
+  const openCreateModal = () => {
+    setModalTitle('New trick')
+    setNewTrick({})
+    setModalOpen(true)
+  }
+
+  const openUpdateModal = (e) => {
+    const id = e.target.dataset.id
+    const trick = data.find(j => j._id == id)
+    setModalTitle(`Updating trick ${id}`)
+    setNewTrick(trick)
+    setModalOpen(true)
+  }
+
+  const updateSearch = async(e) => {
+    const s = e.target.value
+    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+    // to compare ignoring accents
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const r = new RegExp(s, "i");
+    var d = fullData.filter(trick => trick.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r) || trick.acronym.match(r))
+    setData(d)
+    info(`${d.length} tricks filtered over ${fullData.length}`)
+  }
+
+  const headCells = [
+    {
+      id: 'name',
+      numeric: false,
+      disablePadding: false,
+      label: 'Name'
+    },
+    {
+      id: 'acronym',
+      numeric: false,
+      disablePadding: false,
+      label: 'Acronym'
+    },
+    {
+      id: 'directions',
+      numeric: false,
+      disablePadding: false,
+      rewrite: (directions) => { return directions.join(', ')},
+      label: 'Directions'
+    },
+    {
+      id: 'technical_coefficient',
+      numeric: false,
+      disablePadding: false,
+      label: 'Technical Coefficient'
+    },
+    {
+      id: 'solo',
+      type: 'BOOLEAN',
+      disablePadding: false,
+      label: 'solo'
+    },
+    {
+      id: 'repeatable',
+      type: 'BOOLEAN',
+      disablePadding: false,
+      label: 'Repeatable'
+    },
+    {
+      id: 'bonuses',
+      numeric: false,
+      disablePadding: false,
+      rewrite: (bonuses) => { return bonuses.map(b => `${b.name} (${b.bonus})`).join(', ') },
+      label: 'Bonuses'
+    },
+    {
+      id: 'synchro',
+      type: 'BOOLEAN',
+      disablePadding: false,
+      label: 'solo'
+    },
+    {
+      id: 'first_maneuver',
+      numeric: false,
+      disablePadding: false,
+      label: 'First Maneuver'
+    },
+    {
+      id: 'no_first_maneuver',
+      numeric: false,
+      disablePadding: false,
+      label: 'No First Maneuver'
+    },
+    {
+      id: 'last_maneuver',
+      numeric: false,
+      disablePadding: false,
+      label: 'Last Maneuver'
+    },
+    {
+      id: 'no_last_maneuver',
+      numeric: false,
+      disablePadding: false,
+      label: 'No Last Maneuver'
+    },
+    {
+      id: 'update',
+      type: 'ACTION',
+      func: openUpdateModal,
+      label: 'Update'
+    },
+    {
+      id: 'delete',
+      type: 'ACTION',
+      func: deleteTrick,
+      label: 'Delete'
+    }
+  ]
+
+  useEffect(() => {
+      loadTricks()
+      loadBonuses()
+      loadDirections()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        <LinearProgress />
+        Loading
+      </Box>
+    )
+  }
+
+  if (!data) {
+    error("Empty or invalid data")
+    return ''
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>
-            Tricks
-        </Typography>
-        <Typography variant='body2'>Tables display sets of teams.</Typography>
+        <Typography variant='h5'>Tricks<RefreshIcon onClick={loadTricks} /></Typography>
+      </Grid>
+      <Grid item xs={4} sm={4}>
+        <TextField fullWidth id='outlined-basic' label='Search trick' variant='outlined' onChange={updateSearch} />
+      </Grid>
+      <Grid item xs={8} sm={8} container>
+        <Button
+          variant='contained'
+          onClick={openCreateModal}
+          startIcon={<AddIcon />}
+        >new trick</Button>
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          aria-labelledby='modal-modal-title'
+          aria-describedby='modal-modal-description'
+        >
+          <Card sx={modalStyle}>
+            <form onSubmit={createOrUpdateTrick}>
+              <CardHeader
+                title={modalTitle}
+                titleTypographyProps={{ variant: 'h6' }}
+              />
+              <CardContent>
+                <Grid container spacing={5}>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth name="name" label='Name' placeholder='Trick name' defaultValue={newTrick.name ?? ""}
+                      onChange={(e) => {
+                        newTrick.name = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth name="acronym" label='Acronym' placeholder='Trick Acronym' defaultValue={newTrick.acronym ?? ""}
+                      onChange={(e) => {
+                        newTrick.acronym = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Autocomplete
+                      disablePortal
+                      id="autocomplete-directions"
+                      multiple
+                      options={directions}
+                      defaultValue={newTrick.directions}
+                      renderInput={(params) => <TextField {...params} name="directions" label="Directions" />}
+                      onChange={(e, v) => {
+                        newTrick.directions = v
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    Bonuses ##TODO##
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          defaultChecked={newTrick.solo ?? true}
+                          onChange={e => {
+                            newTrick.solo = e.target.checked
+                            setNewTrick(newTrick)
+                          }}
+                          />
+                      }
+                      label="Solo ?"
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          defaultChecked={newTrick.synchro ?? true}
+                          onChange={e => {
+                            newTrick.synchro = e.target.checked
+                            setNewTrick(newTrick)
+                          }}
+                          />
+                      }
+                      label="Synchro ?"
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          defaultChecked={newTrick.repeatable ?? false}
+                          onChange={e => {
+                            newTrick.repeatable = e.target.checked
+                            setNewTrick(newTrick)
+                          }}
+                          />
+                      }
+                      label="Repeatable ?"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth name="technical_coefficient" label='Technical Coefficient' placeholder='Technical Coefficient' defaultValue={newTrick.technical_coefficient ?? ""}
+                      onChange={(e) => {
+                        newTrick.technical_coefficient = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    free space
+                  </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth name="first_maneuver" label='First Maneuver' type="Number" defaultValue={newTrick.first_maneuver ?? 0} 
+                      onChange={(e) => {
+                        newTrick.first_maneuver = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth name="no_first_maneuver" label='No First Maneuver' type="Number" defaultValue={newTrick.no_first_maneuver ?? 0} 
+                      onChange={(e) => {
+                        newTrick.no_first_maneuver = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth name="last_maneuver" label='Last Maneuver' type="Number" defaultValue={newTrick.last_maneuver ?? 0} 
+                      onChange={(e) => {
+                        newTrick.last_maneuver = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth name="no_last_maneuver" label='No Last Maneuver' type="Number" defaultValue={newTrick.no_last_manoeuver ?? 0} 
+                      onChange={(e) => {
+                        newTrick.no_last_maneuver = e.target.value
+                        setNewTrick(newTrick)
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+              <CardActions>
+                <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
+                  Submit
+                </Button>
+                <Button size='large' color='secondary' variant='outlined' onClick={() => setModalOpen(false)}>
+                  Cancel
+                </Button>
+              </CardActions>
+            </form>
+          </Card>
+        </Modal>
       </Grid>
       <Grid item xs={12}>
         <Card>
@@ -89,12 +475,4 @@ const TeamsPage = ({ data }) => {
   )
 }
 
-// This gets called on every request
-export async function getServerSideProps() {
-  let [status, data] = await get('/tricks/')
-
-  // Pass data to the page via props
-  return { props: { data } }
-}
-
-export default withPageAuthRequired(TeamsPage)
+export default withPageAuthRequired(TricksPage)
