@@ -146,6 +146,11 @@ class Trick(BaseModel):
     async def save(self):
         await self.check()
         trick = jsonable_encoder(self)
+
+        old = await collection.find_one({"_id": str(self.id)})
+        if old and trick == old:
+            return
+
         res = await collection.update_one({"_id": str(self.id)}, {"$set": trick})
         if res.modified_count != 1:
             raise HTTPException(400, f"Error while saving Trick {self.id}, 1 item should have been saved, got {res.modified_count}")

@@ -65,6 +65,11 @@ class Team(BaseModel):
     async def save(self):
         await self.check()
         team = jsonable_encoder(self)
+
+        old = await collection.find_one({"_id": str(self.id)})
+        if old and team == old:
+            return
+
         res =  await collection.update_one({"_id": str(self.id)}, {"$set": team})
         if res.modified_count != 1:
             raise HTTPException(400, f"Error while saving team, 1 item should have been saved, got {res.modified_count}")

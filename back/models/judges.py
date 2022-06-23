@@ -51,7 +51,7 @@ class Judge(BaseModel):
     async def check(self):
         if self.civlid is not None:
             try:
-                Pilots.get(self.civlid)
+                await Pilot.get(self.civlid)
             except:
                 raise HTTPException(400, f"CIVL ID #{self.civlid} is not known in Pilot Database. First add it to the database from the pilots page.")
 
@@ -69,6 +69,11 @@ class Judge(BaseModel):
     async def save(self):
         await self.check()
         judge = jsonable_encoder(self)
+
+        old = await collection.find_one({"_id": str(self.id)})
+        if old and judge == old:
+            return
+
         res =  await collection.update_one({"_id": str(self.id)}, {"$set": judge})
         if res.modified_count != 1:
             raise HTTPException(400, f"Error while saving judge {self.id}, 1 item should have been saved, got {res.modified_count}")
