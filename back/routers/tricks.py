@@ -53,7 +53,7 @@ async def get_score(id):
     response_model=Trick,
 )
 async def get(id: str, deleted: bool = False):
-    await Trick.get(id, deleted)
+    return await Trick.get(id, deleted)
 
 #
 # Create a new Trick
