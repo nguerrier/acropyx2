@@ -28,6 +28,9 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 // ** Global css styles
 import '../../styles/globals.css'
 
+// ** notistack
+import { SnackbarProvider } from 'notistack';
+
 const clientSideEmotionCache = createEmotionCache()
 
 // ** Pace Loader
@@ -68,7 +71,19 @@ const App = props => {
         <SettingsProvider>
           <SettingsConsumer>
             {({ settings }) => {
-              return <ThemeComponent settings={settings}>{getLayout(<Component {...pageProps} />)}</ThemeComponent>
+              return (
+                <ThemeComponent settings={settings}>
+                  <SnackbarProvider
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'center',
+                    }}
+                    preventDuplicate
+                  >
+                    {getLayout(<Component {...pageProps} />)}
+                  </SnackbarProvider>
+                </ThemeComponent>
+              )
             }}
           </SettingsConsumer>
         </SettingsProvider>
