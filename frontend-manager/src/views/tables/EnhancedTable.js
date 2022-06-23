@@ -224,10 +224,12 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                     <TableRow hover tabIndex={-1} key={row.name}>
                       {headCells.map((h, index) => {
                         const isActionRowId = h.id === actionRowId
+                        var value = row[h.id]
+                        if (h.rewrite) value = h.rewrite(value)
                         const expr = h.type
                         switch (expr) {
                           case 'BOOLEAN':
-                            if (row[h.id]) {
+                            if (value) {
                               return (
                                 <TableCell align='left' key={index}>
                                   <Checkbox disabled checked />
@@ -242,7 +244,7 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                           case 'LINK':
                             return (
                               <TableCell align='left' key={index}>
-                                <a target='_blank' rel='noopener noreferrer' href={row[h.id]}>
+                                <a target='_blank' rel='noopener noreferrer' href={value}>
                                   link
                                 </a>
                               </TableCell>
@@ -251,7 +253,7 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                             if (h.path) {
                                 return (
                                   <TableCell align='left' key={index}>
-                                    <Link href={h.path + '/' + row.id}>{row[h.id]}</Link>
+                                    <Link href={h.path + '/' + row.id}>{value}</Link>
                                   </TableCell>
                                 )
                             }
@@ -259,13 +261,13 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                                 return (
                                   <TableCell align='left' key={index}>
                                     <Button onClick={h.func} data-id={row.id}>
-                                      {row[h.id]}
+                                      {value}
                                     </Button>
                                   </TableCell>
                                 )
                             }
                           default:
-                            return <TableCell align={h.numeric ? 'right' : 'left'} key={index}>{row[h.id]}</TableCell>
+                            return <TableCell align={h.numeric ? 'right' : 'left'} key={index}>{value}</TableCell>
                           // }
                         }
                       })}
