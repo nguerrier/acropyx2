@@ -175,13 +175,9 @@ const TeamsPage = () => {
   const headCells = [
     {
       id: 'name',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'pilots',
-      numeric: false,
-      disablePadding: false,
       rewrite: (v) => {
         return v.map((p) => p.name).sort().join(', ')
       },

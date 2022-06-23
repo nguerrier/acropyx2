@@ -62,44 +62,36 @@ const CompetitionsPage = ({ data }) => {
     {
       id: 'name',
       numeric: false,
-      disablePadding: false,
       type: 'ACTION',
       path: router.asPath
     },
     {
       id: 'state',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'start_date',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'end_date',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'type',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'pilots',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'judges',
       numeric: false,
-      disablePadding: false,
     },
     {
       id: 'runs',
       numeric: false,
-      disablePadding: false,
     }
   ]
 

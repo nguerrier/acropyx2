@@ -15,33 +15,23 @@ import { get } from 'src/util/backend'
 const headCells = [
   {
     id: 'name',
-    numeric: false,
-    disablePadding: false,
   },
   {
     id: 'acronym',
-    numeric: false,
-    disablePadding: false,
   },
   {
     id: 'technical_coefficient',
     numeric: true,
-    disablePadding: false,
   },
   {
     id: 'bonus',
     numeric: true,
-    disablePadding: false,
   },
   {
     id: 'bonus_types',
-    numeric: false,
-    disablePadding: false,
   },
   {
     id: 'base_trick',
-    numeric: false,
-    disablePadding: false,
   }
 ]
 

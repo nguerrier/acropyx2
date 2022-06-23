@@ -171,23 +171,15 @@ const JudgesPage = () => {
   const headCells = [
     {
       id: 'name',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'country',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'level',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'civlid',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'update',

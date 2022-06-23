@@ -193,65 +193,49 @@ const TricksPage = () => {
   const headCells = [
     {
       id: 'name',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'acronym',
-      numeric: false,
-      disablePadding: false,
     },
     {
       id: 'directions',
-      numeric: false,
-      disablePadding: false,
       rewrite: (directions) => { return directions.join(', ')},
     },
     {
       id: 'technical_coefficient',
-      numeric: false,
-      disablePadding: false,
+      numeric: true,
     },
     {
       id: 'solo',
       type: 'BOOLEAN',
-      disablePadding: false,
     },
     {
       id: 'repeatable',
       type: 'BOOLEAN',
-      disablePadding: false,
     },
     {
       id: 'bonuses',
-      numeric: false,
-      disablePadding: false,
       rewrite: (bonuses) => { return bonuses.map(b => `${b.name} (${b.bonus})`).join(', ') },
     },
     {
       id: 'synchro',
       type: 'BOOLEAN',
-      disablePadding: false,
     },
     {
       id: 'first_maneuver',
-      numeric: false,
-      disablePadding: false,
+      numeric: true,
     },
     {
       id: 'no_first_maneuver',
-      numeric: false,
-      disablePadding: false,
+      numeric: true,
     },
     {
       id: 'last_maneuver',
-      numeric: false,
-      disablePadding: false,
+      numeric: true,
     },
     {
       id: 'no_last_maneuver',
-      numeric: false,
-      disablePadding: false,
+      numeric: true,
     },
     {
       id: 'update',
