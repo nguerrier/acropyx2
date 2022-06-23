@@ -18,108 +18,68 @@ import CardPilot from 'src/views/cards/CardPilot'
 //
 import Router from 'next/router'
 import { useState, useEffect } from 'react';
+import { getNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
 
-const headCells = [
-  {
-    id: 'civlid',
-    numeric: false,
-    disablePadding: true,
-    label: 'CIVL ID'
-  },
-  {
-    id: 'rank',
-    numeric: false,
-    disablePadding: false,
-    label: 'Rank'
-  },
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name'
-  },
-  {
-    id: 'country',
-    numeric: false,
-    disablePadding: false,
-    label: 'Country'
-  },
-  {
-    id: 'link',
-    numeric: false,
-    link: true,
-    disablePadding: false,
-    label: 'Link'
-  }
-]
 
 const PilotsPage = () => {
+  // ** notification messages
+  const [success, info, warning, error] = getNotifications()
+
 
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
-  const [message, setMessage] = useState('')
   const [isLoading, setLoading] = useState(false)
-  const [isUpdatingPilots, setUpdatingPilots] = useState(false)
-  const [isUpdatingPilot, setUpdatingPilot] = useState(0)
 
-  const loadPilots = () => {
-    setMessage('')
-    setLoading(true)
-    fetch('/api/acropyx/pilots')
-      .then((res) => {
-        if (res.status == 200) {
-          return res.json()
-        } else {
-          throw new Error(`Wrong status code ${res.status}`)
-        }
-      })
-      .then((data) => {
-        setData(data)
-        setFullData(data)
-        setMessage(`${data.length} pilots successfully loaded`)
-        setLoading(false)
-      }).catch(error => {
-        setMessage(error.toString())
-      })
+  const loadPilots = async () => {
+    setLoading('Loading pilots list')
+
+    const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
+
+    if (err) {
+        setData(false)
+        setFullData(false)
+        error(`Error while retrieving pilots list: ${err}`)
+        return
+    }
+
+    setData(data)
+    setFullData(data)
+    setLoading(false)
   }
-  useEffect(() => {
-      loadPilots()
-  }, [])
 
-  const handleSubmit = async (e) => {
+  const handleSubmitUpdatePilot = (e) => {
       event.preventDefault()
       updatePilot(parseInt(document.getElementById('civlid').value))
   }
+
   const updatePilot = async (civlid) => {
-      setMessage('')
       if (civlid < 1 || isNaN(civlid)) return
-      setUpdatingPilot(civlid)
-      const res = await fetch('/api/acropyx/pilots/' + civlid, {
-          method: 'POST'
-      })
-      setUpdatingPilot(0)
-      if (res.status != 201) {
-          alert("Error while trying to update pilot ${civlid}\nHTTP Status Code=${res.status}")
-          return
+
+      setLoading(`Updating pilot #${civlid}`)
+
+      const [err, data, headers] = await APIRequest(`/pilots/${civlid}`, {method: 'POST', expected_status: 201})
+      if (err) {
+          error(`Error updating Pilot #${civlid}: ${err}`)
+      } else {
+          success(`Pilot #${civlid} successfully updated`)
       }
-      // reload data
       loadPilots()
   }
 
   const updateAllPilots = async () => {
-      if (!confirm('Are you sure to update all pilots ?')) return;
-      setMessage('')
-      setUpdatingPilots(true)
 
-      const res = await fetch('/api/acropyx/pilots/update_all', {
-          method: 'POST'
-      })
-      setUpdatingPilots(false)
-      if (res.status != 201) {
-          alert(`Error while trying to update pilots\nHTTP Status Code=${res.status}`)
-          return
+      if (!confirm('Are you sure to update all pilots ?')) return;
+
+      setLoading(`Updating all pilots`)
+
+      const [err, data, headers] = await APIRequest(`/pilots/update_all`, {method: 'POST', expected_status: 201})
+      if (err) {
+          error(`Error updating all pilots: ${err}`)
+      } else {
+          success(`Pilots successfully updated`)
       }
-      // reload data
+
       loadPilots()
   }
 
@@ -130,67 +90,50 @@ const PilotsPage = () => {
       setData(fullData.filter(pilot => pilot.civlid == civlid))
       return
     }
+    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+    // to compare ignoring accents
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     const r = new RegExp(s, "i");
-    const d = fullData.filter(pilot => pilot.name.match(r))
+    const d = fullData.filter(pilot => pilot.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r))
     setData(d)
-    setMessage(`${d.length} pilots filtered over ${fullData.length}`)
+    info(`${d.length} pilots filtered over ${fullData.length}`)
   }
+
+  useEffect(() => {
+      loadPilots()
+  }, [])
 
   if (isLoading) {
     return (
       <Box sx={{ width: '100%', textAlign: 'center' }}>
         <LinearProgress />
-        Loading
-        {message}
+        { isLoading }
       </Box>
     )
   }
 
-  if (isUpdatingPilot > 0) {
-    return (
-      <Box sx={{ width: '100%', textAlign: 'center' }}>
-        <LinearProgress />
-        Updating pilot #{isUpdatingPilot}
-        {message}
-      </Box>
-    )
-  }
-
-  if (isUpdatingPilots) {
-    return (
-      <Box sx={{ width: '100%', textAlign: 'center' }}>
-        <LinearProgress />
-        Updating all pilots, this can be long
-        {message}
-      </Box>
-    )
-  }
   if (!data) return <p>No data</p>
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12} sx={{ paddingBottom: 4 }}>
         <Typography variant='h5'>Pilots<RefreshIcon onClick={loadPilots} /></Typography>
-        { message }
       </Grid>
       <Grid item xs={4} sm={4}>
         <TextField fullWidth id='outlined-basic' label='Search pilot' variant='outlined' onChange={updateSearch} />
       </Grid>
       <Grid item xs={2} sm={2}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmitUpdatePilot}>
           <TextField id='civlid' label='CIVL ID' />
         </form>
       </Grid>
       <Grid item xs={2} sm={2}>
-        <form onSubmit={handleSubmit}>
-          <Button type="submit">
-            Add or Update pilot
-          </Button>
+        <form onSubmit={handleSubmitUpdatePilot}>
+          <Button type="submit">Add or Update pilot</Button>
         </form>
       </Grid>
       <Grid item xs={4} sm={4} container direction='row' justifyContent='flex-end'>
         <Button variant='outlined' startIcon={<RefreshIcon />} onClick={updateAllPilots} >
-          {' '}
           Synchronize from CIVL
         </Button>
       </Grid>
