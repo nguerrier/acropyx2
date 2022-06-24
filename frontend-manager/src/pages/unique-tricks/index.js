@@ -6,70 +6,134 @@ import Grid from '@mui/material/Grid'
 
 // ** Demo Components Imports
 import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Modal from '@mui/material/Modal'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import TextField from '@mui/material/TextField'
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Link from '@mui/material/Link'
+import AddIcon from '@mui/icons-material/Add'
 import CardHeader from '@mui/material/CardHeader'
-import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import CardActions from '@mui/material/CardActions'
+import Breadcrumbs from '@mui/material/Breadcrumbs'
+import Autocomplete from '@mui/material/Autocomplete';
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { useSnackbar } from 'notistack';
+
 import EnhancedTable from 'src/views/tables/EnhancedTable'
-import { get } from 'src/util/backend'
+import CardPilot from 'src/views/cards/CardPilot'
 
-const headCells = [
-  {
-    id: 'name',
-  },
-  {
-    id: 'acronym',
-  },
-  {
-    id: 'technical_coefficient',
-    numeric: true,
-  },
-  {
-    id: 'bonus',
-    numeric: true,
-  },
-  {
-    id: 'bonus_types',
-  },
-  {
-    id: 'base_trick',
+//
+import Router from 'next/router'
+import { useState, useEffect } from 'react';
+import { countryListAllIsoData } from 'src/util/countries'
+import { getNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
+
+const UniqueTricksPage = () => {
+  // ** notification messages
+  const [success, info, warning, error] = getNotifications()
+
+  const [data, setData] = useState([])
+  const [fullData, setFullData] = useState([])
+  const [isLoading, setLoading] = useState(false)
+
+  const loadTricks = async () => {
+    setLoading(true)
+
+    const [err, data, headers] = await APIRequest('/tricks/uniques', {expect_json: true})
+
+    if (err) {
+        setData(false)
+        setFullData(false)
+        error(`Error while retrieving tricks list: ${err}`)
+        return
+    }
+
+    setData(data)
+    setFullData(data)
+    setLoading(false)
   }
-]
 
-const TeamsPage = ({ data }) => {
+  const updateSearch = async(e) => {
+    const s = e.target.value
+    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+    // to compare ignoring accents
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const r = new RegExp(s, "i");
+    var d = fullData.filter(trick => trick.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r) || trick.acronym.match(r))
+    setData(d)
+    info(`${d.length} tricks filtered over ${fullData.length}`)
+  }
+
+  const headCells = [
+    {
+      id: 'name',
+    },
+    {
+      id: 'acronym',
+    },
+    {
+      id: 'technical_coefficient',
+      numeric: true,
+    },
+    {
+      id: 'bonus',
+      numeric: true,
+      rewrite: (b) => { return `${b}%`},
+      label: "Bonus (%)",
+    },
+    {
+      id: 'bonus_types',
+      rewrite: (types) => { return types.join(', ')},
+    },
+    {
+      id: 'base_trick',
+    }
+  ]
+
+  useEffect(() => {
+      loadTricks()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        <LinearProgress />
+        Loading
+      </Box>
+    )
+  }
+
+  if (!data) {
+    error("Empty or invalid data")
+    return ''
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>
-            Tricks Variant
-        </Typography>
-        <Typography variant='body2'>All the variant of all the tricks.</Typography>
+        <Typography variant='h5'>Tricks<RefreshIcon onClick={loadTricks} /></Typography>
+      </Grid>
+      <Grid item xs={6} sm={6}>
+        <TextField fullWidth id='outlined-basic' label='Search trick' variant='outlined' onChange={updateSearch} />
       </Grid>
       <Grid item xs={12}>
         <Card>
-          <EnhancedTable
-            rows={data.map(p =>
-              {return {
-                name: p.name,
-                acronym: p.acronym,
-                technical_coefficient: p.technical_coefficient,
-                bonus: p.bonus,
-                bonus_types: p.bonus_types.join(', '),
-                base_trick: p.base_trick
-              }}
-            )}
-            headCells={headCells} orderById='technical_coefficient' />
+          <EnhancedTable rows={data} headCells={headCells} orderById='technical_coefficient' />
         </Card>
       </Grid>
     </Grid>
   )
 }
 
-// This gets called on every request
-export async function getServerSideProps() {
-  let [status, data] = await get('/tricks/scores')
-
-  // Pass data to the page via props
-  return { props: { data } }
-}
-
-export default withPageAuthRequired(TeamsPage)
+export default withPageAuthRequired(UniqueTricksPage)
