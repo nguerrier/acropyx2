@@ -173,17 +173,17 @@ class Trick(BaseModel):
         return Trick.parse_obj(trick)
 
     @staticmethod
-    async def get_scores(solo: bool, synchro: bool) -> List[UniqueTrick]:
+    async def get_unique_tricks(solo: bool, synchro: bool) -> List[UniqueTrick]:
         if not solo and not synchro:
             return []
         tricks = []
-        for trick in await collection.find({"$or": [{"solo": solo}, {"synchro": synchro}]}).sort("technical_coefficient").to_list(1000):
+        for trick in await collection.find({"deleted": None, "$or": [{"solo": solo}, {"synchro": synchro}]}).sort("technical_coefficient").to_list(1000):
             for t in trick['tricks']:
                 tricks.append(UniqueTrick.parse_obj(t))
         return tricks
 
     @staticmethod
-    async def get_score(id, solo:bool = True, synchro:bool = True) -> UniqueTrick:
+    async def get_unique_trick(id, solo:bool = True, synchro:bool = True) -> UniqueTrick:
         trick = await collection.find_one({"deleted": None, "$or": [{"tricks.name": id}, {"tricks.acronym": id}]})
         if trick is None:
             return None

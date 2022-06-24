@@ -117,7 +117,7 @@ class TrickCtrl:
 
     @staticmethod
     async def check_tricks_unicity():
-        tricks = await Trick.get_scores(solo=True, synchro=True)
+        tricks = await Trick.get_unique_tricks(solo=True, synchro=True)
         acronyms  = list(map(lambda x: x.acronym, tricks))
         duplicates = [a for a in acronyms if acronyms.count(a) > 1 ]
         if len(duplicates) > 0:

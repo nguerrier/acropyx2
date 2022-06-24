@@ -387,7 +387,7 @@ class Competition(CompetitionNew):
         tricks = []
         errors = []
         for trick_name in flight.tricks:
-            trick = await Trick.get_score(trick_name,
+            trick = await Trick.get_unique_trick(trick_name,
                 solo  = (self.type==CompetitionType.solo),
                 synchro = (self.type==CompetitionType.synchro),
             )

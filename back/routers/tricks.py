@@ -23,15 +23,15 @@ async def list(deleted: bool = False, repeatable: bool = None):
     return await Trick.getall(deleted = deleted, repeatable = repeatable)
 
 #
-# Get all scores
+# Get all unique tricks
 #
 @tricks.get(
-    "/scores",
-    response_description="Get all tricks",
+    "/uniques",
+    response_description="Get all unique tricks",
     response_model=List[UniqueTrick],
 )
-async def get_scores(solo: bool=True, synchro: bool=True):
-    return await Trick.get_scores(solo, synchro)
+async def get_unique_tricks(solo: bool=True, synchro: bool=True):
+    return await Trick.get_unique_tricks(solo, synchro)
 
 #
 # Get available bonuses
@@ -59,15 +59,15 @@ async def get_directions():
 
 
 #
-# Get a score
+# Get a unique trick
 #
 @tricks.get(
-    "/score/{id:path}", # https://github.com/tiangolo/fastapi/issues/4390#issuecomment-1019558295
-    response_description="Get a Trick",
+    "/unique/{id:path}", # https://github.com/tiangolo/fastapi/issues/4390#issuecomment-1019558295
+    response_description="Get a Unique Trick",
     response_model=UniqueTrick,
 )
-async def get_score(id):
-    return await Trick.get_score(id)
+async def get_unique_trick(id):
+    return await Trick.get_unique_trick(id)
 
 #
 # Get one trick
