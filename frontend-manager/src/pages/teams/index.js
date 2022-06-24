@@ -34,7 +34,7 @@ import CardPilot from 'src/views/cards/CardPilot'
 import Router from 'next/router'
 import { useState, useEffect } from 'react';
 import { countryListAllIsoData } from 'src/util/countries'
-import { getNotifications } from 'src/util/notifications'
+import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
 
 const modalStyle = {
@@ -51,7 +51,7 @@ const modalStyle = {
 
 const TeamsPage = () => {
   // ** notification messages
-  const [success, info, warning, error] = getNotifications()
+  const [success, info, warning, error] = useNotifications()
 
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
@@ -112,7 +112,7 @@ const TeamsPage = () => {
 
     newTeam.pilots = newTeam.pilots ?? []
     newTeam.pilots = newTeam.pilots.map(p => p.civlid)
-    console.log(newTeam)
+
     const [err, data, headers] = await APIRequest(route, {
       expected_status: expected_status,
       method: method,
@@ -264,7 +264,6 @@ const TeamsPage = () => {
                       renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" />}
                       onChange={(e, v) => {
                         newTeam.pilots = v
-                        console.log("change pilots:", newTeam)
                         setNewTeam(newTeam)
                       }}
                     />

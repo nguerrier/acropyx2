@@ -20,15 +20,17 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'react/display-name': 'off',
+    'import/no-anonymous-default-export': 'off',
+    'react-hooks/exhaustive-deps': 'off',
+/*
     '@next/next/no-img-element': 'off',
     'react/no-unescaped-entities': 'off',
-    'import/no-anonymous-default-export': 'off',
 
     // add new line above comment
     'lines-around-comment': [
       'error',
       {
-        beforeLineComment: true,
+        beforeLineComment: false,
         beforeBlockComment: true,
         allowBlockStart: true,
         allowClassStart: true,
@@ -38,7 +40,7 @@ module.exports = {
     ],
 
     // add new line above return
-    'newline-before-return': 'error',
+    //'newline-before-return': 'off',
 
     // add new line below import
     'import/newline-after-import': [
@@ -54,5 +56,6 @@ module.exports = {
       { blankLine: 'always', prev: ['export'], next: ['*'] },
       { blankLine: 'always', prev: ['*'], next: ['multiline-const', 'multiline-let', 'multiline-var', 'export'] }
     ]
+*/
   }
 }

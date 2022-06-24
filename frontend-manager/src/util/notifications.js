@@ -1,6 +1,6 @@
 import { useSnackbar } from 'notistack';
 
-export const getNotifications = (props) => {
+export const useNotifications = (props) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const notification = (text, type) => {
     const k = enqueueSnackbar(text, {

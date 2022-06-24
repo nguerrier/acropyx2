@@ -1,6 +1,9 @@
 // ** React Import
 import { useState } from 'react'
 
+// ** Next Imports
+import Image from 'next/image'
+
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import Fade from '@mui/material/Fade'
@@ -70,7 +73,7 @@ const BuyNowButton = () => {
               rel='noreferrer'
               href='https://themeselection.com/products/materio-mui-react-nextjs-admin-template/'
             >
-              <img width='100%' alt='materio-pro-banner' src='/images/misc/materio-pro-banner.png' />
+              <Image width='100%' alt='materio-pro-banner' src='/images/misc/materio-pro-banner.png' />
             </a>
             <CardContent>
               <Typography sx={{ mb: 4 }} variant='h6'>

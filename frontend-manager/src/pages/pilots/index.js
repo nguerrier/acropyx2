@@ -18,13 +18,13 @@ import CardPilot from 'src/views/cards/CardPilot'
 //
 import Router from 'next/router'
 import { useState, useEffect } from 'react';
-import { getNotifications } from 'src/util/notifications'
+import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
 
 
 const PilotsPage = () => {
   // ** notification messages
-  const [success, info, warning, error] = getNotifications()
+  const [success, info, warning, error] = useNotifications()
 
 
   const [data, setData] = useState([])
