@@ -1,0 +1,20 @@
+name: Deploy Backend to Preprod
+on:
+  push:
+    branches:
+      - main
+#  pull_request:
+#    branches: 
+#      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "preprod-api-acropyx2"
+          heroku_email: "jerome@loyet.net"
+          appdir: "back"
