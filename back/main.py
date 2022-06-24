@@ -29,11 +29,14 @@ app = FastAPI(
     }
 )
 
-# Set all CORS enabled origins
-if settings.BACKEND_CORS_ORIGINS:
-    origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-else:
-    origins=["*"]
+origins = [
+    'http://127.0.0.1:3001',
+    'http://localhost:3001',
+    'https://acropyx.herokuapp.com',
+    'https://preprod-acropyx.herokuapp.com',
+    'https://manager-acropyx.herokuapp.com',
+    'https://preprod-manager-acropyx.herokuapp.com'
+]
 
 app.add_middleware(
     CORSMiddleware,
