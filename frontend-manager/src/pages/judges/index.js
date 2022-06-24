@@ -24,8 +24,9 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import CardActions from '@mui/material/CardActions'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
-import Autocomplete from '@mui/material/Autocomplete';
-import { useSnackbar } from 'notistack';
+import Autocomplete from '@mui/material/Autocomplete'
+import Avatar from '@mui/material/Avatar'
+import { useSnackbar } from 'notistack'
 
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardPilot from 'src/views/cards/CardPilot'
@@ -56,6 +57,7 @@ const JudgesPage = () => {
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
   const [levels, setLevels] = useState([])
+  const [pilots, setPilots] = useState([])
   const [isLoading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalTitle, setModalTitle] = useState('')
@@ -94,6 +96,17 @@ const JudgesPage = () => {
         return
     }
     setLevels(data)
+  }
+
+  const loadPilots = async () => {
+    const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
+
+    if (err) {
+        setPilots([])
+        error(`Error while retrieving pilots list: ${err}`)
+        return
+    }
+    setPilots(data)
   }
 
   const createOrUpdateJudge = async(event) => {
@@ -171,6 +184,20 @@ const JudgesPage = () => {
   const headCells = [
     {
       id: 'name',
+      rewrite: (name) => {
+          const judge = fullData.find(j => j.name == name)
+          if (!judge || !judge.civlid || judge.civlid <= 0) return name
+          const pilot = pilots.find(p => p.civlid == judge.civlid)
+          if (!pilot) return name
+          return (
+            <Box>
+              <Link href={pilot.link} target="_blank" rel="noopener noreferrer">
+                <Avatar alt={name} src={pilot.photo}/>
+                {name}
+              </Link>
+            </Box>
+          )
+      }
     },
     {
       id: 'country',
@@ -196,6 +223,7 @@ const JudgesPage = () => {
   useEffect(() => {
       loadJudges()
       loadLevels()
+      loadPilots()
   }, [])
 
   if (isLoading) {

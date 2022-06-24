@@ -25,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem'
 import CardActions from '@mui/material/CardActions'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
 import Autocomplete from '@mui/material/Autocomplete';
+import Avatar from '@mui/material/Avatar';
 import { useSnackbar } from 'notistack';
 
 import EnhancedTable from 'src/views/tables/EnhancedTable'
@@ -179,7 +180,12 @@ const TeamsPage = () => {
     {
       id: 'pilots',
       rewrite: (v) => {
-        return v.map((p) => p.name).sort().join(', ')
+        return (
+          <Box>
+            <Link href={v[0].link} target="_blank" rel="noopener noreferrer"><Avatar alt={v[0].name} src={v[0].photo} />{v[0].name}</Link>
+            <Link href={v[0].link} target="_blank" rel="noopener noreferrer"><Avatar alt={v[1].name} src={v[1].photo} />{v[1].name}</Link>
+          </Box>
+        )
       },
     },
     {

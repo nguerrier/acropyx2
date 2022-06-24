@@ -23,12 +23,7 @@ const navigation = () => {
       path: '/'
     },
     {
-      sectionTitle: 'User Interface'
-    },
-    {
-      title: 'Competitions',
-      icon: Account,
-      path: '/competitions'
+      sectionTitle: 'Main Menu'
     },
     {
       title: 'Pilots',
@@ -54,6 +49,11 @@ const navigation = () => {
       title: 'UniqueTricks',
       icon: ScriptText,
       path: '/unique-tricks'
+    },
+    {
+      title: 'Competitions',
+      icon: Account,
+      path: '/competitions'
     },
   ]
 }
