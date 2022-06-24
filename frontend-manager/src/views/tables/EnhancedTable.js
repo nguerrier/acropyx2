@@ -225,7 +225,7 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId,
                       {headCells.map((h, index) => {
                         const isActionRowId = h.id === actionRowId
                         var value = row[h.id]
-                        if (h.rewrite) value = h.rewrite(value)
+                        if (h.rewrite) value = h.rewrite(value, row)
                         const expr = h.type
                         switch (expr) {
                           case 'BOOLEAN':
