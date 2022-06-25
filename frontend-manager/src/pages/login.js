@@ -65,13 +65,7 @@ const Login = () => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>Login</Typography>
-        <Modal
-          open={true}
-          aria-labelledby='modal-modal-title'
-          aria-describedby='modal-modal-description'
-        >
-          <Card sx={modalStyle}>
+          <Card>
             <form onSubmit={loginSubmit}>
               <CardHeader
                 title="Login"
@@ -92,7 +86,6 @@ const Login = () => {
               </CardContent>
             </form>
           </Card>
-        </Modal>
       </Grid>
     </Grid>
   )

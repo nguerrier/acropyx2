@@ -21,6 +21,9 @@ import ScrollToTop from 'src/@core/components/scroll-to-top'
 // ** Styled Component
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
+// ** auth
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+
 const VerticalLayoutWrapper = styled('div')({
   height: '100%',
   display: 'flex'
@@ -59,12 +62,16 @@ const VerticalLayout = props => {
   // ** Toggle Functions
   const toggleNavVisibility = () => setNavVisible(!navVisible)
 
+  // ** auth
+  const { user, error, isLoading, checkSession } = useUser();
+
+
   return (
     <>
       <VerticalLayoutWrapper className='layout-wrapper'>
         <Navigation
           navWidth={navWidth}
-          navVisible={navVisible}
+          navVisible={user && navVisible}
           setNavVisible={setNavVisible}
           toggleNavVisibility={toggleNavVisibility}
           {...props}
