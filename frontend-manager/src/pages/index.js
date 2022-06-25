@@ -1,11 +1,18 @@
-import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0'
+// ** auth
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
+// ** react
+import { useState, useEffect } from 'react'
+
+// ** next
 import Link from 'next/link'
 
-export const getServerSideProps = withPageAuthRequired()
+const Login = () => {
 
-const Dashboard = () => {
-  const { user, error, isLoading } = useUser()
+  const { user, error, isLoading, checkSession } = useUser();
+
+  useEffect(() => {
+  }, [])
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>{error.message}</div>
@@ -13,12 +20,12 @@ const Dashboard = () => {
   if (user) {
     return (
       <div>
-        Welcome {user.name}! <Link href='/api/auth/logout'>Logout</Link>
+        Welcome {user.name}!
       </div>
     )
   }
-  
-  return <Link href='/api/auth/login'>Login</Link>
+
+  return 'internal error :('
 }
 
-export default Dashboard
+export default withPageAuthRequired(Login)

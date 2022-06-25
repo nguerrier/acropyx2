@@ -1,10 +1,11 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
 
-import { useUser } from '@auth0/nextjs-auth0';
-
 // ** Next Import
 import { useRouter } from 'next/router'
+
+// ** Auth
+import { useUser } from '@auth0/nextjs-auth0'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -81,11 +82,9 @@ const UserDropdown = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Avatar
-          alt={user.name}
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
-          src={user.picture}
-        />
+        >{ user.name.slice(0, 1).toUpperCase() }</Avatar>
       </Badge>
       <Menu
         anchorEl={anchorEl}
@@ -102,7 +101,7 @@ const UserDropdown = () => {
               badgeContent={<BadgeContentSpan />}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-              <Avatar alt={user.name} src={user.picture} sx={{ width: '2.5rem', height: '2.5rem' }} />
+              <Avatar sx={{ width: '2.5rem', height: '2.5rem' }} >{ user.name.slice(0, 1).toUpperCase() }</Avatar>
             </Badge>
             <Box sx={{ display: 'flex', marginLeft: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
               <Typography sx={{ fontWeight: 600 }}>{user.name}</Typography>
@@ -153,7 +152,7 @@ const UserDropdown = () => {
         </MenuItem>
         <Divider />
 */}
-        <MenuItem sx={{ py: 2 }} onClick={() => window.location = '/api/auth/logout'}>
+        <MenuItem sx={{ py: 2 }} onClick={() => window.location = '/logout'}>
           <LogoutVariant sx={{ marginRight: 2, fontSize: '1.375rem', color: 'text.secondary' }} />
           Logout
         </MenuItem>

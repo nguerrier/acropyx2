@@ -1,10 +1,14 @@
-// ** Auth0 Imports
-import { withPageAuthRequired } from '@auth0/nextjs-auth0'
+// ** react
+import { useState, useEffect } from 'react';
+
+// ** nextjs
+import Router from 'next/router'
+
+// ** auth
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
-
-// ** Demo Components Imports
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import RefreshIcon from '@mui/icons-material/Refresh'
@@ -13,20 +17,19 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 
+// ** internal
 import CardPilot from 'src/views/cards/CardPilot'
-
-//
-import Router from 'next/router'
-import { useState, useEffect } from 'react';
 import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
-
 
 const PilotsPage = () => {
   // ** notification messages
   const [success, info, warning, error] = useNotifications()
 
+  // ** auth/user
+  const { user, authError, authIisLoading } = useUser();
 
+  // ** local
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
   const [isLoading, setLoading] = useState(false)
@@ -34,7 +37,7 @@ const PilotsPage = () => {
   const loadPilots = async () => {
     setLoading('Loading pilots list')
 
-    const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
+    const [err, data, headers] = await APIRequest('/pilots/', {expect_json: true})
 
     if (err) {
         setData(false)

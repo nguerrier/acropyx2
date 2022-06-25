@@ -1,7 +1,6 @@
 // ** Next Imports
 import Head from 'next/head'
 import { Router } from 'next/router'
-import { UserProvider } from '@auth0/nextjs-auth0'
 
 // ** Loader Import
 import NProgress from 'nprogress'
@@ -31,6 +30,12 @@ import '../../styles/globals.css'
 // ** notistack
 import { SnackbarProvider } from 'notistack';
 
+// ** auth
+import { UserProvider, RequestError } from '@auth0/nextjs-auth0'
+
+// ** local
+import { APIRequest } from 'src/util/backend'
+
 const clientSideEmotionCache = createEmotionCache()
 
 // ** Pace Loader
@@ -49,14 +54,19 @@ if (themeConfig.routingLoader) {
 // ** Configure JSS & ClassName
 const App = props => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
-
   const { user } = pageProps
 
   // Variables
   const getLayout = Component.getLayout ?? (page => <UserLayout>{page}</UserLayout>)
 
+  const authFetcher = async(route) => {
+    const [err, body, headers] = await APIRequest(route, {expect_json: true})
+    if (err) throw new RequestError(err)
+    return body
+  }
+
   return (
-    <UserProvider user={user}>
+    <UserProvider user={user} loginUrl={`${process.env.NEXT_PUBLIC_APP_BASE_PATH}/login`} profileUrl="/auth/me" fetcher={authFetcher}>
       <CacheProvider value={emotionCache}>
         <Head>
           <title>{`${themeConfig.templateName} - 2022`}</title>

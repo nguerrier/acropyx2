@@ -1,10 +1,14 @@
-// ** Auth0 Imports
-import { withPageAuthRequired } from '@auth0/nextjs-auth0'
+// ** react
+import { useState, useEffect } from 'react';
+
+// ** nextjs
+import Router from 'next/router'
+
+// ** auth
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
-
-// ** Demo Components Imports
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import Modal from '@mui/material/Modal'
@@ -27,14 +31,10 @@ import Breadcrumbs from '@mui/material/Breadcrumbs'
 import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { useSnackbar } from 'notistack';
 
+// ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardPilot from 'src/views/cards/CardPilot'
-
-//
-import Router from 'next/router'
-import { useState, useEffect } from 'react';
 import { countryListAllIsoData } from 'src/util/countries'
 import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
@@ -43,6 +43,10 @@ const UniqueTricksPage = () => {
   // ** notification messages
   const [success, info, warning, error] = useNotifications()
 
+  // ** auth/user
+  const { user, authError, authIisLoading } = useUser();
+
+  // ** local
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
   const [isLoading, setLoading] = useState(false)
