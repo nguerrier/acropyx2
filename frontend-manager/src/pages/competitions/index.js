@@ -221,6 +221,10 @@ const CompetitionsPage = () => {
     {
       id: 'runs',
       rewrite: (v, comp) => `${v.length} runs`,
+    },
+    {
+      id: 'repeatable_tricks',
+      rewrite: (v, comp) => `${v.length} repeatable tricks`,
     }
   ]
 
