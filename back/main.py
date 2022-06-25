@@ -35,7 +35,8 @@ origins = [
     'https://acropyx.herokuapp.com',
     'https://preprod-acropyx.herokuapp.com',
     'https://manager-acropyx.herokuapp.com',
-    'https://preprod-manager-acropyx.herokuapp.com'
+    'https://preprod-manager-acropyx.herokuapp.com',
+    'https://fatpat.github.io',
 ]
 
 app.add_middleware(
