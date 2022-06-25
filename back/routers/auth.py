@@ -30,4 +30,9 @@ def login(
     dependencies=[Depends(auth)]
 )
 def me():
-    return settings.ADMIN_USER
+    return {
+        'name': settings.ADMIN_USER,
+        'nickname': settings.ADMIN_USER,
+        'email': f"{settings.ADMIN_USER}@acropyx",
+        'org_id': 'acropyx',
+    }
