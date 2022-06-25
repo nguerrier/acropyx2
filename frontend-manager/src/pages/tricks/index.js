@@ -38,18 +38,7 @@ import CardPilot from 'src/views/cards/CardPilot'
 import { countryListAllIsoData } from 'src/util/countries'
 import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
-
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '600px',
-  bgcolor: 'background.paper',
-
-  boxShadow: 24,
-  p: 4
-}
+import modalStyle from 'src/configs/modalStyle'
 
 const TricksPage = () => {
   // ** notification messages
