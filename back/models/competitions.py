@@ -74,6 +74,7 @@ class CompetitionNew(BaseModel):
             code = self.code,
             start_date = self.start_date,
             end_date = self.end_date,
+            location = self.location,
             type = self.type,
             state = CompetitionState.init,
             config = CompetitionConfig(),
@@ -211,12 +212,22 @@ class Competition(CompetitionNew):
 #        self.pilots = pilots
 
     async def update(self, updated_comp: CompetitionNew):
-        self.name = updated_comp.name
         self.start_date = updated_comp.start_date
         self.end_date = updated_comp.end_date
+        self.location = updated_comp.location
+
         if self.type != updated_comp.type and self.state != CompetitionState.init:
             raise HTTPException(400, "Can't change the type of an already open or closed competition")
         self.type = updated_comp.type
+
+        if self.name != updated_comp.name and self.state != CompetitionState.init:
+            raise HTTPException(400, "Can't change the name of an already open or closed competition")
+        self.name = updated_comp.name
+
+        if self.code != updated_comp.code and self.state != CompetitionState.init:
+            raise HTTPException(400, "Can't change the code of an already open or closed competition")
+        self.code = updated_comp.code
+
         await self.save()
 
     async def update_pilots(self, pilots: List[int]):
