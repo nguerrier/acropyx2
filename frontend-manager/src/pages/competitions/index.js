@@ -41,6 +41,7 @@ import { countryListAllIsoData } from 'src/util/countries'
 import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
 import modalStyle from 'src/configs/modalStyle'
+import ResponsiveDatePicker from 'src/components/ResponsiveDatePicker'
 
 const CompetitionsPage = () => {
   // ** notification messages
@@ -52,9 +53,6 @@ const CompetitionsPage = () => {
   // ** local
   const [data, setData] = useState([])
   const [fullData, setFullData] = useState([])
-  const [pilots, setPilots] = useState([])
-  const [Judges, setJudges] = useState([])
-  const [Tricks, setTricks] = useState([])
   const [isLoading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalTitle, setModalTitle] = useState('')
@@ -84,40 +82,6 @@ const CompetitionsPage = () => {
     setLoading(false)
   }
 
-  const loadPilots = async () => {
-    const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
-
-    if (err) {
-        setPilots([])
-        error(`Error while retrieving judge levels: ${err}`)
-        return
-    }
-    setPilots(data)
-  }
-
-  const loadJudges = async () => {
-    const [err, data, headers] = await APIRequest('/judges', {expect_json: true})
-
-    if (err) {
-        setJudges([])
-        error(`Error while retrieving judge levels: ${err}`)
-        return
-    }
-    setJudges(data)
-  }
-
-  const loadTricks = async () => {
-    const [err, data, headers] = await APIRequest('/tricks', {expect_json: true})
-
-    if (err) {
-        setTricks([])
-        error(`Error while retrieving judge levels: ${err}`)
-        return
-    }
-    setTricks(data)
-  }
-
-
   const createOrUpdateCompetition = async(event) => {
     event.preventDefault()
 
@@ -130,9 +94,6 @@ const CompetitionsPage = () => {
       method = 'PUT'
       expected_status = 204
     }
-
-    newCompetition.pilots = newCompetition.pilots ?? []
-    newCompetition.pilots = newCompetition.pilots.map(p => p.civlid)
 
     const [err, data, headers] = await APIRequest(route, {
       expected_status: expected_status,
@@ -207,32 +168,16 @@ const CompetitionsPage = () => {
       id: 'end_date',
     },
     {
-      id: 'pilots',
-      rewrite: (v, comp) => comp.type == 'solo' ? `${v.length} pilots` : 'N/A',
-    },
-    {
-      id: 'teams',
-      rewrite: (v, comp) => comp.type == 'synchro' ? `${v.length} teams` : 'N/A',
-    },
-    {
-      id: 'judges',
-      rewrite: (v, comp) => `${v.length} judges`,
-    },
-    {
       id: 'runs',
       rewrite: (v, comp) => `${v.length} runs`,
     },
     {
-      id: 'repeatable_tricks',
-      rewrite: (v, comp) => `${v.length} repeatable tricks`,
+      id: 'code',
     }
   ]
 
   useEffect(() => {
       loadCompetitions()
-      loadPilots()
-      loadJudges()
-      loadTricks()
   }, [])
 
   if (isLoading) {
@@ -277,44 +222,58 @@ const CompetitionsPage = () => {
               />
               <CardContent>
                 <Grid container spacing={5}>
-                  <Grid item xs={12}>
+                  <Grid item xs={6}>
                     <TextField
-                      fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? Date.now()}
+                      fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? newCompetition.name}
                       onChange={(e) => {
                         newCompetition.name = e.target.value
                         setNewCompetition(newCompetition)
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? newCompetition.code}
+                      onChange={(e) => {
+                        if (e.target.value.length > 0) {
+                          newCompetition.code = e.target.value
+                          setNewCompetition(newCompetition)
+                        } else {
+                          delete newCompetition.code
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Autocomplete
+                      disablePortal
+                      id="autocomplete-type"
+                      options={['solo', 'synchro']}
+                      defaultValue={newCompetition.type ?? ""}
+                      renderInput={(params) => <TextField {...params} name="type" label="Type" />}
+                      onChange={(e, v) => {
+                        newCompetition.type = v
+                        setNewCompetition(newCompetition)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <ResponsiveDatePicker
                       label="Start Date"
-                      openTo="day"
-                      views={['year', 'month', 'day']}
-                      value={newCompetition.start_date ?? ""}
-                      onChange={v => {
+                      default={newCompetition.start_date ?? ""}
+                      onChange={(v) => {
                         newCompetition.start_date = v
                         setNewCompetition(newCompetition)
                       }}
-                      renderInput={(params) => <TextField {...params} />}
                     />
-                    </LocalizationProvider>
                   </Grid>
-                  <Grid item xs={12}>
-                    <Autocomplete
-                      disablePortal
-                      multiple
-                      id="autocomplete-pilots"
-                      options={pilots}
-                      getOptionLabel={(p) => `${p.name} (${p.civlid})`}
-                      defaultValue={pilots.filter(p => {
-                          if (!newCompetition.pilots) return false
-                          return newCompetition.pilots.find((p2) => p2.civlid == p.civlid)
-                      })}
-                      renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" />}
-                      onChange={(e, v) => {
-                        newCompetition.pilots = v
+                  <Grid item xs={6}>
+                    <ResponsiveDatePicker
+                      label="End Date"
+                      default={newCompetition.end_date ?? ""}
+                      onChange={(v) => {
+                        console.log(v, typeof(v))
+                        newCompetition.end_date = v
                         setNewCompetition(newCompetition)
                       }}
                     />
