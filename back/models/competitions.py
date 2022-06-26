@@ -1,11 +1,14 @@
 import logging
 from pydantic import BaseModel, Field, validator
+from fastapi import  HTTPException
 from bson import ObjectId
 from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 import pymongo
 from enum import Enum
 from datetime import date, datetime
+import re
+import unicodedata
 
 from models.pilots import Pilot
 from models.teams import Team
@@ -36,6 +39,7 @@ class CompetitionState(str, Enum):
 class CompetitionExport(BaseModel):
     id: str = Field(alias="_id")
     name: str
+    code: str
     start_date: date
     end_date: date
     type: CompetitionType
@@ -52,9 +56,11 @@ class CompetitionExport(BaseModel):
 
 class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
+    code: str = Field(..., regex='^[a-z][a-z0-9-]*[a-z0-9]')
     start_date: date
     end_date: date
     type: CompetitionType
+
 
     async def create(self):
 
@@ -174,6 +180,7 @@ class Competition(CompetitionNew):
         return CompetitionExport(
             _id = str(self.id),
             name = self.name,
+            code = self.code,
             start_date = self.start_date,
             end_date = self.end_date,
             type = self.type,
@@ -485,14 +492,14 @@ class Competition(CompetitionNew):
     @staticmethod
     def createIndexes():
         collection.create_index([('name', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
-        log.debug('index created on "name,deleted"')
+        collection.create_index([('code', pymongo.ASCENDING), ('deleted', pymongo.ASCENDING)], unique=True)
+        log.debug('index created on "name,deleted" and on "code,deleted"')
 
     @staticmethod
     async def get(id: str, deleted: bool = False):
-        if deleted:
-            search = {"_id": id}
-        else:
-            search = {"_id": id, "deleted": None}
+        search = {"$or": [{"_id": id}, {"code": id}]}
+        if not deleted:
+            search['deleted'] = None
         competition = await collection.find_one(search)
         if competition is None:
             raise HTTPException(404, f"Competition {id} not found")
