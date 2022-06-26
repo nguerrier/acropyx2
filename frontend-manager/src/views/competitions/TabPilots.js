@@ -1,63 +1,88 @@
 // ** React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** MUI Imports
-
 import Grid from '@mui/material/Grid'
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField'
 
-function createData(civlid) {
-  return {
-    civlid
-  }
-}
+// ** local imports
+import {usePilots} from 'src/util/backend'
 
-const TabPilots = ({ pilots }) => {
+const TabPilots = ({pilots, update}) => {
   // ** State
-  const [date, setDate] = useState(null)
+  const [allPilots] = usePilots()
+  const [value, setValue] = useState([])
+
+  const removePilot = async(e) => {
+    const civlid = e.target.dataset.id
+    if (!confirm(`Are you sure you want to remove pilot (${civlid}) ?`)) return
+    update(pilots.filter(p => p.civlid != civlid))
+  }
 
   const headCells = [
     {
       id: 'civlid',
-      numeric: false,
-      disablePadding: true,
-      label: 'CIVL ID'
+      numeric: true,
     },
     {
       id: 'name',
-      numeric: false,
-      disablePadding: false,
-      label: 'Name'
     },
     {
       id: 'country',
-      numeric: false,
-      disablePadding: false,
-      label: 'Country'
+    },
+    {
+      id: 'rank',
     },
     {
       id: 'link',
-      numeric: false,
-      link: true,
-      disablePadding: false,
-      label: 'Link'
+      type: 'LINK'
+    },
+    {
+      id: 'delete',
+      type: 'ACTION',
+      func: removePilot,
     }
   ]
+
+  useEffect(() =>{
+    pilots = pilots.map(p => {
+      p.delete = 'delete'
+      p.id = p.civlid
+      return p
+    })
+  }, [])
 
   return (
     <CardContent>
       <Grid container spacing={7}>
-        <Grid item xs={12} sm={12} container>
-          <Button variant='contained' startIcon={<AddIcon />}>
-            {' '}
-            Add pilot
+        <Grid item xs={6} sm={6}>
+                    <Autocomplete
+                      multiple
+                      disablePortal
+                      id="autocomplete-pilots"
+                      options={allPilots.filter(p => pilots.filter(p2 => p2.civlid == p.civlid).length == 0)}
+                      getOptionLabel={(p) => `${p.name} (${p.civlid})`}
+                      value={value}
+                      renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" onKeyPress={(e) => {
+                          e.key === 'Enter' && update(value.concat(pilots))
+                      }}/>}
+                      onChange={(e, v) => {
+                        setValue(v)
+                      }}
+                    />
+          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
+              update(value.concat(pilots))
+          }}>
+            Add pilot(s)
           </Button>
         </Grid>
         <Grid item xs={12} sm={12}>
-          <EnhancedTable rows={pilots.map(p => createData(p))} headCells={headCells} orderById='rank' />
+          <EnhancedTable rows={pilots} headCells={headCells} orderById='rank' />
         </Grid>
       </Grid>
     </CardContent>

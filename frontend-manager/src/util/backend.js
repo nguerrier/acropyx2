@@ -1,3 +1,9 @@
+// ** react
+import React, { useState, useEffect } from 'react';
+
+// ** locals
+import { useNotifications } from 'src/util/notifications'
+
 export async function APIRequest(route, props={}) {
   var expected_status = props.expected_status ?? 200
   var expect_json = props.expect_json ?? false
@@ -35,4 +41,35 @@ export async function APIRequest(route, props={}) {
   }
 
   return [err, body, res.headers]
+}
+
+
+/*
+ * Hook to load pilots
+ */
+export const usePilots = (props) => {
+  const [success, info, warning, error] = useNotifications()
+  const [pilots, setPilots] = useState([]);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const [err, data, headers] = await APIRequest('/pilots', {expect_json: true})
+
+      if (err) {
+          setPilots([])
+          error(`Error while retrieving teams list: ${err}`)
+          return
+      }
+
+      data = data.map(j => {
+        j.id = j._id
+        return j
+      })
+
+      setPilots(data)
+    }
+    asyncFunc()
+  }, [])
+
+  return([pilots])
 }

@@ -33,6 +33,14 @@ import Avatar from '@mui/material/Avatar';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import TabList from '@mui/lab/TabList'
+import TabPanel from '@mui/lab/TabPanel'
+import TabContext from '@mui/lab/TabContext'
+import { styled } from '@mui/material/styles'
+import MuiTab from '@mui/material/Tab'
+import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
+import AccountOutline from 'mdi-material-ui/AccountOutline'
+import InformationOutline from 'mdi-material-ui/InformationOutline'
 
 // ** others
 import Moment from 'react-moment'
@@ -46,6 +54,34 @@ import { APIRequest } from 'src/util/backend'
 import modalStyle from 'src/configs/modalStyle'
 import ResponsiveDatePicker from 'src/components/ResponsiveDatePicker'
 import Editable from 'src/components/Editable'
+
+// ** Tabs Imports
+import TabRuns from 'src/views/competitions/TabRuns'
+import TabTeams from 'src/views/competitions/TabTeams'
+import TabPilots from 'src/views/competitions/TabPilots'
+import TabJudges from 'src/views/competitions/TabJudges'
+import TabSettings from 'src/views/competitions/TabSettings'
+import TabResults from 'src/views/competitions/TabResults'
+import TabReapeatableTricks from 'src/views/competitions/TabReapeatableTricks'
+
+
+const Tab = styled(MuiTab)(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    minWidth: 100
+  },
+  [theme.breakpoints.down('sm')]: {
+    minWidth: 67
+  }
+}))
+
+const TabName = styled('span')(({ theme }) => ({
+  lineHeight: 1.71,
+  fontSize: '0.875rem',
+  marginLeft: theme.spacing(2.4),
+  [theme.breakpoints.down('md')]: {
+    display: 'none'
+  }
+}))
 
 const CompetitionPage = () => {
   // ** params
@@ -62,9 +98,7 @@ const CompetitionPage = () => {
   const [data, setData] = useState({})
   const [tempData, setTempData] = useState({})
   const [isLoading, setLoading] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalTitle, setModalTitle] = useState('')
-  const [newCompetition, setNewCompetition] = useState({})
+  const [tabContext, setTabContext] = useState('runs')
 
   // ** refs
   const nameRef = useRef()
@@ -123,6 +157,23 @@ const CompetitionPage = () => {
     }
 
     if (tempData.code != data.code) return router.replace(`/competitions/${tempData.code}`)
+    loadCompetition()
+  }
+
+  const setPilots = async(pilots) => {
+    console.log('set pilots', pilots)
+    var route = `/competitions/${code}/pilots`
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/pilots`, {
+        expected_status: 204,
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(pilots.map(p => p.civlid)),
+    })
+
+    if (err) {
+      error(`error while updating pilots list ${code}: ${err}`)
+      return
+    }
     loadCompetition()
   }
 
@@ -297,6 +348,120 @@ const CompetitionPage = () => {
         </Typography>
       </Grid>
 
+      <Grid item xs={12}>
+        <Card>
+          <TabContext value={tabContext}>
+            <TabList
+              onChange={(e, v) => {setTabContext(v)}}
+              aria-label='account-settings tabs'
+              sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}
+            >
+              <Tab
+                value='runs'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LockOpenOutline />
+                    <TabName>Runs</TabName>
+                  </Box>
+                }
+              />
+{ data.type == "solo" &&
+              <Tab
+                value='pilots'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountOutline />
+                    <TabName>Pilots</TabName>
+                  </Box>
+                }
+              />
+}
+{ data.type == "synchro" &&
+              <Tab
+                value='teams'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountOutline />
+                    <TabName>Teams</TabName>
+                  </Box>
+                }
+              />
+}
+              <Tab
+                value='judges'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccountOutline />
+                    <TabName>Judges</TabName>
+                  </Box>
+                }
+              />
+
+              <Tab
+                value='repeatable_tricks'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <InformationOutline />
+                    <TabName>Repeatables tricks</TabName>
+                  </Box>
+                }
+              />
+              <Tab
+                value='results'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <InformationOutline />
+                    <TabName>Results</TabName>
+                  </Box>
+                }
+              />
+              <Tab
+                value='settings'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <InformationOutline />
+                    <TabName>Competition Settings</TabName>
+                  </Box>
+                }
+              />
+            </TabList>
+
+            <TabPanel sx={{ p: 0 }} value='runs'>
+{/*
+              <TabRuns runs={data.runs} />
+*/}
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='pilots'>
+              <TabPilots pilots={data.pilots} update={v => setPilots(v) } />
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='teams'>
+{/*
+              <TabTeams teams={data.teams} />
+*/}
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='judges'>
+{/*
+              <TabJudges judges={data.judges} />
+*/}
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='repeatable_tricks'>
+{/*
+              <TabReapeatableTricks tricks={data.repeatable_tricks} />
+*/}
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='settings'>
+{/*
+              <TabSettings competition={data} />
+*/}
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='results'>
+{/*
+              <TabResults results={results} />
+*/}
+            </TabPanel>
+          </TabContext>
+        </Card>
+      </Grid>
     </Grid>
   )
 }
