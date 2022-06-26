@@ -56,7 +56,7 @@ class CompetitionExport(BaseModel):
 
 class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
-    code: str = Field(..., regex='^[a-z][a-z0-9-]*[a-z0-9]')
+    code: Optional[str] = Field(regex='^[a-z][a-z0-9-]*[a-z0-9]')
     start_date: date
     end_date: date
     type: CompetitionType
@@ -64,8 +64,12 @@ class CompetitionNew(BaseModel):
 
     async def create(self):
 
+        if self.code is None:
+            self.code = re.sub(r'[^a-z0-9 ]', '', unicodedata.normalize("NFD", self.name).encode('ascii', 'ignore').decode('utf-8').lower()).strip().replace(' ', '-')
+
         competition = Competition(
             name = self.name,
+            code = self.code,
             start_date = self.start_date,
             end_date = self.end_date,
             type = self.type,
