@@ -242,11 +242,13 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId,
                               </TableCell>
                             )
                           case 'LINK':
+                            var href = value
+                            if (h.href) href = h.href(value, row)
                             return (
                               <TableCell align='left' key={index}>
-                                <a target='_blank' rel='noopener noreferrer' href={value}>
-                                  link
-                                </a>
+                                <Link href={href}>
+                                  {value}
+                                </Link>
                               </TableCell>
                             )
                           case 'ACTION':
