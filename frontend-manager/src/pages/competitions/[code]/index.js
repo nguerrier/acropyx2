@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 // ** nextjs
-import Router from 'next/router'
+import { useRouter } from 'next/router'
 
 // ** auth
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
@@ -43,7 +43,11 @@ import { APIRequest } from 'src/util/backend'
 import modalStyle from 'src/configs/modalStyle'
 import ResponsiveDatePicker from 'src/components/ResponsiveDatePicker'
 
-const CompetitionsPage = () => {
+const CompetitionPage = () => {
+  // ** params
+  const router = useRouter()
+  const { code } = router.query
+
   // ** notification messages
   const [success, info, warning, error] = useNotifications()
 
@@ -58,10 +62,10 @@ const CompetitionsPage = () => {
   const [modalTitle, setModalTitle] = useState('')
   const [newCompetition, setNewCompetition] = useState({})
 
-  const loadCompetitions = async () => {
+  const loadCompetition = async () => {
     setLoading(true)
 
-    const [err, data, headers] = await APIRequest('/competitions', {expect_json: true})
+    const [err, data, headers] = await APIRequest(`/competitions/${code}`, {expect_json: true})
 
     if (err) {
         setData(false)
@@ -70,12 +74,9 @@ const CompetitionsPage = () => {
         return
     }
 
-    data = data.map(j => {
-      j.delete = 'delete'
-      j.update = 'update'
-      j.id = j._id
-      return j
-    })
+    data.delete = 'delete'
+    data.update = 'update'
+    data.id = data._id
 
     setData(data)
     setFullData(data)
@@ -112,7 +113,7 @@ const CompetitionsPage = () => {
     }
 
     setModalOpen(false)
-    loadCompetitions()
+    loadCompetition()
   }
 
   const deleteCompetition = async (e) => {
@@ -126,7 +127,7 @@ const CompetitionsPage = () => {
     } else {
       success(`Competition ${id} successfully deleted`)
     }
-    loadCompetitions()
+    loadCompetition()
   }
 
   const openCreateModal = () => {
@@ -157,8 +158,6 @@ const CompetitionsPage = () => {
   const headCells = [
     {
       id: 'name',
-      type: 'LINK',
-      href: (v, comp) => `/competitions/${comp.code}`,
     },
     {
       id: 'type',
@@ -179,10 +178,11 @@ const CompetitionsPage = () => {
   ]
 
   useEffect(() => {
-      loadCompetitions()
-  }, [])
+      if (!router.isReady) return
+      loadCompetition()
+  }, [router.isReady])
 
-  if (isLoading) {
+  if (isLoading || !router.isReady) {
     return (
       <Box sx={{ width: '100%', textAlign: 'center' }}>
         <LinearProgress />
@@ -199,8 +199,9 @@ const CompetitionsPage = () => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>Competitions<RefreshIcon onClick={loadCompetitions} /></Typography>
+        <Typography variant='h5'>{data.name}<RefreshIcon onClick={loadCompetition} /></Typography>
       </Grid>
+{/*
       <Grid item xs={4} sm={4}>
         <TextField fullWidth id='outlined-basic' label='Search competition' variant='outlined' onChange={updateSearch} />
       </Grid>
@@ -299,8 +300,9 @@ const CompetitionsPage = () => {
           <EnhancedTable rows={data} headCells={headCells} orderById='name' />
         </Card>
       </Grid>
+*/}
     </Grid>
   )
 }
 
-export default CompetitionsPage
+export default CompetitionPage
