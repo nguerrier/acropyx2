@@ -3,8 +3,9 @@ export async function APIRequest(route, props={}) {
   var expect_json = props.expect_json ?? false
 
   if (props.headers == null) {
-    props.headers = new Headers({})
+    props.headers = {}
   }
+  props.headers = new Headers(props.headers)
 
   var token = localStorage.getItem('token')
   if (token) {
