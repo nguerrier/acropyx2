@@ -1,5 +1,5 @@
 // ** react
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ** nextjs
 import { useRouter } from 'next/router'
@@ -34,6 +34,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 
+// ** others
+import Moment from 'react-moment'
+
 // ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardPilot from 'src/views/cards/CardPilot'
@@ -42,6 +45,7 @@ import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
 import modalStyle from 'src/configs/modalStyle'
 import ResponsiveDatePicker from 'src/components/ResponsiveDatePicker'
+import Editable from 'src/components/Editable'
 
 const CompetitionPage = () => {
   // ** params
@@ -55,12 +59,19 @@ const CompetitionPage = () => {
   const { user, authError, authIisLoading } = useUser();
 
   // ** local
-  const [data, setData] = useState([])
-  const [fullData, setFullData] = useState([])
+  const [data, setData] = useState({})
+  const [tempData, setTempData] = useState({})
   const [isLoading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalTitle, setModalTitle] = useState('')
   const [newCompetition, setNewCompetition] = useState({})
+
+  // ** refs
+  const nameRef = useRef()
+  const codeRef = useRef()
+  const startDateRef = useRef()
+  const endDateRef = useRef()
+  const locationRef = useRef()
 
   const loadCompetition = async () => {
     setLoading(true)
@@ -69,7 +80,7 @@ const CompetitionPage = () => {
 
     if (err) {
         setData(false)
-        setFullData(false)
+        setTempData(false)
         error(`Error while retrieving competitions list: ${err}`)
         return
     }
@@ -79,43 +90,43 @@ const CompetitionPage = () => {
     data.id = data._id
 
     setData(data)
-    setFullData(data)
+    setTempData(Object.assign({}, data)) // clone data before assigning it to tempData, otherwise they'll share the same object
     setLoading(false)
   }
 
-  const createOrUpdateCompetition = async(event) => {
+  const updateCompetition = async(event) => {
     event.preventDefault()
 
-    var route = '/competitions/new'
-    var method = 'POST'
-    var expected_status = 201
+    var route = `/competitions/${code}`
+    var method = 'PATCH'
+    var expected_status = 204
 
-    if (newCompetition._id) {
-      route = `/competitions/${newCompetition._id}`
-      method = 'PUT'
-      expected_status = 204
+    const updatedCompetition = {
+        name: tempData.name,
+        code: tempData.code,
+        start_date: tempData.start_date,
+        end_date: tempData.end_date,
+        location: tempData.location,
+        type: tempData.type,
     }
 
-    const [err, data, headers] = await APIRequest(route, {
+    const [err, retData, headers] = await APIRequest(route, {
       expected_status: expected_status,
       method: method,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(newCompetition),
+      body: JSON.stringify(updatedCompetition),
     })
 
     if (err) {
-        if (newCompetition._id) {
-            error(`error while updating competition ${newCompetition._id}: ${err}`)
-        } else {
-            error(`error while creating new competition: ${err}`)
-        }
+        error(`error while updating competition ${code}: ${err}`)
         return
     }
 
-    setModalOpen(false)
+    if (tempData.code != data.code) return router.replace(`/competitions/${tempData.code}`)
     loadCompetition()
   }
 
+/*
   const deleteCompetition = async (e) => {
       const id = e.target.dataset.id
       if (!confirm(`Are you sure you want to delete Competition ${name} (${id}) ?`)) return
@@ -129,32 +140,7 @@ const CompetitionPage = () => {
     }
     loadCompetition()
   }
-
-  const openCreateModal = () => {
-    setModalTitle('New competition')
-    setNewCompetition({})
-    setModalOpen(true)
-  }
-
-  const openUpdateModal = (e) => {
-    const id = e.target.dataset.id
-    const competition = data.find(j => j._id == id)
-    setModalTitle(`Updating competition ${id}`)
-    setNewCompetition(competition)
-    setModalOpen(true)
-  }
-
-  const updateSearch = async(e) => {
-    const s = e.target.value
-    // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
-    // to compare ignoring accents
-    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    const r = new RegExp(s, "i");
-    const d = fullData.filter(competition => competition.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(r))
-    setData(d)
-    info(`${d.length} competitions filtered over ${fullData.length}`)
-  }
-
+*/
   const headCells = [
     {
       id: 'name',
@@ -198,109 +184,119 @@ const CompetitionPage = () => {
 
   return (
     <Grid container spacing={6}>
+
       <Grid item xs={12}>
         <Typography variant='h5'>{data.name}<RefreshIcon onClick={loadCompetition} /></Typography>
       </Grid>
-{/*
-      <Grid item xs={4} sm={4}>
-        <TextField fullWidth id='outlined-basic' label='Search competition' variant='outlined' onChange={updateSearch} />
-      </Grid>
-      <Grid item xs={8} sm={8} container>
-        <Button
-          variant='contained'
-          onClick={openCreateModal}
-          startIcon={<AddIcon />}
-        >new competition</Button>
-        <Modal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          aria-labelledby='modal-modal-title'
-          aria-describedby='modal-modal-description'
-        >
-          <Card sx={modalStyle}>
-            <form onSubmit={createOrUpdateCompetition}>
-              <CardHeader
-                title={modalTitle}
-                titleTypographyProps={{ variant: 'h6' }}
-              />
-              <CardContent>
-                <Grid container spacing={5}>
-                  <Grid item xs={6}>
+
+      <Grid item xs={12} md={6} sx={{ paddingBottom: 4 }}>
+        <Typography>
+          <Editable
+            text={tempData.name}
+            title="Name"
+            onChange={updateCompetition}
+            onCancel={(e) => {
+              setTempData(data)
+            }}
+            childRef={nameRef}
+          >
                     <TextField
-                      fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? newCompetition.name}
+                      fullWidth name="name" label='Name' placeholder='Name' defaultValue={tempData.name} inputProps={ {ref:nameRef} }
                       onChange={(e) => {
-                        newCompetition.name = e.target.value
-                        setNewCompetition(newCompetition)
+                        tempData.name = e.target.value
+                        setTempData(tempData)
                       }}
                     />
-                  </Grid>
-                  <Grid item xs={3}>
+          </Editable>
+        </Typography>
+        <Typography>
+          <Editable
+            text={tempData.code}
+            title="Code"
+            onChange={updateCompetition}
+            onCancel={(e) => {
+              setTempData(data)
+            }}
+            childRef={codeRef}
+          >
                     <TextField
-                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? newCompetition.code}
+                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={tempData.code} inputProps={ {ref:codeRef} }
                       onChange={(e) => {
-                        if (e.target.value.length > 0) {
-                          newCompetition.code = e.target.value
-                          setNewCompetition(newCompetition)
-                        } else {
-                          delete newCompetition.code
-                        }
+                        tempData.code = e.target.value
+                        setTempData(tempData)
                       }}
                     />
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Autocomplete
-                      disablePortal
-                      id="autocomplete-type"
-                      options={['solo', 'synchro']}
-                      defaultValue={newCompetition.type ?? ""}
-                      renderInput={(params) => <TextField {...params} name="type" label="Type" />}
-                      onChange={(e, v) => {
-                        newCompetition.type = v
-                        setNewCompetition(newCompetition)
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <ResponsiveDatePicker
-                      label="Start Date"
-                      default={newCompetition.start_date ?? ""}
-                      onChange={(v) => {
-                        newCompetition.start_date = v
-                        setNewCompetition(newCompetition)
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <ResponsiveDatePicker
-                      label="End Date"
-                      default={newCompetition.end_date ?? ""}
-                      onChange={(v) => {
-                        console.log(v, typeof(v))
-                        newCompetition.end_date = v
-                        setNewCompetition(newCompetition)
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-              <CardActions>
-                <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
-                  Submit
-                </Button>
-                <Button size='large' color='secondary' variant='outlined' onClick={() => setModalOpen(false)}>
-                  Cancel
-                </Button>
-              </CardActions>
-            </form>
-          </Card>
-        </Modal>
+          </Editable>
+        </Typography>
+        <Typography>
+          Status: <strong>{tempData.state}</strong>
+        </Typography>
+        <Typography>
+          Type: <strong>{tempData.type}</strong>
+        </Typography>
       </Grid>
-      <Grid item xs={12}>
-        <Card>
-          <EnhancedTable rows={data} headCells={headCells} orderById='name' />
-        </Card>
+
+      <Grid item xs={12} md={6} sx={{ paddingBottom: 4 }}>
+        <Typography>
+          <Editable
+            text={tempData.start_date}
+            title="Start date"
+            onChange={updateCompetition}
+            onCancel={(e) => {
+              setTempData(data)
+            }}
+            childRef={startDateRef}
+          >
+            <TextField
+              fullWidth name="start_date" label='Start date' placeholder='Start date' defaultValue={tempData.start_date} inputProps={ {ref:startDateRef} }
+              onChange={(e) => {
+                tempData.start_date = e.target.value
+                setTempData(tempData)
+              }}
+            />
+          </Editable>
+        </Typography>
+        <Typography>
+          <Editable
+            text={tempData.end_date}
+            title="End date"
+            onChange={updateCompetition}
+            onCancel={(e) => {
+              setTempData(data)
+            }}
+            childRef={endDateRef}
+          >
+            <TextField
+              fullWidth name="end_date" label='End date' placeholder='End date' defaultValue={tempData.end_date} inputProps={ {ref:endDateRef} }
+              onChange={(e) => {
+                tempData.end_date = e.target.value
+                setTempData(tempData)
+              }}
+            />
+          </Editable>
+        </Typography>
+
+        <Typography>
+          <Editable
+            text={tempData.location}
+            title="Location"
+            onChange={updateCompetition}
+            onCancel={(e) => {
+              setTempData(data)
+            }}
+            childRef={locationRef}
+          >
+            <TextField
+              fullWidth name="location" label='Location' placeholder='Location' defaultValue={tempData.location} inputProps={ {ref:locationRef} }
+              onChange={(e) => {
+                tempData.location = e.target.value
+                setTempData(tempData)
+              }}
+            />
+          </Editable>
+        </Typography>
       </Grid>
-*/}
+
     </Grid>
   )
 }

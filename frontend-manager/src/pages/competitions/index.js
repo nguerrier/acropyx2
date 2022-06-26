@@ -170,6 +170,9 @@ const CompetitionsPage = () => {
       id: 'end_date',
     },
     {
+      id: 'location',
+    },
+    {
       id: 'runs',
       rewrite: (v, comp) => `${v.length} runs`,
     },
@@ -226,7 +229,7 @@ const CompetitionsPage = () => {
                 <Grid container spacing={5}>
                   <Grid item xs={6}>
                     <TextField
-                      fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? newCompetition.name}
+                      fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? ""}
                       onChange={(e) => {
                         newCompetition.name = e.target.value
                         setNewCompetition(newCompetition)
@@ -235,7 +238,7 @@ const CompetitionsPage = () => {
                   </Grid>
                   <Grid item xs={3}>
                     <TextField
-                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? newCompetition.code}
+                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? ""}
                       onChange={(e) => {
                         if (e.target.value.length > 0) {
                           newCompetition.code = e.target.value
@@ -276,6 +279,15 @@ const CompetitionsPage = () => {
                       onChange={(v) => {
                         console.log(v, typeof(v))
                         newCompetition.end_date = v
+                        setNewCompetition(newCompetition)
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth name="location" label='Location' placeholder='Location' defaultValue={newCompetition.location ?? ""}
+                      onChange={(e) => {
+                        newCompetition.location = e.target.value
                         setNewCompetition(newCompetition)
                       }}
                     />
