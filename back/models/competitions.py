@@ -42,6 +42,7 @@ class CompetitionExport(BaseModel):
     code: str
     start_date: date
     end_date: date
+    location: str
     type: CompetitionType
     pilots: List[Pilot] 
     teams: List[Team]
@@ -59,6 +60,7 @@ class CompetitionNew(BaseModel):
     code: Optional[str] = Field(regex='^[a-z][a-z0-9-]*[a-z0-9]')
     start_date: date
     end_date: date
+    location: str = Field(..., min_len=1)
     type: CompetitionType
 
 
@@ -187,6 +189,7 @@ class Competition(CompetitionNew):
             code = self.code,
             start_date = self.start_date,
             end_date = self.end_date,
+            location = self.location,
             type = self.type,
             pilots = pilots,
             teams = teams,
