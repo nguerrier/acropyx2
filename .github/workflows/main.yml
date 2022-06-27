@@ -28,11 +28,7 @@ jobs:
           node-version: 16
       - run: npm ci
         working-directory: ./frontend-manager
-      - run: npm build
-        env:
-          NEXT_PUBLIC_API_URL: https://preprod-api-acropyx.herokuapp.com
-          NEXT_PUBLIC_APP_BASE_PATH: /acropyx2/preprod
-      - run: npm export
+      - run: npm run build
         env:
           NEXT_PUBLIC_API_URL: https://preprod-api-acropyx.herokuapp.com
           NEXT_PUBLIC_APP_BASE_PATH: /acropyx2/preprod
