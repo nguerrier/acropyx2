@@ -42,6 +42,9 @@ import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
 import AccountOutline from 'mdi-material-ui/AccountOutline'
 import InformationOutline from 'mdi-material-ui/InformationOutline'
 import Checkbox from '@mui/material/Checkbox';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import CloseIcon from '@mui/icons-material/Close';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 // ** others
 import Moment from 'react-moment'
@@ -99,7 +102,7 @@ const CompetitionPage = () => {
   const [data, setData] = useState({})
   const [tempData, setTempData] = useState({})
   const [isLoading, setLoading] = useState(false)
-  const [tabContext, setTabContext] = useState('runs')
+  const [tabContext, setTabContext] = useState('actions')
 
   // ** refs
   const nameRef = useRef()
@@ -237,6 +240,21 @@ const CompetitionPage = () => {
     loadCompetition()
   }
 
+  const setState = async(status) => {
+    if (!confirm(`Are you sure to ${status} this competition ?`)) return
+
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/${status}`, {
+        expected_status: 204,
+        method: 'POST',
+    })
+
+    if (err) {
+      error(`error while ${status} competition ${code}: ${err}`)
+      return
+    }
+    loadCompetition()
+  }
+
   const deleteCompetition = async (e) => {
 
     alert('No yet implemented! #TODO')
@@ -322,6 +340,15 @@ const CompetitionPage = () => {
         </Typography>
         <Typography>
           Status: <strong>{tempData.state}</strong>
+{ data.state == 'init' &&
+          <Button variant='outlined' startIcon={<RocketLaunchIcon />} onClick={() => setState('open') }>Open</Button>
+}
+{ data.state == 'open' &&
+          <Button variant='outlined' startIcon={<CloseIcon />} onClick={() => setState('close') }>Close</Button>
+}
+{ data.state == 'closed' &&
+          <Button variant='outlined' startIcon={<AutorenewIcon />} onClick={() => setState('reopen') }>Reopen</Button>
+}
         </Typography>
         <Typography>
           Type: <strong>{tempData.type}</strong>
@@ -503,9 +530,7 @@ const CompetitionPage = () => {
               <TabConfig config={data.config} update={v => setConfig(v) } type={data.type}/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='runs'>
-{/*
-              <TabRuns runs={data.runs} />
-*/}
+              <TabRuns comp={data} />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
 {/*
