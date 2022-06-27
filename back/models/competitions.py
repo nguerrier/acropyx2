@@ -139,7 +139,7 @@ class Competition(CompetitionNew):
             if self.type == CompetitionType.solo and len(self.pilots) < 2:
                 raise HTTPException(400, "At least 2 pilots are needed to open a competition")
             if self.type == CompetitionType.synchro and len(self.teams) < 2:
-                raise HTTPException(400, "At least 2 pilots are needed to open a competition")
+                raise HTTPException(400, "At least 2 teams are needed to open a competition")
             if len(self.judges) < 2:
                 raise HTTPException(400, "At least 2 judges are needed to open a competition")
 
