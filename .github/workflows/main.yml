@@ -8,7 +8,7 @@ on:
 #      - main
 
 jobs:
-  deploy:
+  deploy-back:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,9 +18,26 @@ jobs:
           heroku_app_name: "preprod-api-acropyx"
           heroku_email: "jerome@loyet.net"
           appdir: "back"
-      - uses: akhileshns/heroku-deploy@v3.12.12
+
+  deploy-front:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "preprod-manager-acropyx"
-          heroku_email: "jerome@loyet.net"
-          appdir: "frontend-manager"
+          node-version: 16
+      - run: npm ci
+        working-directory: ./frontend-manager
+      - run: npm build
+        env:
+          NEXT_PUBLIC_API_URL: https://preprod-api-acropyx.herokuapp.com
+          NEXT_PUBLIC_APP_BASE_PATH: /acropyx2/preprod
+      - run: npm export
+        env:
+          NEXT_PUBLIC_API_URL: https://preprod-api-acropyx.herokuapp.com
+          NEXT_PUBLIC_APP_BASE_PATH: /acropyx2/preprod
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./front-manager/out
+          destination_dir: preprod
