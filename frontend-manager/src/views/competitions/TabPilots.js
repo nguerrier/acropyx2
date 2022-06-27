@@ -19,9 +19,10 @@ const TabPilots = ({pilots, update}) => {
   const [value, setValue] = useState([])
 
   const removePilot = async(e) => {
-    const civlid = e.target.dataset.id
-    if (!confirm(`Are you sure you want to remove pilot (${civlid}) ?`)) return
-    update(pilots.filter(p => p.civlid != civlid))
+    const id = e.target.dataset.id
+    const name = allPilots.filter(p => p.id == id)[0].name
+    if (!confirm(`Are you sure you want to remove pilot ${name} (${id}) ?`)) return
+    update(pilots.filter(p => p.id != id))
   }
 
   const headCells = [
@@ -52,7 +53,7 @@ const TabPilots = ({pilots, update}) => {
   useEffect(() =>{
     pilots = pilots.map(p => {
       p.delete = 'delete'
-      p.id = p.civlid
+      p.id = p.id
       return p
     })
   }, [])
@@ -65,8 +66,8 @@ const TabPilots = ({pilots, update}) => {
                       multiple
                       disablePortal
                       id="autocomplete-pilots"
-                      options={allPilots.filter(p => pilots.filter(p2 => p2.civlid == p.civlid).length == 0)}
-                      getOptionLabel={(p) => `${p.name} (${p.civlid})`}
+                      options={allPilots.filter(p => pilots.filter(p2 => p2.id == p.id).length == 0)}
+                      getOptionLabel={(p) => `${p.name} (${p.id})`}
                       value={value}
                       renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" onKeyPress={(e) => {
                           e.key === 'Enter' && update(value.concat(pilots))

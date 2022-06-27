@@ -1,50 +1,92 @@
 // ** React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
-import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField'
+import Box from '@mui/material/Box'
+import Avatar from '@mui/material/Avatar'
+import Link from '@mui/material/Link'
 
-const headCells = [
-  {
-    id: 'id',
-    numeric: false,
-    disablePadding: true,
-    label: 'Id'
-  },
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name'
-  }
-]
+// ** local imports
+import {useTeams} from 'src/util/backend'
+import EnhancedTable from 'src/views/tables/EnhancedTable'
 
-function createData(id, name) {
-  return {
-    id,
-    name
-  }
-}
-
-const TabTeams = ({ teams }) => {
+const TabTeams = ({teams, update}) => {
   // ** State
-  const [date, setDate] = useState(null)
+  const [allTeams] = useTeams()
+  const [value, setValue] = useState([])
+
+  const removeTeam = async(e) => {
+    const id = e.target.dataset.id
+    const name = allTeams.filter(p => p.id == id)[0].name
+    if (!confirm(`Are you sure you want to remove team ${name} (${id}) ?`)) return
+    update(teams.filter(p => p.id != id))
+  }
+
+  const headCells = [
+    {
+      id: 'id',
+    },
+    {
+      id: 'name',
+    },
+    {
+      id: 'pilots',
+      rewrite: (v) => {
+        return (
+          <Box>
+            <Link href={v[0].link} target="_blank" rel="noopener noreferrer"><Avatar alt={v[0].name} src={v[0].photo} />{v[0].name}</Link>
+            <Link href={v[0].link} target="_blank" rel="noopener noreferrer"><Avatar alt={v[1].name} src={v[1].photo} />{v[1].name}</Link>
+          </Box>
+        )
+      },
+    },
+    {
+      id: 'delete',
+      type: 'ACTION',
+      func: removeTeam,
+    }
+  ]
+
+  useEffect(() =>{
+    teams = teams.map(p => {
+      p.delete = 'delete'
+      p.id = p._id
+      return p
+    })
+  }, [])
 
   return (
     <CardContent>
       <Grid container spacing={7}>
-        <Grid item xs={12} sm={12} container>
-          <Button variant='contained' startIcon={<AddIcon />}>
-            {' '}
-            Add team
+        <Grid item xs={6} sm={6}>
+                    <Autocomplete
+                      multiple
+                      disablePortal
+                      id="autocomplete-teams"
+                      options={allTeams.filter(p => teams.filter(p2 => p2.id == p.id).length == 0)}
+                      getOptionLabel={(p) => `${p.name}`}
+                      value={value}
+                      renderInput={(params) => <TextField {...params} name="teams" label="Teams" onKeyPress={(e) => {
+                          e.key === 'Enter' && update(value.concat(teams))
+                      }}/>}
+                      onChange={(e, v) => {
+                        setValue(v)
+                      }}
+                    />
+          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
+              update(value.concat(teams))
+          }}>
+            Add team(s)
           </Button>
         </Grid>
         <Grid item xs={12} sm={12}>
-          <EnhancedTable rows={teams.map(j => createData(j, ''))} headCells={headCells} orderById='rank' />
+          <EnhancedTable rows={teams} headCells={headCells} orderById='rank' />
         </Grid>
       </Grid>
     </CardContent>

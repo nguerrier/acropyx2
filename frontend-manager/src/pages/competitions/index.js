@@ -23,6 +23,9 @@ import AddIcon from '@mui/icons-material/Add'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import FormControl from '@mui/material/FormControl'
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import InputLabel from '@mui/material/InputLabel'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
@@ -85,29 +88,15 @@ const CompetitionsPage = () => {
   const createOrUpdateCompetition = async(event) => {
     event.preventDefault()
 
-    var route = '/competitions/new'
-    var method = 'POST'
-    var expected_status = 201
-
-    if (newCompetition._id) {
-      route = `/competitions/${newCompetition._id}`
-      method = 'PUT'
-      expected_status = 204
-    }
-
-    const [err, data, headers] = await APIRequest(route, {
-      expected_status: expected_status,
-      method: method,
+    const [err, data, headers] = await APIRequest(`/competitions/new`, {
+      expected_status: 201,
+      method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(newCompetition),
     })
 
     if (err) {
-        if (newCompetition._id) {
-            error(`error while updating competition ${newCompetition._id}: ${err}`)
-        } else {
-            error(`error while creating new competition: ${err}`)
-        }
+        error(`error while creating new competition: ${err}`)
         return
     }
 
@@ -115,31 +104,9 @@ const CompetitionsPage = () => {
     loadCompetitions()
   }
 
-  const deleteCompetition = async (e) => {
-      const id = e.target.dataset.id
-      if (!confirm(`Are you sure you want to delete Competition ${name} (${id}) ?`)) return
-
-      setLoading(true)
-    const [err, data, headers] = await APIRequest(`/competitions/${id}`, {method: "DELETE", expected_status: 204})
-    if (err) {
-      error(`Error while deleting Competition ${id}: ${err}`)
-    } else {
-      success(`Competition ${id} successfully deleted`)
-    }
-    loadCompetitions()
-  }
-
   const openCreateModal = () => {
     setModalTitle('New competition')
     setNewCompetition({})
-    setModalOpen(true)
-  }
-
-  const openUpdateModal = (e) => {
-    const id = e.target.dataset.id
-    const competition = data.find(j => j._id == id)
-    setModalTitle(`Updating competition ${id}`)
-    setNewCompetition(competition)
     setModalOpen(true)
   }
 
@@ -178,6 +145,10 @@ const CompetitionsPage = () => {
     },
     {
       id: 'code',
+    },
+    {
+      id: 'published',
+      type: 'BOOLEAN',
     }
   ]
 
@@ -227,7 +198,7 @@ const CompetitionsPage = () => {
               />
               <CardContent>
                 <Grid container spacing={5}>
-                  <Grid item xs={6}>
+                  <Grid item xs={8}>
                     <TextField
                       fullWidth name="name" label='Name' placeholder='Competition name' defaultValue={newCompetition.name ?? ""}
                       onChange={(e) => {
@@ -236,20 +207,7 @@ const CompetitionsPage = () => {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={3}>
-                    <TextField
-                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? ""}
-                      onChange={(e) => {
-                        if (e.target.value.length > 0) {
-                          newCompetition.code = e.target.value
-                          setNewCompetition(newCompetition)
-                        } else {
-                          delete newCompetition.code
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={3}>
+                  <Grid item xs={4}>
                     <Autocomplete
                       disablePortal
                       id="autocomplete-type"
@@ -291,6 +249,30 @@ const CompetitionsPage = () => {
                         setNewCompetition(newCompetition)
                       }}
                     />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={newCompetition.code ?? ""}
+                      onChange={(e) => {
+                        if (e.target.value.length > 0) {
+                          newCompetition.code = e.target.value
+                          setNewCompetition(newCompetition)
+                        } else {
+                          delete newCompetition.code
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={<Checkbox defaultCHecked={newCompetition.published ?? true} onChange={(e) => {
+                            newCompetition.published = e.target.checked
+                            setNewCompetition(newCompetition)
+                        }}/>}
+                        label="Published"
+                      />
+                    </FormGroup>
                   </Grid>
                 </Grid>
               </CardContent>

@@ -41,6 +41,7 @@ import MuiTab from '@mui/material/Tab'
 import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
 import AccountOutline from 'mdi-material-ui/AccountOutline'
 import InformationOutline from 'mdi-material-ui/InformationOutline'
+import Checkbox from '@mui/material/Checkbox';
 
 // ** others
 import Moment from 'react-moment'
@@ -141,6 +142,7 @@ const CompetitionPage = () => {
         start_date: tempData.start_date,
         end_date: tempData.end_date,
         location: tempData.location,
+        published: tempData.published,
         type: tempData.type,
     }
 
@@ -161,8 +163,6 @@ const CompetitionPage = () => {
   }
 
   const setPilots = async(pilots) => {
-    console.log('set pilots', pilots)
-    var route = `/competitions/${code}/pilots`
     const [err, retData, headers] = await APIRequest(`/competitions/${code}/pilots`, {
         expected_status: 204,
         method: 'PATCH',
@@ -172,6 +172,36 @@ const CompetitionPage = () => {
 
     if (err) {
       error(`error while updating pilots list ${code}: ${err}`)
+      return
+    }
+    loadCompetition()
+  }
+
+  const setTeams = async(teams) => {
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/teams`, {
+        expected_status: 204,
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(teams.map(j => j.id)),
+    })
+
+    if (err) {
+      error(`error while updating teams list ${code}: ${err}`)
+      return
+    }
+    loadCompetition()
+  }
+
+  const setJudges = async(judges) => {
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/judges`, {
+        expected_status: 204,
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(judges.map(p => p.id)),
+    })
+
+    if (err) {
+      error(`error while updating judges list ${code}: ${err}`)
       return
     }
     loadCompetition()
@@ -346,6 +376,26 @@ const CompetitionPage = () => {
             />
           </Editable>
         </Typography>
+
+        <Typography>
+          <section>
+            <div>
+              <span>
+                Published: 
+                <Checkbox checked={tempData.published} 
+                  onChange={(e) => {
+                    if (!confirm(`Are you sure to ${e.target.checked ? 'publish' : 'unpublish'} the competition ?`)) {
+                        e.target.checked = !e.target.checked
+                        return
+                    }
+                    tempData.published = e.target.checked
+                    setTempData(tempData)
+                    updateCompetition(e)
+                }}/>
+              </span>
+            </div>
+          </section>
+        </Typography>
       </Grid>
 
       <Grid item xs={12}>
@@ -435,14 +485,10 @@ const CompetitionPage = () => {
               <TabPilots pilots={data.pilots} update={v => setPilots(v) } />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='teams'>
-{/*
-              <TabTeams teams={data.teams} />
-*/}
+              <TabTeams teams={data.teams} update={v => setTeams(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='judges'>
-{/*
-              <TabJudges judges={data.judges} />
-*/}
+              <TabJudges judges={data.judges} update={v => setJudges(v)}/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='repeatable_tricks'>
 {/*

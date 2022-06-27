@@ -57,7 +57,7 @@ export const usePilots = (props) => {
 
       if (err) {
           setPilots([])
-          error(`Error while retrieving teams list: ${err}`)
+          error(`Error while retrieving pilots list: ${err}`)
           return
       }
 
@@ -72,4 +72,66 @@ export const usePilots = (props) => {
   }, [])
 
   return([pilots])
+}
+
+
+/*
+ * Hook to load teams
+ */
+export const useTeams = (props) => {
+  const [success, info, warning, error] = useNotifications()
+  const [teams, setTeams] = useState([]);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const [err, data, headers] = await APIRequest('/teams', {expect_json: true})
+
+      if (err) {
+          setTeams([])
+          error(`Error while retrieving teams list: ${err}`)
+          return
+      }
+
+      data = data.map(j => {
+        j.id = j._id
+        return j
+      })
+
+      setTeams(data)
+    }
+    asyncFunc()
+  }, [])
+
+  return([teams])
+}
+
+
+/*
+ * Hook to load judges
+ */
+export const useJudges = (props) => {
+  const [success, info, warning, error] = useNotifications()
+  const [judges, setJudges] = useState([]);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const [err, data, headers] = await APIRequest('/judges', {expect_json: true})
+
+      if (err) {
+          setJudges([])
+          error(`Error while retrieving judges list: ${err}`)
+          return
+      }
+
+      data = data.map(j => {
+        j.id = j._id
+        return j
+      })
+
+      setJudges(data)
+    }
+    asyncFunc()
+  }, [])
+
+  return([judges])
 }
