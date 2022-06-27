@@ -222,6 +222,9 @@ class Competition(CompetitionNew):
 #        self.pilots = pilots
 
     async def update(self, updated_comp: CompetitionNew):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't change on a closed competition")
+
         self.start_date = updated_comp.start_date
         self.end_date = updated_comp.end_date
         self.location = updated_comp.location
@@ -242,26 +245,40 @@ class Competition(CompetitionNew):
         await self.save()
 
     async def update_pilots(self, pilots: List[int]):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't update pilots of a closed competition")
+
         if self.type != CompetitionType.solo:
             raise HTTPException(400, "Pilot's list can only be changed on a solo competition")
         self.pilots = pilots
         await self.save()
 
     async def update_teams(self, teams: List[str]):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't update teams of a closed competition")
+
         if self.type != CompetitionType.synchro:
             raise HTTPException(400, "Team's list can only be changed on a synchro competition")
         self.teams = teams
         await self.save()
 
     async def update_judges(self, judges: List[str]):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't update judges of a closed competition")
+
         self.judges = judges
         await self.save()
 
     async def update_repeatable_tricks(self, repeatable_tricks: List[str]):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't update repeatable tricks of a closed competition")
+
         self.repeatable_tricks = repeatable_tricks
         await self.save()
 
     async def update_config(self, config: CompetitionConfig):
+        if self.state == CompetitionState.closed:
+            raise HTTPException(400, "Can't change configuration of a closed competition")
         self.config = config
         await self.save()
 
