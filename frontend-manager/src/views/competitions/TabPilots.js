@@ -61,7 +61,7 @@ const TabPilots = ({pilots, update}) => {
   useEffect(() =>{
     pilots = pilots.map(p => {
       p.delete = 'delete'
-      p.id = p.id
+      p.id = p.civlid
       return p
     })
   }, [])
