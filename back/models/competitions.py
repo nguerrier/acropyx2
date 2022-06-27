@@ -11,7 +11,7 @@ import re
 import unicodedata
 
 from models.pilots import Pilot
-from models.teams import Team
+from models.teams import Team, TeamExport
 from models.judges import Judge
 from models.runs import Run, RunState, RunExport
 from models.tricks import Trick
@@ -43,9 +43,10 @@ class CompetitionExport(BaseModel):
     start_date: date
     end_date: date
     location: str
+    published: bool
     type: CompetitionType
     pilots: List[Pilot] 
-    teams: List[Team]
+    teams: List[TeamExport]
     judges: List[Judge]
     repeatable_tricks: List[Trick]
     state: CompetitionState
@@ -61,6 +62,7 @@ class CompetitionNew(BaseModel):
     start_date: date
     end_date: date
     location: str = Field(..., min_len=1)
+    published: bool
     type: CompetitionType
 
 
@@ -75,6 +77,7 @@ class CompetitionNew(BaseModel):
             start_date = self.start_date,
             end_date = self.end_date,
             location = self.location,
+            published = self.published,
             type = self.type,
             state = CompetitionState.init,
             config = CompetitionConfig(),
@@ -191,6 +194,7 @@ class Competition(CompetitionNew):
             start_date = self.start_date,
             end_date = self.end_date,
             location = self.location,
+            published = self.published,
             type = self.type,
             pilots = pilots,
             teams = teams,
@@ -215,6 +219,7 @@ class Competition(CompetitionNew):
         self.start_date = updated_comp.start_date
         self.end_date = updated_comp.end_date
         self.location = updated_comp.location
+        self.published = updated_comp.published
 
         if self.type != updated_comp.type and self.state != CompetitionState.init:
             raise HTTPException(400, "Can't change the type of an already open or closed competition")
