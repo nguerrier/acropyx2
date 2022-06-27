@@ -158,7 +158,7 @@ const CompetitionPage = () => {
         return
     }
 
-    if (tempData.code != data.code) return router.replace(`/competitions/${tempData.code}`)
+    if (tempData.code != data.code) return router.push(`/competitions/show?code=${tempData.code}`)
     loadCompetition()
   }
 
