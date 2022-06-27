@@ -27,9 +27,6 @@ const TabRepeatableTricks = ({tricks, update}) => {
 
   const headCells = [
     {
-      id: 'id',
-    },
-    {
       id: 'name',
     },
     {

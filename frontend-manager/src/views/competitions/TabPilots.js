@@ -30,10 +30,6 @@ const TabPilots = ({pilots, update}) => {
 
   const headCells = [
     {
-      id: 'civlid',
-      numeric: true,
-    },
-    {
       id: 'name',
       rewrite: (name, p) => {return(
           <Box>

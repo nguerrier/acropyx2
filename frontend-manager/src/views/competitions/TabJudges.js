@@ -27,9 +27,6 @@ const TabJudges = ({judges, update}) => {
 
   const headCells = [
     {
-      id: 'id',
-    },
-    {
       id: 'name',
     },
     {
