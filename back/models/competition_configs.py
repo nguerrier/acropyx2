@@ -50,7 +50,7 @@ class MarkPercentageSynchro(BaseModel):
 
 class MarkPercentages(BaseModel):
     solo: MarkPercentageSolo = MarkPercentageSolo()
-    synchro: MarkPercentageSolo = MarkPercentageSynchro()
+    synchro: MarkPercentageSynchro = MarkPercentageSynchro()
 
     class Config:
         schema_extra = {
