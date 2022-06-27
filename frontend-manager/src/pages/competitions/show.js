@@ -274,8 +274,6 @@ const CompetitionPage = () => {
     return ''
   }
 
-  console.log(data)
-
   return (
     <Grid container spacing={6}>
 

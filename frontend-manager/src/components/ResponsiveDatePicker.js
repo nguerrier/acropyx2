@@ -19,7 +19,6 @@ export default function ResponsiveDatePicker(props) {
           newValue.toJSON = function() {
             return `${String(this.getFullYear())}-${String(this.getMonth() + 1).padStart(2, "0")}-${String(this.getDate()).padStart(2, "0")}`
           }
-          console.log(newValue)
           setValue(newValue);
           if (props.onChange) props.onChange(newValue)
         }}

@@ -234,7 +234,6 @@ const CompetitionsPage = () => {
                       label="End Date"
                       default={newCompetition.end_date ?? ""}
                       onChange={(v) => {
-                        console.log(v, typeof(v))
                         newCompetition.end_date = v
                         setNewCompetition(newCompetition)
                       }}
