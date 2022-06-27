@@ -44,10 +44,6 @@ const TabPilots = ({pilots, update}) => {
       id: 'rank',
     },
     {
-      id: 'link',
-      type: 'LINK'
-    },
-    {
       id: 'delete',
       type: 'ACTION',
       func: removePilot,
