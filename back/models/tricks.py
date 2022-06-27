@@ -129,7 +129,7 @@ class Trick(BaseModel):
 #        for id in self.pilots:
 #            pilot = await Pilot.get(id)
 #            if pilot is None:
-#                raise ValueError(f"Pilot '{id}' is unknown, only known pilots can be part of a trick")
+#                raise HTTPException(400, f"Pilot '{id}' is unknown, only known pilots can be part of a trick")
         return
 
     async def create(self):

@@ -116,29 +116,35 @@ class Competition(CompetitionNew):
             for id in self.pilots:
                 pilot = await Pilot.get(id)
                 if pilot is None:
-                    raise ValueError(f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
+                    raise HTTPException(400, f"Pilot '{id}' is unknown, only known pilots can take part of a competition")
+
+            if len(list(set(self.pilots))) != len(self.pilots):
+                raise HTTPException(400, f"Can have duplicate pilots")
 
         if self.type == CompetitionType.synchro:
             for id in self.teams:
                 team = await Team.get(id)
                 if team is None:
-                    raise ValueError(f"Team '{id}' is unknown, only known teams can take part of a competition")
+                    raise HTTPException(400, f"Team '{id}' is unknown, only known teams can take part of a competition")
+
+            if len(list(set(self.teams))) != len(self.teams):
+                raise HTTPException(400, f"Can have duplicate teams")
 
         for id in self.judges:
             judge = await Judge.get(id)
             if judge is None:
-                raise ValueError(f"Judge '{id}' is unknown, only known judges can take part of a competition")
+                raise HTTPException(400, f"Judge '{id}' is unknown, only known judges can take part of a competition")
 
         if self.state != CompetitionState.init:
             if self.type == CompetitionType.solo and len(self.pilots) < 2:
-                raise ValueError("At least 2 pilots are needed to open a competition")
+                raise HTTPException(400, "At least 2 pilots are needed to open a competition")
             if self.type == CompetitionType.synchro and len(self.teams) < 2:
-                raise ValueError("At least 2 pilots are needed to open a competition")
+                raise HTTPException(400, "At least 2 pilots are needed to open a competition")
             if len(self.judges) < 2:
-                raise ValueError("At least 2 judges are needed to open a competition")
+                raise HTTPException(400, "At least 2 judges are needed to open a competition")
 
         if self.start_date > self.end_date:
-            raise ValueError("End date must be higher than start date")
+            raise HTTPException(400, "End date must be higher than start date")
 
     async def create(self):
         try:
@@ -237,13 +243,13 @@ class Competition(CompetitionNew):
 
     async def update_pilots(self, pilots: List[int]):
         if self.type != CompetitionType.solo:
-            raise Exception(400, "Pilot's list can only be changed on a solo competition")
+            raise HTTPException(400, "Pilot's list can only be changed on a solo competition")
         self.pilots = pilots
         await self.save()
 
     async def update_teams(self, teams: List[str]):
         if self.type != CompetitionType.synchro:
-            raise Exception(400, "Team's list can only be changed on a synchro competition")
+            raise HTTPException(400, "Team's list can only be changed on a synchro competition")
         self.teams = teams
         await self.save()
 
