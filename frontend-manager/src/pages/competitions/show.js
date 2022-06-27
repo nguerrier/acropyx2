@@ -237,12 +237,15 @@ const CompetitionPage = () => {
     loadCompetition()
   }
 
-/*
   const deleteCompetition = async (e) => {
-      const id = e.target.dataset.id
-      if (!confirm(`Are you sure you want to delete Competition ${name} (${id}) ?`)) return
 
-      setLoading(true)
+    alert('No yet implemented! #TODO')
+    return
+    
+    const id = e.target.dataset.id
+    if (!confirm(`Are you sure you want to delete Competition ${name} (${id}) ?`)) return
+
+    setLoading(true)
     const [err, data, headers] = await APIRequest(`/competitions/${id}`, {method: "DELETE", expected_status: 204})
     if (err) {
       error(`Error while deleting Competition ${id}: ${err}`)
@@ -251,28 +254,6 @@ const CompetitionPage = () => {
     }
     loadCompetition()
   }
-*/
-  const headCells = [
-    {
-      id: 'name',
-    },
-    {
-      id: 'type',
-    },
-    {
-      id: 'start_date',
-    },
-    {
-      id: 'end_date',
-    },
-    {
-      id: 'runs',
-      rewrite: (v, comp) => `${v.length} runs`,
-    },
-    {
-      id: 'code',
-    }
-  ]
 
   useEffect(() => {
       if (!router.isReady) return
