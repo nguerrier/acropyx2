@@ -61,7 +61,7 @@ import TabRuns from 'src/views/competitions/TabRuns'
 import TabTeams from 'src/views/competitions/TabTeams'
 import TabPilots from 'src/views/competitions/TabPilots'
 import TabJudges from 'src/views/competitions/TabJudges'
-import TabSettings from 'src/views/competitions/TabSettings'
+import TabConfig from 'src/views/competitions/TabConfig'
 import TabResults from 'src/views/competitions/TabResults'
 import TabReapeatableTricks from 'src/views/competitions/TabReapeatableTricks'
 
@@ -207,6 +207,36 @@ const CompetitionPage = () => {
     loadCompetition()
   }
 
+  const setRepeatableTricks = async(tricks) => {
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/repeatable_tricks`, {
+        expected_status: 204,
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(tricks.map(t => t.id)),
+    })
+
+    if (err) {
+      error(`error while updating repeatable tricks list ${code}: ${err}`)
+      return
+    }
+    loadCompetition()
+  }
+
+  const setConfig = async(config) => {
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/config`, {
+        expected_status: 204,
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(config),
+    })
+
+    if (err) {
+      error(`error while updating config ${code}: ${err}`)
+      return
+    }
+    loadCompetition()
+  }
+
 /*
   const deleteCompetition = async (e) => {
       const id = e.target.dataset.id
@@ -262,6 +292,8 @@ const CompetitionPage = () => {
     error("Empty or invalid data")
     return ''
   }
+
+  console.log(data)
 
   return (
     <Grid container spacing={6}>
@@ -406,15 +438,6 @@ const CompetitionPage = () => {
               aria-label='account-settings tabs'
               sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}
             >
-              <Tab
-                value='runs'
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <LockOpenOutline />
-                    <TabName>Runs</TabName>
-                  </Box>
-                }
-              />
 { data.type == "solo" &&
               <Tab
                 value='pilots'
@@ -457,15 +480,6 @@ const CompetitionPage = () => {
                 }
               />
               <Tab
-                value='results'
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
-                    <TabName>Results</TabName>
-                  </Box>
-                }
-              />
-              <Tab
                 value='settings'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -474,13 +488,26 @@ const CompetitionPage = () => {
                   </Box>
                 }
               />
+              <Tab
+                value='runs'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LockOpenOutline />
+                    <TabName>Runs</TabName>
+                  </Box>
+                }
+              />
+              <Tab
+                value='results'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <InformationOutline />
+                    <TabName>Results</TabName>
+                  </Box>
+                }
+              />
             </TabList>
 
-            <TabPanel sx={{ p: 0 }} value='runs'>
-{/*
-              <TabRuns runs={data.runs} />
-*/}
-            </TabPanel>
             <TabPanel sx={{ p: 0 }} value='pilots'>
               <TabPilots pilots={data.pilots} update={v => setPilots(v) } />
             </TabPanel>
@@ -488,16 +515,17 @@ const CompetitionPage = () => {
               <TabTeams teams={data.teams} update={v => setTeams(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='judges'>
-              <TabJudges judges={data.judges} update={v => setJudges(v)}/>
+              <TabJudges judges={data.judges} update={v => setJudges(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='repeatable_tricks'>
-{/*
-              <TabReapeatableTricks tricks={data.repeatable_tricks} />
-*/}
+              <TabReapeatableTricks tricks={data.repeatable_tricks} update={v => setRepeatableTricks(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='settings'>
+              <TabConfig config={data.config} update={v => setConfig(v) } type={data.type}/>
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='runs'>
 {/*
-              <TabSettings competition={data} />
+              <TabRuns runs={data.runs} />
 */}
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>

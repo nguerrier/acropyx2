@@ -9,6 +9,9 @@ import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField'
+import Box from '@mui/material/Box'
+import Link from '@mui/material/Link'
+import Avatar from '@mui/material/Avatar'
 
 // ** local imports
 import {usePilots} from 'src/util/backend'
@@ -32,6 +35,11 @@ const TabPilots = ({pilots, update}) => {
     },
     {
       id: 'name',
+      rewrite: (name, p) => {return(
+          <Box>
+            <Link href={p.link} target="_blank" rel="noopener noreferrer"><Avatar alt={p.name} src={p.photo} />{p.name}</Link>
+          </Box>
+      )},
     },
     {
       id: 'country',

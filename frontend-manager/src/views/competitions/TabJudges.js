@@ -36,7 +36,7 @@ const TabJudges = ({judges, update}) => {
       id: 'country',
     },
     {
-      id: 'cilvid',
+      id: 'civlid',
     },
     {
       id: 'delete',

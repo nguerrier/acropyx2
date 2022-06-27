@@ -47,7 +47,7 @@ export async function APIRequest(route, props={}) {
 /*
  * Hook to load pilots
  */
-export const usePilots = (props) => {
+export const usePilots = () => {
   const [success, info, warning, error] = useNotifications()
   const [pilots, setPilots] = useState([]);
 
@@ -78,7 +78,7 @@ export const usePilots = (props) => {
 /*
  * Hook to load teams
  */
-export const useTeams = (props) => {
+export const useTeams = () => {
   const [success, info, warning, error] = useNotifications()
   const [teams, setTeams] = useState([]);
 
@@ -109,7 +109,7 @@ export const useTeams = (props) => {
 /*
  * Hook to load judges
  */
-export const useJudges = (props) => {
+export const useJudges = () => {
   const [success, info, warning, error] = useNotifications()
   const [judges, setJudges] = useState([]);
 
@@ -134,4 +134,35 @@ export const useJudges = (props) => {
   }, [])
 
   return([judges])
+}
+
+
+/*
+ * Hook to load repeatable tricks
+ */
+export const useTricks = () => {
+  const [success, info, warning, error] = useNotifications()
+  const [tricks, setTricks] = useState([]);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const [err, data, headers] = await APIRequest('/tricks', {expect_json: true})
+
+      if (err) {
+          setTricks([])
+          error(`Error while retrieving tricks list: ${err}`)
+          return
+      }
+
+      data = data.map(j => {
+        j.id = j._id
+        return j
+      })
+
+      setTricks(data)
+    }
+    asyncFunc()
+  }, [])
+
+  return([tricks])
 }
