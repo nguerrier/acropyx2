@@ -32,6 +32,9 @@ class RunExport(BaseModel):
     config: CompetitionConfig
     flights: List[FlightExport]
 
+    class Config:
+        json_encoders = {ObjectId: str}
+
 class Run(BaseModel):
     state: RunState
     pilots: List[int] = Field(..., min_len=1)
