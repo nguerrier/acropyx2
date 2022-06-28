@@ -530,12 +530,10 @@ const CompetitionPage = () => {
               <TabConfig config={data.config} update={v => setConfig(v) } type={data.type}/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='runs'>
-              <TabRuns comp={data} />
+              <TabRuns comp={data} refresh={loadCompetition}/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
-{/*
-              <TabResults results={results} />
-*/}
+              <TabResults code={data.code} />
             </TabPanel>
           </TabContext>
         </Card>

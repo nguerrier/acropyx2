@@ -1,49 +1,76 @@
 // ** React Imports
-import { forwardRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
-import EnhancedTable from 'src/views/tables/EnhancedTable'
+import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
 
-function createData(id, name, state) {
-  return {
-    id,
-    name,
-    state
-  }
-}
 
-const TabResults = ({ results }) => {
+// ** local
+import EnhancedTable from 'src/views/tables/EnhancedTable'
+import { useNotifications } from 'src/util/notifications'
+import { APIRequest } from 'src/util/backend'
+
+const TabResults = ({ code }) => {
+  // ** notification messages
+  const [success, info, warning, error] = useNotifications()
+
   // ** State
-  const [date, setDate] = useState(null)
+  const [results, setResults] = useState(false)
 
-  const router = useRouter()
+  const loadResults = async() => {
+
+    const [err, retData, headers] = await APIRequest(`/competitions/${code}/results`, {
+      expect_json: true
+    })
+
+    if (err) {
+        error(`error while retrieving results for competition ${code}: ${err}`)
+        setResults(false)
+        return
+    }
+
+    retData.overall_results = retData.overall_results.map((r, i) => {
+      r.rank = i+1
+      return r
+    })
+
+    setResults(retData)
+  }
 
   const headCells = [
     {
-      id: 'name',
-      numeric: false,
-      disablePadding: false,
-      type: 'ACTION',
-      path: router.asPath + '/runs',
-      label: 'Name'
+      id: 'rank',
     },
     {
-      id: 'state',
-      numeric: false,
-      disablePadding: false,
-      label: 'State'
+      id: 'pilot',
+      rewrite: (p) => p.name,
+    },
+    {
+      id: 'score',
+      numeric: true,
     }
   ]
 
+  useEffect(() => {
+    loadResults()
+  }, [])
+
+  if (!results) return('loading ...')
+
+  console.log('overall', results.overall_results)
+
   return (
     <CardContent>
+      <Typography varian="h2">
+        { results.final ? 'Final' : 'Intermediate' } results
+      </Typography>
       <Grid container spacing={7}>
         <Grid item xs={12} sm={12}>
           <EnhancedTable
-            rows={results}
+            rows={results.overall_results}
             headCells={headCells}
             orderById='rank'
           />
