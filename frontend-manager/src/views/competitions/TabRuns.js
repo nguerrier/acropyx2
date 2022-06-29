@@ -49,7 +49,7 @@ const TabRuns = ({comp, refresh}) => {
       id: 'name',
       type: 'LINK',
       href: (name, run) => {
-        return `/runs/show?competition=${comp.code}&id=${run.id}`
+        return `/competitions/run?cid=${comp.code}&rid=${run.id}`
       },
     },
     {

@@ -124,7 +124,7 @@ const CompetitionsPage = () => {
     {
       id: 'name',
       type: 'LINK',
-      href: (v, comp) => `/competitions/show?code=${comp.code}`,
+      href: (v, comp) => `/competitions/show?cid=${comp.code}`,
     },
     {
       id: 'type',

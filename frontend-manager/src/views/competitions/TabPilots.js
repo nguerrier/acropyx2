@@ -16,16 +16,15 @@ import Avatar from '@mui/material/Avatar'
 // ** local imports
 import {usePilots} from 'src/util/backend'
 
-const TabPilots = ({pilots, update}) => {
+const TabPilots = ({pilots, allPilots, update}) => {
   // ** State
-  const [allPilots] = usePilots()
   const [value, setValue] = useState([])
 
   const removePilot = async(e) => {
     const id = e.target.dataset.id
-    const name = allPilots.filter(p => p.id == id)[0].name
+    const name = allPilots.filter(p => p.civlid == id)[0].name
     if (!confirm(`Are you sure you want to remove pilot ${name} (${id}) ?`)) return
-    update(pilots.filter(p => p.id != id))
+    update(pilots.filter(p => p.civlid != id))
   }
 
   const headCells = [
@@ -66,8 +65,8 @@ const TabPilots = ({pilots, update}) => {
                       multiple
                       disablePortal
                       id="autocomplete-pilots"
-                      options={allPilots.filter(p => pilots.filter(p2 => p2.id == p.id).length == 0)}
-                      getOptionLabel={(p) => `${p.name} (${p.id})`}
+                      options={allPilots.filter(p => pilots.filter(p2 => p2.civlid == p.civlid).length == 0)}
+                      getOptionLabel={(p) => `${p.name} (${p.civlid})`}
                       value={value}
                       renderInput={(params) => <TextField {...params} name="pilots" label="Pilots" onKeyPress={(e) => {
                           e.key === 'Enter' && update(value.concat(pilots))
@@ -76,11 +75,9 @@ const TabPilots = ({pilots, update}) => {
                         setValue(v)
                       }}
                     />
-          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
-              update(value.concat(pilots))
-          }}>
-            Add pilot(s)
-          </Button>
+        </Grid>
+        <Grid item xs={6} sm={6}>
+          <Button variant='contained' onClick={() => {update(value.concat(pilots))}}><AddIcon /></Button>
         </Grid>
         <Grid item xs={12} sm={12}>
           <EnhancedTable rows={pilots} headCells={headCells} orderById='rank' />

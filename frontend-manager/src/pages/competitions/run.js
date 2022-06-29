@@ -54,7 +54,7 @@ import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardPilot from 'src/views/cards/CardPilot'
 import { countryListAllIsoData } from 'src/util/countries'
 import { useNotifications } from 'src/util/notifications'
-import { APIRequest, usePilots, useTeams, useJudges, useTricks } from 'src/util/backend'
+import { APIRequest, useTricks } from 'src/util/backend'
 import modalStyle from 'src/configs/modalStyle'
 import ResponsiveDatePicker from 'src/components/ResponsiveDatePicker'
 import Editable from 'src/components/Editable'
@@ -65,8 +65,9 @@ import TabTeams from 'src/views/competitions/TabTeams'
 import TabPilots from 'src/views/competitions/TabPilots'
 import TabJudges from 'src/views/competitions/TabJudges'
 import TabConfig from 'src/views/competitions/TabConfig'
-import TabCompResults from 'src/views/competitions/TabCompResults'
+import TabRunResults from 'src/views/competitions/TabRunResults'
 import TabRepeatableTricks from 'src/views/competitions/TabRepeatableTricks'
+import TabFlights from 'src/views/competitions/TabFlights'
 
 
 const Tab = styled(MuiTab)(({ theme }) => ({
@@ -87,7 +88,7 @@ const TabName = styled('span')(({ theme }) => ({
   }
 }))
 
-const CompetitionPage = () => {
+const RunPage = () => {
   // ** params
   const router = useRouter()
   const { cid, rid } = router.query
@@ -99,13 +100,11 @@ const CompetitionPage = () => {
   const { user, authError, authIisLoading } = useUser();
 
   // ** local
-  const [comp, setComp] = useState({})
+  const [comp, setComp] = useState(false)
+  const [run, setRun] = useState(false)
   const [tempComp, setTempComp] = useState({})
   const [isLoading, setLoading] = useState(false)
   const [tabContext, setTabContext] = useState('actions')
-  const [allPilots] = usePilots()
-  const [allTeams] = useTeams()
-  const [allJudges] = useJudges()
   const [allTricks] = useTricks()
 
   // ** refs
@@ -122,6 +121,7 @@ const CompetitionPage = () => {
 
     if (err) {
         setComp(false)
+        setRun(false)
         setTempComp(false)
         error(`Error while retrieving competitions list: ${err}`)
         return
@@ -132,45 +132,28 @@ const CompetitionPage = () => {
     data.id = data._id
 
     setComp(data)
+    setRun(data.runs[rid])
     setTempComp(Object.assign({}, data)) // clone data before assigning it to tempComp, otherwise they'll share the same object
     setLoading(false)
   }
 
-  const updateCompetition = async(event) => {
-    event.preventDefault()
+  const setState = async(status) => {
+    if (!confirm(`Are you sure to ${status} run ${rid} of competition ${cid} ?`)) return
 
-    var route = `/competitions/${cid}`
-    var method = 'PATCH'
-    var expected_status = 204
-
-    const updatedCompetition = {
-        name: tempComp.name,
-        code: tempComp.code,
-        start_date: tempComp.start_date,
-        end_date: tempComp.end_date,
-        location: tempComp.location,
-        published: tempComp.published,
-        type: tempComp.type,
-    }
-
-    const [err, retData, headers] = await APIRequest(route, {
-      expected_status: expected_status,
-      method: method,
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(updatedCompetition),
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/${status}`, {
+        expected_status: 204,
+        method: 'POST',
     })
 
     if (err) {
-        error(`error while updating competition ${cid}: ${err}`)
-        return
+      error(`error while ${status} run ${rid} of competition ${cid}: ${err}`)
+      return
     }
-
-    if (tempComp.code != comp.code) return router.push(`/competitions/show?cid=${tempComp.code}`)
     loadCompetition()
   }
 
   const setPilots = async(pilots) => {
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/pilots`, {
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/pilots`, {
         expected_status: 204,
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
@@ -185,7 +168,7 @@ const CompetitionPage = () => {
   }
 
   const setTeams = async(teams) => {
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/teams`, {
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/teams`, {
         expected_status: 204,
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
@@ -200,7 +183,7 @@ const CompetitionPage = () => {
   }
 
   const setJudges = async(judges) => {
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/judges`, {
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/judges`, {
         expected_status: 204,
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
@@ -215,7 +198,7 @@ const CompetitionPage = () => {
   }
 
   const setRepeatableTricks = async(tricks) => {
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/repeatable_tricks`, {
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/repeatable_tricks`, {
         expected_status: 204,
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
@@ -230,7 +213,7 @@ const CompetitionPage = () => {
   }
 
   const setConfig = async(config) => {
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/config`, {
+    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/runs/${rid}/config`, {
         expected_status: 204,
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
@@ -244,35 +227,20 @@ const CompetitionPage = () => {
     loadCompetition()
   }
 
-  const setState = async(status) => {
-    if (!confirm(`Are you sure to ${status} this competition ?`)) return
-
-    const [err, retData, headers] = await APIRequest(`/competitions/${cid}/${status}`, {
-        expected_status: 204,
-        method: 'POST',
-    })
-
-    if (err) {
-      error(`error while ${status} competition ${cid}: ${err}`)
-      return
-    }
-    loadCompetition()
-  }
-
-  const deleteCompetition = async (e) => {
+  const deleteRun = async (e) => {
 
     alert('No yet implemented! #TODO')
     return
     
     const id = e.target.dataset.id
-    if (!confirm(`Are you sure you want to delete Competition ${name} (${id}) ?`)) return
+    if (!confirm(`Are you sure you want to delete run #${rid} from Competition ${name} ?`)) return
 
     setLoading(true)
-    const [err, data, headers] = await APIRequest(`/competitions/${id}`, {method: "DELETE", expected_status: 204})
+    const [err, data, headers] = await APIRequest(`/competitions/${id}/runs/${rid}`, {method: "DELETE", expected_status: 204})
     if (err) {
-      error(`Error while deleting Competition ${id}: ${err}`)
+      error(`Error while deleting run #${rid} from competition ${cid}: ${err}`)
     } else {
-      success(`Competition ${id} successfully deleted`)
+      success(`Run #${rid} from competition ${cid} successfully deleted`)
     }
     loadCompetition()
   }
@@ -291,7 +259,7 @@ const CompetitionPage = () => {
     )
   }
 
-  if (!comp) {
+  if (!comp || !run) {
     error("Empty or invalid data")
     return ''
   }
@@ -300,143 +268,24 @@ const CompetitionPage = () => {
     <Grid container spacing={6}>
 
       <Grid item xs={12}>
-        <Typography variant='h5'>{comp.name}<RefreshIcon onClick={loadCompetition} /></Typography>
+        <Typography variant='h6'><Link href={`/competitions/show?cid=${comp.code}`}>{comp.name}</Link></Typography><Typography variant='h3'>Run #{rid}<RefreshIcon onClick={loadCompetition} /></Typography>
       </Grid>
 
       <Grid item xs={12} md={6} sx={{ paddingBottom: 4 }}>
         <Typography>
-          <Editable
-            text={tempComp.name}
-            title="Name"
-            onChange={updateCompetition}
-            onCancel={(e) => {
-              setTempComp(comp)
-            }}
-            childRef={nameRef}
-          >
-                    <TextField
-                      fullWidth name="name" label='Name' placeholder='Name' defaultValue={tempComp.name} inputProps={ {ref:nameRef} }
-                      onChange={(e) => {
-                        tempComp.name = e.target.value
-                        setTempComp(tempComp)
-                      }}
-                    />
-          </Editable>
-        </Typography>
-        <Typography>
-          <Editable
-            text={tempComp.code}
-            title="Code"
-            onChange={updateCompetition}
-            onCancel={(e) => {
-              setTempComp(comp)
-            }}
-            childRef={codeRef}
-          >
-                    <TextField
-                      fullWidth name="code" label='Code' placeholder='Code' defaultValue={tempComp.code} inputProps={ {ref:codeRef} }
-                      onChange={(e) => {
-                        tempComp.code = e.target.value
-                        setTempComp(tempComp)
-                      }}
-                    />
-          </Editable>
-        </Typography>
-        <Typography>
-          Status: <strong>{tempComp.state}</strong>
-{ comp.state == 'init' &&
+          Status: <strong>{run.state}</strong>
+{ run.state == 'init' &&
           <Button variant='outlined' startIcon={<RocketLaunchIcon />} onClick={() => setState('open') }>Open</Button>
 }
-{ comp.state == 'open' &&
+{ run.state == 'open' &&
           <Button variant='outlined' startIcon={<CloseIcon />} onClick={() => setState('close') }>Close</Button>
 }
-{ comp.state == 'closed' &&
+{ run.state == 'closed' &&
           <Button variant='outlined' startIcon={<AutorenewIcon />} onClick={() => setState('reopen') }>Reopen</Button>
 }
         </Typography>
         <Typography>
           Type: <strong>{tempComp.type}</strong>
-        </Typography>
-      </Grid>
-
-      <Grid item xs={12} md={6} sx={{ paddingBottom: 4 }}>
-        <Typography>
-          <Editable
-            text={tempComp.start_date}
-            title="Start date"
-            onChange={updateCompetition}
-            onCancel={(e) => {
-              setTempComp(comp)
-            }}
-            childRef={startDateRef}
-          >
-            <TextField
-              fullWidth name="start_date" label='Start date' placeholder='Start date' defaultValue={tempComp.start_date} inputProps={ {ref:startDateRef} }
-              onChange={(e) => {
-                tempComp.start_date = e.target.value
-                setTempComp(tempComp)
-              }}
-            />
-          </Editable>
-        </Typography>
-        <Typography>
-          <Editable
-            text={tempComp.end_date}
-            title="End date"
-            onChange={updateCompetition}
-            onCancel={(e) => {
-              setTempComp(comp)
-            }}
-            childRef={endDateRef}
-          >
-            <TextField
-              fullWidth name="end_date" label='End date' placeholder='End date' defaultValue={tempComp.end_date} inputProps={ {ref:endDateRef} }
-              onChange={(e) => {
-                tempComp.end_date = e.target.value
-                setTempComp(tempComp)
-              }}
-            />
-          </Editable>
-        </Typography>
-
-        <Typography>
-          <Editable
-            text={tempComp.location}
-            title="Location"
-            onChange={updateCompetition}
-            onCancel={(e) => {
-              setTempComp(comp)
-            }}
-            childRef={locationRef}
-          >
-            <TextField
-              fullWidth name="location" label='Location' placeholder='Location' defaultValue={tempComp.location} inputProps={ {ref:locationRef} }
-              onChange={(e) => {
-                tempComp.location = e.target.value
-                setTempComp(tempComp)
-              }}
-            />
-          </Editable>
-        </Typography>
-
-        <Typography>
-          <section>
-            <div>
-              <span>
-                Published: 
-                <Checkbox checked={tempComp.published} 
-                  onChange={(e) => {
-                    if (!confirm(`Are you sure to ${e.target.checked ? 'publish' : 'unpublish'} the competition ?`)) {
-                        e.target.checked = !e.target.checked
-                        return
-                    }
-                    tempComp.published = e.target.checked
-                    setTempComp(tempComp)
-                    updateCompetition(e)
-                }}/>
-              </span>
-            </div>
-          </section>
         </Typography>
       </Grid>
 
@@ -494,16 +343,16 @@ const CompetitionPage = () => {
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <InformationOutline />
-                    <TabName>Competition Settings</TabName>
+                    <TabName>Run Settings</TabName>
                   </Box>
                 }
               />
               <Tab
-                value='runs'
+                value='flights'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <LockOpenOutline />
-                    <TabName>Runs</TabName>
+                    <TabName>Flights</TabName>
                   </Box>
                 }
               />
@@ -519,25 +368,25 @@ const CompetitionPage = () => {
             </TabList>
 
             <TabPanel sx={{ p: 0 }} value='pilots'>
-              <TabPilots pilots={comp.pilots} allPilots={allPilots} update={v => setPilots(v) } />
+              <TabPilots pilots={run.pilots} allPilots={comp.pilots} update={v => setPilots(v) } />
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='teams'>
-              <TabTeams teams={comp.teams} allTeams={allTeams} update={v => setTeams(v) }/>
+              <TabTeams teams={run.teams} allTeams={comp.teams} update={v => setTeams(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='judges'>
-              <TabJudges judges={comp.judges} allJudges={allJudges} update={v => setJudges(v) }/>
+              <TabJudges judges={run.judges} allJudges={comp.judges} update={v => setJudges(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='repeatable_tricks'>
-              <TabRepeatableTricks tricks={comp.repeatable_tricks} allTricks={allTricks} update={v => setRepeatableTricks(v) }/>
+              <TabRepeatableTricks tricks={run.repeatable_tricks} allTricks={allTricks} update={v => setRepeatableTricks(v) }/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='settings'>
-              <TabConfig config={comp.config} update={v => setConfig(v) } type={comp.type}/>
+              <TabConfig config={run.config} update={v => setConfig(v) } type={comp.type}/>
             </TabPanel>
-            <TabPanel sx={{ p: 0 }} value='runs'>
-              <TabRuns comp={comp} refresh={loadCompetition}/>
+            <TabPanel sx={{ p: 0 }} value='flights'>
+              <TabFlights comp={comp} run={run} rid={rid}/>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
-              <TabCompResults code={cid} />
+              <TabRunResults code={cid} rid={rid} />
             </TabPanel>
           </TabContext>
         </Card>
@@ -546,4 +395,4 @@ const CompetitionPage = () => {
   )
 }
 
-export default CompetitionPage
+export default RunPage

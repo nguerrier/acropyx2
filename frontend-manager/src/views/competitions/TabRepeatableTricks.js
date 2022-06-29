@@ -13,9 +13,8 @@ import TextField from '@mui/material/TextField'
 // ** local imports
 import {useTricks} from 'src/util/backend'
 
-const TabRepeatableTricks = ({tricks, update}) => {
+const TabRepeatableTricks = ({tricks, allTricks, update}) => {
   // ** State
-  const [allTricks] = useTricks()
   const [value, setValue] = useState([])
 
   const removeRepeatableTrick = async(e) => {
@@ -65,11 +64,9 @@ const TabRepeatableTricks = ({tricks, update}) => {
                         setValue(v)
                       }}
                     />
-          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
-              update(value.concat(tricks))
-          }}>
-            Add repeatable_trick(s)
-          </Button>
+        </Grid>
+        <Grid item xs={6} sm={6}>
+          <Button variant='contained' onClick={() => {update(value.concat(tricks))}}><AddIcon /></Button>
         </Grid>
         <Grid item xs={12} sm={12}>
           <EnhancedTable rows={tricks} headCells={headCells} orderById='technical_coefficient' />

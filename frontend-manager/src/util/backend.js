@@ -62,7 +62,7 @@ export const usePilots = () => {
       }
 
       data = data.map(j => {
-        j.id = j._id
+        j.id = j.civlid
         return j
       })
 

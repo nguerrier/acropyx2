@@ -16,9 +16,8 @@ import Link from '@mui/material/Link'
 import {useTeams} from 'src/util/backend'
 import EnhancedTable from 'src/views/tables/EnhancedTable'
 
-const TabTeams = ({teams, update}) => {
+const TabTeams = ({teams, allTeams, update}) => {
   // ** State
-  const [allTeams] = useTeams()
   const [value, setValue] = useState([])
 
   const removeTeam = async(e) => {
@@ -79,11 +78,9 @@ const TabTeams = ({teams, update}) => {
                         setValue(v)
                       }}
                     />
-          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
-              update(value.concat(teams))
-          }}>
-            Add team(s)
-          </Button>
+        </Grid>
+        <Grid item xs={6} sm={6}>
+          <Button variant='contained' onClick={() => {update(value.concat(teams))}}><AddIcon /></Button>
         </Grid>
         <Grid item xs={12} sm={12}>
           <EnhancedTable rows={teams} headCells={headCells} orderById='rank' />

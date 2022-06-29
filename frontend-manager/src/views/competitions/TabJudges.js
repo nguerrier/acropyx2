@@ -13,9 +13,8 @@ import TextField from '@mui/material/TextField'
 // ** local imports
 import {useJudges} from 'src/util/backend'
 
-const TabJudges = ({judges, update}) => {
+const TabJudges = ({judges, allJudges, update}) => {
   // ** State
-  const [allJudges] = useJudges()
   const [value, setValue] = useState([])
 
   const removeJudge = async(e) => {
@@ -68,11 +67,9 @@ const TabJudges = ({judges, update}) => {
                         setValue(v)
                       }}
                     />
-          <Button variant='contained' startIcon={<AddIcon />} onClick={() => {
-              update(value.concat(judges))
-          }}>
-            Add judge(s)
-          </Button>
+        </Grid>
+        <Grid item xs={6} sm={6}>
+          <Button variant='contained' onClick={() => {update(value.concat(judges))}}><AddIcon /></Button>
         </Grid>
         <Grid item xs={12} sm={12}>
           <EnhancedTable rows={judges} headCells={headCells} orderById='name' />

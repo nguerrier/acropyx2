@@ -60,7 +60,6 @@ const TabResults = ({ code }) => {
 
   if (!results) return('loading ...')
 
-  console.log('overall', results.overall_results)
 
   return (
     <CardContent>
