@@ -14,10 +14,10 @@ import Button from '@mui/material/Button'
 import Modal from '@mui/material/Modal'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import TextField from '@mui/material/TextField'
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
+import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
 import Link from '@mui/material/Link'
 import AddIcon from '@mui/icons-material/Add'
 import CardHeader from '@mui/material/CardHeader'
@@ -28,8 +28,8 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import CardActions from '@mui/material/CardActions'
 import Breadcrumbs from '@mui/material/Breadcrumbs'
-import Autocomplete from '@mui/material/Autocomplete';
-import Avatar from '@mui/material/Avatar';
+import Autocomplete from '@mui/material/Autocomplete'
+import Avatar from '@mui/material/Avatar'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -41,10 +41,17 @@ import MuiTab from '@mui/material/Tab'
 import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
 import AccountOutline from 'mdi-material-ui/AccountOutline'
 import InformationOutline from 'mdi-material-ui/InformationOutline'
-import Checkbox from '@mui/material/Checkbox';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import CloseIcon from '@mui/icons-material/Close';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
+import Checkbox from '@mui/material/Checkbox'
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch'
+import CloseIcon from '@mui/icons-material/Close'
+import AutorenewIcon from '@mui/icons-material/Autorenew'
+import AccountCowboyHat from 'mdi-material-ui/AccountCowboyHat'
+import RepeatIcon from '@mui/icons-material/Repeat'
+import SettingsIcon from '@mui/icons-material/Settings'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import FlightIcon from '@mui/icons-material/Flight'
+import AccountGroup from 'mdi-material-ui/AccountGroup'
+
 
 // ** others
 import Moment from 'react-moment'
@@ -464,7 +471,7 @@ const CompetitionPage = () => {
                 value='teams'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AccountOutline />
+                    <AccountGroup />
                     <TabName>Teams</TabName>
                   </Box>
                 }
@@ -474,7 +481,7 @@ const CompetitionPage = () => {
                 value='judges'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AccountOutline />
+                    <AccountCowboyHat />
                     <TabName>Judges</TabName>
                   </Box>
                 }
@@ -484,7 +491,7 @@ const CompetitionPage = () => {
                 value='repeatable_tricks'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
+                    <RepeatIcon />
                     <TabName>Repeatables tricks</TabName>
                   </Box>
                 }
@@ -493,7 +500,7 @@ const CompetitionPage = () => {
                 value='settings'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
+                    <SettingsIcon />
                     <TabName>Competition Settings</TabName>
                   </Box>
                 }
@@ -502,7 +509,7 @@ const CompetitionPage = () => {
                 value='runs'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <LockOpenOutline />
+                    <FlightIcon />
                     <TabName>Runs</TabName>
                   </Box>
                 }
@@ -511,7 +518,7 @@ const CompetitionPage = () => {
                 value='results'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
+                    <EmojiEventsIcon />
                     <TabName>Results</TabName>
                   </Box>
                 }
