@@ -138,7 +138,7 @@ export const useJudges = () => {
 
 
 /*
- * Hook to load repeatable tricks
+ * Hook to load tricks
  */
 export const useTricks = () => {
   const [success, info, warning, error] = useNotifications()
@@ -151,6 +151,37 @@ export const useTricks = () => {
       if (err) {
           setTricks([])
           error(`Error while retrieving tricks list: ${err}`)
+          return
+      }
+
+      data = data.map(j => {
+        j.id = j._id
+        return j
+      })
+
+      setTricks(data)
+    }
+    asyncFunc()
+  }, [])
+
+  return([tricks])
+}
+
+
+/*
+ * Hook to load unique tricks
+ */
+export const useUniqueTricks = () => {
+  const [success, info, warning, error] = useNotifications()
+  const [tricks, setTricks] = useState([]);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const [err, data, headers] = await APIRequest('/tricks/uniques', {expect_json: true})
+
+      if (err) {
+          setTricks([])
+          error(`Error while retrieving unique tricks list: ${err}`)
           return
       }
 
