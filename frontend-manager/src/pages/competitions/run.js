@@ -267,7 +267,6 @@ const RunPage = () => {
   }
 
   if (!comp || !run) {
-    error("Empty or invalid data")
     return ''
   }
 

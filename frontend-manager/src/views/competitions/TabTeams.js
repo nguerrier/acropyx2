@@ -6,11 +6,12 @@ import Grid from '@mui/material/Grid'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
-import Autocomplete from '@mui/material/Autocomplete';
+import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
 import Avatar from '@mui/material/Avatar'
 import Link from '@mui/material/Link'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 // ** local imports
 import {useTeams} from 'src/util/backend'
@@ -21,7 +22,8 @@ const TabTeams = ({teams, allTeams, update}) => {
   const [value, setValue] = useState([])
 
   const removeTeam = async(e) => {
-    const id = e.target.dataset.id
+    const id = e.currentTarget.dataset.id
+    if (!id) return
     const name = allTeams.filter(p => p.id == id)[0].name
     if (!confirm(`Are you sure you want to remove team ${name} (${id}) ?`)) return
     update(teams.filter(p => p.id != id))
@@ -49,6 +51,7 @@ const TabTeams = ({teams, allTeams, update}) => {
       id: 'delete',
       type: 'ACTION',
       func: removeTeam,
+      rewrite: (v) => { return <DeleteIcon /> }
     }
   ]
 

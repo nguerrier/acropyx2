@@ -169,96 +169,6 @@ const TabConfig = ({ config,  update, type}) => {
           </Typography>
         </Grid>
 
-        <Grid item xs={3} sm={3} container>
-          <Typography>
-            <Editable
-              text={config.mark_percentages[type].technical}
-              title="Mark Percentage: Technical"
-              onChange={(e) => update(value)}
-              onCancel={(e) => {
-                setValue(config)
-              }}
-              childRef={markTechnicalRef}
-            >
-              <TextField
-                fullWidth name="mark_percentages_technical" label='Mark Percentage: Technical' placeholder='Technical' defaultValue={config.mark_percentages[type].technical} inputProps={ {ref:markTechnicalRef} }
-                onChange={(e) => {
-                  value.mark_percentages[type].technical = e.target.value
-                  setValue(value)
-                }}
-              />
-            </Editable>
-          </Typography>
-        </Grid>
-
-        <Grid item xs={3} sm={3} container>
-          <Typography>
-            <Editable
-              text={config.mark_percentages[type].choreography}
-              title="Mark Percentage: Choreography"
-              onChange={(e) => update(value)}
-              onCancel={(e) => {
-                setValue(config)
-              }}
-              childRef={markChoreographyRef}
-            >
-              <TextField
-                fullWidth name="mark_percentages_choreography" label='Mark Percentage: Choreography' placeholder='Choreography' defaultValue={config.mark_percentages[type].choreography} inputProps={ {ref:markChoreographyRef} }
-                onChange={(e) => {
-                  value.mark_percentages[type].choreography = e.target.value
-                  setValue(value)
-                }}
-              />
-            </Editable>
-          </Typography>
-        </Grid>
-
-        <Grid item xs={3} sm={3} container>
-          <Typography>
-            <Editable
-              text={config.mark_percentages[type].landing}
-              title="Mark Percentage: Landing"
-              onChange={(e) => update(value)}
-              onCancel={(e) => {
-                setValue(config)
-              }}
-              childRef={markLandingRef}
-            >
-              <TextField
-                fullWidth name="mark_percentages_landing" label='Mark Percentage: Landing' placeholder='Landing' defaultValue={config.mark_percentages[type].landing} inputProps={ {ref:markLandingRef} }
-                onChange={(e) => {
-                  value.mark_percentages[type].landing = e.target.value
-                  setValue(value)
-                }}
-              />
-            </Editable>
-          </Typography>
-        </Grid>
-
-{ type == "synchro" && 
-        <Grid item xs={3} sm={3} container>
-          <Typography>
-            <Editable
-              text={config.mark_percentages[type].synchro}
-              title="Mark Percentage: Synchro"
-              onChange={(e) => update(value)}
-              onCancel={(e) => {
-                setValue(config)
-              }}
-              childRef={markSynchroRef}
-            >
-              <TextField
-                fullWidth name="mark_percentages_synchro" label='Mark Percentage: Synchro' placeholder='Synchro' defaultValue={config.mark_percentages[type].synchro} inputProps={ {ref:markSynchroRef} }
-                onChange={(e) => {
-                  value.mark_percentages[type].synchro = e.target.value
-                  setValue(value)
-                }}
-              />
-            </Editable>
-          </Typography>
-        </Grid>
-}
-
         <Grid item xs={4} sm={4} container>
           <Typography>
             <Editable
@@ -324,6 +234,96 @@ const TabConfig = ({ config,  update, type}) => {
             </Editable>
           </Typography>
         </Grid>
+
+        <Grid item xs={4} sm={4} container>
+          <Typography>
+            <Editable
+              text={config.mark_percentages[type].technical}
+              title="Mark Percentage: Technical"
+              onChange={(e) => update(value)}
+              onCancel={(e) => {
+                setValue(config)
+              }}
+              childRef={markTechnicalRef}
+            >
+              <TextField
+                fullWidth name="mark_percentages_technical" label='Mark Percentage: Technical' placeholder='Technical' defaultValue={config.mark_percentages[type].technical} inputProps={ {ref:markTechnicalRef} }
+                onChange={(e) => {
+                  value.mark_percentages[type].technical = e.target.value
+                  setValue(value)
+                }}
+              />
+            </Editable>
+          </Typography>
+        </Grid>
+
+        <Grid item xs={4} sm={4} container>
+          <Typography>
+            <Editable
+              text={config.mark_percentages[type].choreography}
+              title="Mark Percentage: Choreography"
+              onChange={(e) => update(value)}
+              onCancel={(e) => {
+                setValue(config)
+              }}
+              childRef={markChoreographyRef}
+            >
+              <TextField
+                fullWidth name="mark_percentages_choreography" label='Mark Percentage: Choreography' placeholder='Choreography' defaultValue={config.mark_percentages[type].choreography} inputProps={ {ref:markChoreographyRef} }
+                onChange={(e) => {
+                  value.mark_percentages[type].choreography = e.target.value
+                  setValue(value)
+                }}
+              />
+            </Editable>
+          </Typography>
+        </Grid>
+
+        <Grid item xs={4} sm={4} container>
+          <Typography>
+            <Editable
+              text={config.mark_percentages[type].landing}
+              title="Mark Percentage: Landing"
+              onChange={(e) => update(value)}
+              onCancel={(e) => {
+                setValue(config)
+              }}
+              childRef={markLandingRef}
+            >
+              <TextField
+                fullWidth name="mark_percentages_landing" label='Mark Percentage: Landing' placeholder='Landing' defaultValue={config.mark_percentages[type].landing} inputProps={ {ref:markLandingRef} }
+                onChange={(e) => {
+                  value.mark_percentages[type].landing = e.target.value
+                  setValue(value)
+                }}
+              />
+            </Editable>
+          </Typography>
+        </Grid>
+
+{ type == "synchro" && 
+        <Grid item xs={4} sm={4} container>
+          <Typography>
+            <Editable
+              text={config.mark_percentages[type].synchro}
+              title="Mark Percentage: Synchro"
+              onChange={(e) => update(value)}
+              onCancel={(e) => {
+                setValue(config)
+              }}
+              childRef={markSynchroRef}
+            >
+              <TextField
+                fullWidth name="mark_percentages_synchro" label='Mark Percentage: Synchro' placeholder='Synchro' defaultValue={config.mark_percentages[type].synchro} inputProps={ {ref:markSynchroRef} }
+                onChange={(e) => {
+                  value.mark_percentages[type].synchro = e.target.value
+                  setValue(value)
+                }}
+              />
+            </Editable>
+          </Typography>
+        </Grid>
+}
 
       </Grid>
     </CardContent>

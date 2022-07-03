@@ -7,8 +7,9 @@ import EnhancedTable from 'src/views/tables/EnhancedTable'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
-import Autocomplete from '@mui/material/Autocomplete';
+import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 // ** local imports
 import {useTricks} from 'src/util/backend'
@@ -18,7 +19,8 @@ const TabRepeatableTricks = ({tricks, allTricks, update}) => {
   const [value, setValue] = useState([])
 
   const removeRepeatableTrick = async(e) => {
-    const id = e.target.dataset.id
+    const id = e.currentTarget.dataset.id
+    if (!id) return
     const name = allTricks.filter(j => j.id == id)[0].name
     if (!confirm(`Are you sure you want to remove repeatable_trick ${name} (${id}) ?`)) return
     update(tricks.filter(p => p.id != id))
@@ -35,6 +37,7 @@ const TabRepeatableTricks = ({tricks, allTricks, update}) => {
       id: 'delete',
       type: 'ACTION',
       func: removeRepeatableTrick,
+      rewrite: (v) => { return <DeleteIcon /> }
     }
   ]
 

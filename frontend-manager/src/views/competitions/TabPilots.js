@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
 import Link from '@mui/material/Link'
 import Avatar from '@mui/material/Avatar'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 // ** local imports
 import {usePilots} from 'src/util/backend'
@@ -21,7 +22,8 @@ const TabPilots = ({pilots, allPilots, update}) => {
   const [value, setValue] = useState([])
 
   const removePilot = async(e) => {
-    const id = e.target.dataset.id
+    const id = e.currentTarget.dataset.id
+    if (!id) return
     const name = allPilots.filter(p => p.civlid == id)[0].name
     if (!confirm(`Are you sure you want to remove pilot ${name} (${id}) ?`)) return
     update(pilots.filter(p => p.civlid != id))
@@ -43,15 +45,16 @@ const TabPilots = ({pilots, allPilots, update}) => {
       id: 'rank',
     },
     {
-      id: 'delete',
+      id: "delete",
       type: 'ACTION',
       func: removePilot,
+      rewrite: (v) => { return <DeleteIcon /> }
     }
   ]
 
   useEffect(() =>{
     pilots = pilots.map(p => {
-      p.delete = 'delete'
+      p.delete = "delete"
       p.id = p.civlid
       return p
     })
