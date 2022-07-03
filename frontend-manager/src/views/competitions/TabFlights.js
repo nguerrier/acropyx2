@@ -36,6 +36,15 @@ const TabFlights = ({ comp, run, rid }) => {
   // ** states
   const [currentFlight, setCurrentFlight] = useState(0)
   const [pilot, setPilot] = useState(null)
+  const [data, setData] = useState({
+    tricks: [],
+    marks: [],
+    did_not_start: false,
+    warnings: []
+  })
+  const [result, setResult] = useState({
+      judges_mark:{}
+  })
   const [uniqueTricks] = useUniqueTricks()
 
   // ** refs
@@ -57,6 +66,48 @@ const TabFlights = ({ comp, run, rid }) => {
     }
     setPilot(run.pilots[currentFlight])
     setCurrentFlight(currentFlight)
+  }
+
+  const simulateScore = async(data) => {
+
+    const body = {
+      tricks: data.tricks.filter(t => t!=null).map(t => t.name),
+      marks: data.marks,
+      did_no_start: data.did_not_start,
+      warnings: data.warnings,
+    }
+
+    const [err, retData, headers] = await APIRequest("/scores/simulate/solo", {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    })
+
+    if (err) {
+        console.log(`error while simlating score: ${err}`)
+        setResult({
+          judges_mark:{}
+        })
+        return
+    }
+    console.log("simulated score:", retData) 
+    setResult(retData)
+  }
+
+  const setMark = (type, judge, mark) => {
+    for (const [i, m] of data.marks.entries()) {
+        if (data.marks[i].judge == judge._id) {
+          data.marks[i][type] = mark
+          setData(data)
+          simulateScore(data)
+          return
+        }
+    }
+    var m = {judge: judge._id}
+    m[type] = mark
+    data.marks.push(m)
+    setData(data)
+    simulateScore(data)
   }
 
   const headCells = [
@@ -123,20 +174,22 @@ const TabFlights = ({ comp, run, rid }) => {
             <Grid xs={12}>
               <Typography variant="h5">Maneuvers</Typography>
             </Grid>
-            <Grid xs={11}>
+{ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(i => (
+            <Grid xs={12} key={i}>
                     <Autocomplete
-                      id="autocomplete-trick"
+                      id="autocomplete-trick-{i}"
+                      key="autocomplete-trick-{i}"
                       options={uniqueTricks}
-                      getOptionLabel={(p) => `${p.name} (${p.acronym})`}
+                      getOptionLabel={(p) => `${p.name} (${p.acronym}) (${p.technical_coefficient})`}
                       renderInput={(params) => <TextField {...params} name="trick" label="Trick" />}
                       onChange={(e, v) => {
-                        console.log('unique trick', v)
+                          data.tricks[i] = v
+                          simulateScore(data)
+                          setData(data)
                       }}
                     />
             </Grid>
-            <Grid xs={1}>
-                    <Button variant='contained' onClick={() => {console.log('clik add button')}}><AddIcon /></Button>
-            </Grid>
+))}
         </Grid>
         {/* 2nd column */}
         <Grid container xs={6}>
@@ -161,9 +214,11 @@ const TabFlights = ({ comp, run, rid }) => {
           <TableCell>
             Landing
           </TableCell>
+{/*
           <TableCell>
             Synchro
           </TableCell>
+*/}
       </TableRow>
     </TableHead>
             <TableBody>
@@ -174,17 +229,25 @@ const TabFlights = ({ comp, run, rid }) => {
                   <Typography>{ j.name }</Typography>
                 </TableCell>
                 <TableCell>
-                  <TextField />
+                  <TextField onChange={e => {
+                    setMark("technical", j, e.target.value)
+                  }}/>
                 </TableCell>
+                <TableCell>
+                  <TextField onChange={e => {
+                    setMark("choreography", j, e.target.value)
+                  }}/>
+                </TableCell>
+                <TableCell>
+                  <TextField onChange={e => {
+                    setMark("landing", j, e.target.value)
+                  }}/>
+                </TableCell>
+{/*
                 <TableCell>
                   <TextField />
                 </TableCell>
-                <TableCell>
-                  <TextField />
-                </TableCell>
-                <TableCell>
-                  <TextField />
-                </TableCell>
+*/}
             </TableRow>
 )})}
             </TableBody>
@@ -200,10 +263,10 @@ const TabFlights = ({ comp, run, rid }) => {
               <TableBody>
                 <TableRow>
                   <TableCell>
-                    <Typography>Technicity: 2.05</Typography>
+                    <Typography>Technicity: {result.technicity ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>% Bonus: 26%</Typography>
+                    <Typography>% Bonus: {result.bonus_percentage ?? ""}%</Typography>
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -211,41 +274,45 @@ const TabFlights = ({ comp, run, rid }) => {
                     <Typography>Judge's marks</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Technical: 7</Typography>
+                    <Typography>Technical: {result.judges_mark.technical ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Choreography: 7</Typography>
+                    <Typography>Choreography: {result.judges_mark.choreography ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Landing: 7</Typography>
+                    <Typography>Landing: {result.judges_mark.landing ?? ""}</Typography>
                   </TableCell>
+{/*
                   <TableCell>
-                    <Typography>Synchro: 7</Typography>
+                    <Typography>Synchro: {result.judges_mark.technical ?? ""}</Typography>
                   </TableCell>
+*/}
                 </TableRow>
                 <TableRow>
                   <TableCell>
                     <Typography>Final's marks</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Technical: 7</Typography>
+                    <Typography>Technical: {result.technical ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Choreography: 7</Typography>
+                    <Typography>Choreography: {result.choreography ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>Landing: 7</Typography>
+                    <Typography>Landing: {result.landing ?? ""}</Typography>
                   </TableCell>
+{/*
                   <TableCell>
                     <Typography>Synchro: 7</Typography>
                   </TableCell>
+*/}
                 </TableRow>
                 <TableRow>
                   <TableCell>
-                    <Typography>Bonuses: 1.04</Typography>
+                    <Typography>Bonuses: {result.bonus ?? ""}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="h5">Final Score: 12.404</Typography>
+                    <Typography variant="h5">Final Score: {result.score ?? ""}</Typography>
                   </TableCell>
                 </TableRow>
               </TableBody>
