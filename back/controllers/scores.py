@@ -64,6 +64,8 @@ class ScoreCtrl:
             judges = [],
             runs = [],
             deleted = None,
+            location = 'nowhere',
+            published = False,
         )
 
         return await competition.calculate_score(flight=f)

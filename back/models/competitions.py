@@ -790,7 +790,7 @@ class Competition(CompetitionNew):
         # §6.6.1 Twisted manoeuvres bonus
         # -> it is implied that the bonus is the sum of the bonuses limited to 5,3or 2
         #    minus the malus
-        mark.bonus_percentage = sum(bonuses) - malus
+        mark.bonus_percentage = sum(bonuses) - mark.malus
 
         mark_percentage = dict(config.mark_percentages)[self.type.value]
         mark.technical = mark.technicity * mark.judges_mark.technical * mark_percentage.technical / 100
