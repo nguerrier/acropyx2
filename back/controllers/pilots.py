@@ -151,7 +151,6 @@ class PilotCtrl:
 
         background_picture = html.cssselect('.image-fon img')[0].get('src')
 
-        rank = 9999
         async with httpx.AsyncClient() as client:
             link = settings.pilots.civl_link_one_pilot + str(civlid) + '/ranking?discipline_id=5'
 
@@ -165,10 +164,11 @@ class PilotCtrl:
             if ret.status_code != HTTPStatus.OK:
                 raise HTTPException(status_code=500, detail=f"Problem while fetch pilot ranking from CIVL database")
 
+        rank = 9999
         html = lxml.html.fromstring(ret.text)
-        div = html.cssselect('div#w1 div.col-2:nth-child(3)')[0]
-        if div is not None:
-            rank = int(div.text_content())
+        divs = html.cssselect('div#w1 div.col-2:nth-child(3)')
+        if divs is not None and len(divs) > 0:
+            rank = int(divs[0].text_content())
 
         pilot = Pilot(
             id=civlid,
