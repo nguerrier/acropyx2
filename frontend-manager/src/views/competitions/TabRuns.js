@@ -49,7 +49,7 @@ const TabRuns = ({comp, refresh}) => {
       id: 'name',
       type: 'LINK',
       href: (name, run) => {
-        return `/competitions/run?cid=${comp.code}&rid=${run.id}`
+        return `${process.env.NEXT_PUBLIC_APP_BASE_PATH}/competitions/run?cid=${comp.code}&rid=${run.id}`
       },
     },
     {
@@ -61,7 +61,7 @@ const TabRuns = ({comp, refresh}) => {
     setRuns(comp.runs.map((r,i) => {
       r.delete = 'delete'
       r.id = i
-      r.name = `run #${i}`
+      r.name = `run #${i+1}`
       return r
     }))
   }, [])
