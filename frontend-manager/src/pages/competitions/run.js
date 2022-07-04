@@ -413,7 +413,7 @@ const RunPage = () => {
                   <TableBody>
 { comp.pilots.sort((a,b) => b.rank-a.rank).map((p, i) => {
   return(
-    <TableRow>
+    <TableRow key="pilot-{i}">
       <TableCell>#{i+1}</TableCell>
       <TableCell>{p.name}</TableCell>
     </TableRow>

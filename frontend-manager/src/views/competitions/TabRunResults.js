@@ -6,7 +6,13 @@ import { useRouter } from 'next/router'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
-
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableRow from '@mui/material/TableRow'
+import TableHead from '@mui/material/TableHead'
+import Table from '@mui/material/Table'
+import TableContainer from '@mui/material/TableContainer'
+import Checkbox from '@mui/material/Checkbox'
 
 // ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
@@ -22,7 +28,7 @@ const TabResults = ({ code, rid }) => {
 
   const loadResults = async() => {
 
-    const [err, data, headers] = await APIRequest(`/competitions/${code}/results/${rid}`, {
+    const [err, data, headers] = await APIRequest(`/competitions/${code}/results/${rid}?published_only=false`, {
       expect_json: true
     })
 
@@ -59,6 +65,7 @@ const TabResults = ({ code, rid }) => {
   }, [])
 
   if (!results) return('loading ...')
+  console.log(results)
 
 
   return (
@@ -68,11 +75,62 @@ const TabResults = ({ code, rid }) => {
       </Typography>
       <Grid container spacing={7}>
         <Grid item xs={12} sm={12}>
-          <EnhancedTable
-            rows={results.results}
-            headCells={headCells}
-            orderById='rank'
-          />
+          <TableContainer>
+            <Table sx={{ minWidth: 750 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Rank</TableCell>
+                  <TableCell>Pilot</TableCell>
+                  <TableCell>Warnings</TableCell>
+                  <TableCell>Technicity</TableCell>
+                  <TableCell>Judges marks</TableCell>
+                  <TableCell>Final marks</TableCell>
+                  <TableCell>Bonus</TableCell>
+                  <TableCell>Score</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+{ results.results.map((r,rank) => {
+  return(
+                <TableRow key="result-{i}">
+                  <TableCell>
+                    {rank+1}
+{ r.published || <p>NOT PUBLISHED YET</p> }
+                  </TableCell>
+                  <TableCell>{r.pilot.name}</TableCell>
+                  <TableCell>
+                    <p>warnings: {r.final_marks.warnings.length}</p>
+                    <p>Malus: {r.final_marks.malus}%</p>
+                    { r.did_not_start && <p>DID NOT START</p>}
+                  </TableCell>
+                  <TableCell>
+                    <p>Techniciy: {r.final_marks.technicity}</p>
+                    <p>Bonus: {r.final_marks.bonus_percentage}%</p>
+                  </TableCell>
+                  <TableCell>
+                    <p>Technical: {r.final_marks.judges_mark.technical}</p>
+                    <p>Choreography: {r.final_marks.judges_mark.choreography}</p>
+                    <p>Landing: {r.final_marks.judges_mark.landing}</p>
+{/* TODO
+                    <p>Synchro: {r.final_marks.judges_mark.synchro}</p>
+*/}
+                  </TableCell>
+                  <TableCell>
+                    <p>Technical: {r.final_marks.technical}</p>
+                    <p>Choreography: {r.final_marks.choreography}</p>
+                    <p>Landing: {r.final_marks.landing}</p>
+{/* TODO
+                    <p>Synchro: {r.final_marks.synchro}</p>
+*/}
+                  </TableCell>
+                  <TableCell>{r.final_marks.bonus}</TableCell>
+                  <TableCell>{r.final_marks.score}</TableCell>
+                </TableRow>
+  )
+})}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
     </CardContent>

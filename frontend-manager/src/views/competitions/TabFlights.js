@@ -113,6 +113,28 @@ const TabFlights = ({ comp, run, rid }) => {
     simulateScore(data)
   }
 
+  const saveResults = async(publish) => {
+
+    const body = {
+      tricks: data.tricks.filter(t => t!=null).map(t => t.name),
+      marks: data.marks,
+      did_no_start: data.did_not_start,
+      warnings: data.warnings,
+    }
+
+    const [err, retData, headers] = await APIRequest(`/competitions/${comp.code}/runs/${rid}/flights/${pilot.civlid}/new?published=${publish}&save=${true}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    })
+
+    if (err) {
+        error(`error while saving score: ${err}`)
+    }
+
+    success(`${pilot.name}'s flights saved with a ${retData.score} score`)
+  }
+
   const headCells = [
     {
       id: 'rank',
@@ -325,21 +347,20 @@ const TabFlights = ({ comp, run, rid }) => {
           </Grid>
           {/* actions */}
           <Grid container xs={12}>
-            <Typography variant="h5">Actions</Typography>
-            <Grid container xs={12}>
               <Grid item xs={6}>
-                <Button disabled={!resultsOK}>Save Results</Button>
+                <Button variant="contained" disabled={!resultsOK} onClick={e => saveResults(false)}>Save Results</Button>
               </Grid>
               <Grid item xs={6}>
-                <Button disabled={!resultsOK}>Publish Results</Button>
+                <Button variant="contained" disabled={!resultsOK} onClick={e => saveResults(true)}>Publish Results</Button>
               </Grid>
+{/*
               <Grid item xs={6}>
                 <Button disabled={!resultsOK}>Save Results + next Run</Button>
               </Grid>
               <Grid item xs={6}>
                 <Button disabled={!resultsOK}>Publish Results + next Run</Button>
               </Grid>
-            </Grid>
+*/}
           </Grid>
         </Grid>
       </Grid>
