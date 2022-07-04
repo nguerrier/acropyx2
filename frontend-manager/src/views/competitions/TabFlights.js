@@ -45,7 +45,8 @@ const TabFlights = ({ comp, run, rid }) => {
   const [result, setResult] = useState({
       judges_mark:{}
   })
-  const [uniqueTricks] = useUniqueTricks()
+  const [uniqueTricks] = useUniqueTricks(comp.type)
+  const [resultsOK, setResultsOK] = useState(false)
 
   // ** refs
   const nameRef = useRef()
@@ -88,10 +89,12 @@ const TabFlights = ({ comp, run, rid }) => {
         setResult({
           judges_mark:{}
         })
+        setResultsOK(false)
         return
     }
     console.log("simulated score:", retData) 
     setResult(retData)
+    setResultsOK(true)
   }
 
   const setMark = (type, judge, mark) => {
@@ -214,11 +217,11 @@ const TabFlights = ({ comp, run, rid }) => {
           <TableCell>
             Landing
           </TableCell>
-{/*
+{comp.type == 'synchro' &&
           <TableCell>
             Synchro
           </TableCell>
-*/}
+}
       </TableRow>
     </TableHead>
             <TableBody>
@@ -229,25 +232,27 @@ const TabFlights = ({ comp, run, rid }) => {
                   <Typography>{ j.name }</Typography>
                 </TableCell>
                 <TableCell>
-                  <TextField onChange={e => {
+                  <TextField type="number" InputProps={{ inputProps: { min: "0", max: "10", step: "0.5" } }} onChange={e => {
                     setMark("technical", j, e.target.value)
                   }}/>
                 </TableCell>
                 <TableCell>
-                  <TextField onChange={e => {
+                  <TextField type="number" InputProps={{ inputProps: { min: "0", max: "10", step: "0.5" } }} onChange={e => {
                     setMark("choreography", j, e.target.value)
                   }}/>
                 </TableCell>
                 <TableCell>
-                  <TextField onChange={e => {
+                  <TextField type="number" InputProps={{ inputProps: { min: "0", max: "10", step: "0.5" } }} onChange={e => {
                     setMark("landing", j, e.target.value)
                   }}/>
                 </TableCell>
-{/*
+{comp.type == 'synchro' &&
                 <TableCell>
-                  <TextField />
+                  <TextField type="number" InputProps={{ inputProps: { min: "0", max: "10", step: "0.5" } }} onChange={e => {
+                    setMark("synchro", j, e.target.value)
+                  }}/>
                 </TableCell>
-*/}
+}
             </TableRow>
 )})}
             </TableBody>
@@ -282,11 +287,11 @@ const TabFlights = ({ comp, run, rid }) => {
                   <TableCell>
                     <Typography>Landing: {result.judges_mark.landing ?? ""}</Typography>
                   </TableCell>
-{/*
+{comp.type == 'synchro' &&
                   <TableCell>
-                    <Typography>Synchro: {result.judges_mark.technical ?? ""}</Typography>
+                    <Typography>Synchro: {result.judges_mark.synchro ?? ""}</Typography>
                   </TableCell>
-*/}
+}
                 </TableRow>
                 <TableRow>
                   <TableCell>
@@ -301,11 +306,11 @@ const TabFlights = ({ comp, run, rid }) => {
                   <TableCell>
                     <Typography>Landing: {result.landing ?? ""}</Typography>
                   </TableCell>
-{/*
+{comp.type == 'synchro' &&
                   <TableCell>
-                    <Typography>Synchro: 7</Typography>
+                    <Typography>Synchro: {result.synchro ?? ""}</Typography>
                   </TableCell>
-*/}
+}
                 </TableRow>
                 <TableRow>
                   <TableCell>
@@ -323,16 +328,16 @@ const TabFlights = ({ comp, run, rid }) => {
             <Typography variant="h5">Actions</Typography>
             <Grid container xs={12}>
               <Grid item xs={6}>
-                <Button>Save Results</Button>
+                <Button disabled={!resultsOK}>Save Results</Button>
               </Grid>
               <Grid item xs={6}>
-                <Button>Publish Results</Button>
+                <Button disabled={!resultsOK}>Publish Results</Button>
               </Grid>
               <Grid item xs={6}>
-                <Button>Save Results + next Run</Button>
+                <Button disabled={!resultsOK}>Save Results + next Run</Button>
               </Grid>
               <Grid item xs={6}>
-                <Button>Publish Results + next Run</Button>
+                <Button disabled={!resultsOK}>Publish Results + next Run</Button>
               </Grid>
             </Grid>
           </Grid>

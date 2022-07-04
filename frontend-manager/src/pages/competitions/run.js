@@ -52,6 +52,13 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import FlightIcon from '@mui/icons-material/Flight'
 import AccountGroup from 'mdi-material-ui/AccountGroup'
 import ParaglidingIcon from '@mui/icons-material/Paragliding'
+import ListIcon from '@mui/icons-material/List'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableRow from '@mui/material/TableRow'
+import TableHead from '@mui/material/TableHead'
+import Table from '@mui/material/Table'
+import TableContainer from '@mui/material/TableContainer'
 
 // ** others
 import Moment from 'react-moment'
@@ -363,6 +370,15 @@ const RunPage = () => {
                 }
               />
               <Tab
+                value='starting_order'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <ListIcon />
+                    <TabName>Starting Order</TabName>
+                  </Box>
+                }
+              />
+              <Tab
                 value='results'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -390,6 +406,22 @@ const RunPage = () => {
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='flights'>
               <TabFlights comp={comp} run={run} rid={rid}/>
+            </TabPanel>
+            <TabPanel sx={{ p: 0 }} value='starting_order'>
+              <TableContainer>
+                <Table sx={{ minWidth: 750 }}>
+                  <TableBody>
+{ comp.pilots.sort((a,b) => b.rank-a.rank).map((p, i) => {
+  return(
+    <TableRow>
+      <TableCell>#{i+1}</TableCell>
+      <TableCell>{p.name}</TableCell>
+    </TableRow>
+  )
+})}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
               <TabRunResults code={cid} rid={rid} />

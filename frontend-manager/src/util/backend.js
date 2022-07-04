@@ -171,13 +171,15 @@ export const useTricks = () => {
 /*
  * Hook to load unique tricks
  */
-export const useUniqueTricks = () => {
+export const useUniqueTricks = (type) => {
   const [success, info, warning, error] = useNotifications()
   const [tricks, setTricks] = useState([]);
 
+  const synchro = type == 'synchro'
+
   useEffect(() => {
     const asyncFunc = async () => {
-      const [err, data, headers] = await APIRequest('/tricks/uniques', {expect_json: true})
+      const [err, data, headers] = await APIRequest(`/tricks/uniques?synchro=${synchro}`, {expect_json: true})
 
       if (err) {
           setTricks([])
