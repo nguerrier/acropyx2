@@ -52,19 +52,16 @@ const TabFlights = ({ comp, run, rid }) => {
   const nameRef = useRef()
 
   const prevPilot = () => {
+    if (currentFlight == 0) return
     currentFlight -= 1
-    if (currentFlight < 0) currentFlight = run.pilots.length -1
     setPilot(run.pilots[currentFlight])
     setCurrentFlight(currentFlight)
   }
 
   const nextPilot = () => {
-    if (run.pilots.length == 0) {
-      currentFlight = -1
-    } else {
-      currentFlight += 1
-      if (currentFlight >= run.pilots.length) currentFlight = 0
-    }
+    console.log(currentFlight, run.pilots.length)
+    if (currentFlight+1 >= run.pilots.length)  return
+    currentFlight += 1
     setPilot(run.pilots[currentFlight])
     setCurrentFlight(currentFlight)
   }
@@ -150,8 +147,8 @@ const TabFlights = ({ comp, run, rid }) => {
   ]
 
   useEffect(() => {
-    currentFlight = run.pilots.length -1
-    setPilot(run.pilots[currentFlight])
+    currentFlight = 0
+    setPilot(run.pilots.sort((a,b) => b.rank-a.rank)[currentFlight])
     setCurrentFlight(currentFlight)
   }, [])
 
@@ -167,7 +164,7 @@ const TabFlights = ({ comp, run, rid }) => {
         <Grid item xs={10} sm={10}>
                     <Autocomplete
                       id="autocomplete-pilot"
-                      options={run.pilots}
+                      options={run.pilots.sort((a,b) => b.rank-a.rank)}
                       value={pilot}
                       getOptionLabel={(p) => `${p.name} (${p.civlid})`}
                       renderInput={(params) => <TextField {...params} name="pilot" label="Pilot" />}
@@ -184,7 +181,7 @@ const TabFlights = ({ comp, run, rid }) => {
                     />
         </Grid>
         <Grid item xs={1} sm={1}>
-            <IconButton onClick={prevPilot} >
+            <IconButton onClick={nextPilot} >
               <NavigateNextIcon />
             </IconButton>
         </Grid>
