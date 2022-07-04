@@ -26,7 +26,7 @@ class Settings(BaseSettings):
         case_sensitive = True
 
     class pilots:
-        civl_link_all_pilots = 'https://civlcomps.org/ranking/export?rankingId=1481&type=export_pilots_ranking'
+        civl_link_all_pilots = 'https://civlcomps.org/ranking/paragliding-aerobatics/pilots'
         civl_link_one_pilot = 'https://civlcomps.org/pilot/'
 
     class tricks:

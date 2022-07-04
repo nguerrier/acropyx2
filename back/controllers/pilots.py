@@ -28,6 +28,43 @@ class PilotCtrl:
         return xls
 
     @staticmethod
+    async def update_rankings():
+        async with httpx.AsyncClient() as client:
+            ret = await client.get(settings.pilots.civl_link_all_pilots)
+
+        if ret.status_code != HTTPStatus.OK:
+            log.error("unable to update pilots from %s, code=%d", settings.pilots.civl_link_all_pilots, res.status_code)
+            return
+
+        html = lxml.html.fromstring(ret.text)
+
+        xls_url = html.cssselect('a.btn-download')[0].get('href')
+
+        # fetch the excel
+        async with httpx.AsyncClient() as client:
+            ret = await client.get(xls_url)
+
+        if ret.status_code != HTTPStatus.OK:
+            log.error("unable to update pilots from %s, code=%d", settings.pilots.civl_link_all_pilots, res.status_code)
+            return
+
+        # write the excel to a temporary file and read it
+        xls = await run_in_threadpool(lambda: PilotCtrl.fetch_and_load_pilots_list(ret.content))
+        sheet = xls.active # get the first and only sheet
+        # loop over each cells of column B (where the CIVL id are)
+        # and extract civlids
+        for cell in sheet['B']:
+            try:
+                # convert the cell content to int
+                # if conversion can be made we assume it's a CIVLID
+                civlid = int(cell.value or '')
+                pilot = await Pilot.get(civlid)
+                pilot.rank = int(cell.offset(column=-1).value or '')
+                await pilot.save()
+            except ValueError:
+                continue
+
+    @staticmethod
     async def update_pilots():
         # fetch the excel
         async with httpx.AsyncClient() as client:
@@ -115,14 +152,23 @@ class PilotCtrl:
         background_picture = html.cssselect('.image-fon img')[0].get('src')
 
         rank = 9999
-        try:
-            r = html.cssselect('.paragliding-aerobatics + div')
-            if len(r) > 0:
-                r = r[0].cssselect('td')
-                if len(r) >= 2:
-                    rank = int(r[1].text)
-        except:
-            pass
+        async with httpx.AsyncClient() as client:
+            link = settings.pilots.civl_link_one_pilot + str(civlid) + '/ranking?discipline_id=5'
+
+            try:
+                ret = await client.get(link)
+            except httpx.HTTPError as exc:
+                raise HTTPException(status_code=500, detail=f"Connection failed to CIVL website  (ranking)")
+
+            if ret.status_code == HTTPStatus.NOT_FOUND:
+                raise HTTPException(status_code=404, detail=f"Pilot ranking not found in CIVL database")
+            if ret.status_code != HTTPStatus.OK:
+                raise HTTPException(status_code=500, detail=f"Problem while fetch pilot ranking from CIVL database")
+
+        html = lxml.html.fromstring(ret.text)
+        div = html.cssselect('div#w1 div.col-2:nth-child(3)')[0]
+        if div is not None:
+            rank = int(div.text_content())
 
         pilot = Pilot(
             id=civlid,

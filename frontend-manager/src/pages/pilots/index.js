@@ -86,6 +86,18 @@ const PilotsPage = () => {
       loadPilots()
   }
 
+  const updateRankings = async () => {
+    setLoading('Updating rankings')
+    const [err, data, headers] = await APIRequest('/pilots/update_rankings', {method: 'POST', expected_status: 201})
+    if (err) {
+        error(`Error updating rankings: ${err}`)
+    } else {
+        success(`Rankings successfully updated`)
+    }
+
+    loadPilots()
+  }
+
   const updateSearch = async(e) => {
     const s = e.target.value
     const civlid = parseInt(s)
@@ -136,9 +148,8 @@ const PilotsPage = () => {
         </form>
       </Grid>
       <Grid item xs={4} sm={4} container direction='row' justifyContent='flex-end'>
-        <Button variant='outlined' startIcon={<RefreshIcon />} onClick={updateAllPilots} >
-          Synchronize from CIVL
-        </Button>
+        <Button variant='outlined' startIcon={<RefreshIcon />} onClick={updateRankings} >Update rankings</Button>
+        <Button variant='outlined' startIcon={<RefreshIcon />} onClick={updateAllPilots} disabled>Synchronize from CIVL</Button>
       </Grid>
       {data.map(p => (
         <Grid item xs={12} sm={4} key={p.civlid}>

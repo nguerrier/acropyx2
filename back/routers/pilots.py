@@ -46,6 +46,19 @@ async def sync():
     await PilotCtrl.update_pilots()
 
 #
+# Update ranking of all registered pilots
+#
+@pilots.post(
+    "/update_rankings",
+    status_code=201,
+    response_description="Update ranking of all registered pilots from CIVL database",
+    response_class=Response,
+    dependencies=[Depends(auth)],
+)
+async def update_rankings():
+    await PilotCtrl.update_rankings()
+
+#
 # Create a new Pilot
 #
 @pilots.post(
