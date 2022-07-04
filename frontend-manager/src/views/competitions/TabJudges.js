@@ -34,7 +34,7 @@ const TabJudges = ({judges, allJudges, update}) => {
       id: 'country',
     },
     {
-      id: 'civlid',
+      id: 'level',
     },
     {
       id: 'delete',
@@ -76,7 +76,7 @@ const TabJudges = ({judges, allJudges, update}) => {
           <Button variant='contained' onClick={() => {update(value.concat(judges))}}><AddIcon /></Button>
         </Grid>
         <Grid item xs={12} sm={12}>
-          <EnhancedTable rows={judges} headCells={headCells} orderById='name' />
+          <EnhancedTable rows={judges} headCells={headCells} orderById='level' />
         </Grid>
       </Grid>
     </CardContent>
