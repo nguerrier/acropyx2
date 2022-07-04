@@ -417,7 +417,7 @@ class Competition(CompetitionNew):
         self.runs[i] = run
         await self.save()
 
-    async def run_results(self, run_i: int) -> RunResults:
+    async def run_results(self, run_i: int, published_only: bool = True) -> RunResults:
         run = await self.run_get(run_i)
 
         flights = []
@@ -425,7 +425,8 @@ class Competition(CompetitionNew):
         for flight in run.flights:
             if not flight.published:
                 all_published=False
-                continue
+                if published_only:
+                  continue
             flights.append(flight)
 
         flights.sort(key=lambda e: e.final_marks.score)
@@ -463,7 +464,7 @@ class Competition(CompetitionNew):
         )
 
     async def flight_save(self, run_i: int, civlid: int, flight: FlightNew, save: bool=False, published: bool=False) -> FinalMark:
-        run = await self.get_run(run_i)
+        run = await self.run_get(run_i)
 
         if civlid not in run.pilots:
             raise HTTPException(400, f"Pilot #{civlid} does not participate in the run number #{i} of the comp ({self.name})")

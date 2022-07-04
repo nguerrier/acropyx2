@@ -311,8 +311,8 @@ async def run_reopen(id: str, i: int):
 )
 async def flight_save(id: str, i: int, civlid: int, save: bool, published:bool = False, flight: FlightNew = Body(...)):
     comp = await Competition.get(id)
-    flight = await comp.flight_save(run_i=i, civlid=civlid, flight=flight, save=save, published=published)
-    return flight.export()
+    mark = await comp.flight_save(run_i=i, civlid=civlid, flight=flight, save=save, published=published)
+    return await mark.export()
 
 @competitions.get(
     "/{id}/results",
@@ -333,7 +333,7 @@ async def get_all_results(id: str):
     response_model=RunResultsExport,
     dependencies=[Depends(auth)],
 )
-async def run_get_results(id: str, i: int):
+async def run_get_results(id: str, i: int, published_only: bool = True):
     comp = await Competition.get(id)
-    res = await comp.run_results(run_i=i)
+    res = await comp.run_results(run_i=i, published_only=published_only)
     return await res.export()

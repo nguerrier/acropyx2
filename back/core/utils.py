@@ -24,8 +24,12 @@ def weight_average(list: List[tuple]) -> float:
 
     return top/bottom
 
-def float2digits(cls, v: float) -> float:
+def float2digits(cls, v) -> float:
+    if v is None:
+        return 0
     return round(v, 2)
 
-def float3digits(cls, v: float) -> float:
+def float3digits(cls, v) -> float:
+    if v is None:
+        return 0
     return round(v, 3)

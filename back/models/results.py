@@ -38,7 +38,6 @@ class RunResults(BaseModel):
         results = []
         for result in self.results:
             results.append(await result.export())
-        log.debug(results)
 
         return RunResultsExport(
             final = self.final,
