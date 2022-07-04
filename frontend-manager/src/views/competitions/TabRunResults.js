@@ -90,7 +90,7 @@ const TabResults = ({ code, rid }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-{ results.results.map((r,rank) => {
+{ results.results.sort((a,b) => b.final_marks.score-a.final_marks.score).map((r,rank) => {
   return(
                 <TableRow key="result-{i}">
                   <TableCell>
