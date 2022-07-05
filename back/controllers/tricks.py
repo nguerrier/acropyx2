@@ -37,7 +37,7 @@ class TrickCtrl:
         TrickCtrl.generate_trick(trick, [])
 
         for combination in combinations:
-            Trick.Ctrl.generate_trick(trick, combination)
+            TrickCtrl.generate_trick(trick, combination)
 
     @staticmethod
     def generate_trick(trick: Trick, combination: [Bonus]):
