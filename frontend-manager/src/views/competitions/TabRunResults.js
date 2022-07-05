@@ -96,7 +96,6 @@ const TabResults = ({ code, rid }) => {
                 <TableRow key="result-{i}">
                   <TableCell>
                     {rank+1}
-{ r.published || <p>NOT PUBLISHED YET</p> }
                   </TableCell>
                   <TableCell>{r.pilot.name}</TableCell>
                   <TableCell>
