@@ -348,7 +348,7 @@ const TabFlights = ({ comp, run, rid }) => {
                 <Button variant="contained" disabled={!resultsOK} onClick={e => saveResults(false)}>Save Results</Button>
               </Grid>
               <Grid item xs={6}>
-                <Button variant="contained" disabled={!resultsOK} onClick={e => saveResults(true)}>Publish Results</Button>
+                <Button variant="contained" disabled={!resultsOK} onClick={e => saveResults(true)}>Save & Publish Results</Button>
               </Grid>
 {/*
               <Grid item xs={6}>
