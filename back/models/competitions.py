@@ -498,7 +498,7 @@ class Competition(CompetitionNew):
         overall = {}
 
         for i, run in enumerate(self.runs):
-            run_result = await self.run_results(i)
+            run_result = await self.run_results(i, published_only=False)
             runs_results.append(run_result)
             if not run_result.final:
                 final = False
