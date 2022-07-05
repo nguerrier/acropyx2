@@ -81,6 +81,7 @@ const TabResults = ({ code, rid }) => {
                 <TableRow>
                   <TableCell>Rank</TableCell>
                   <TableCell>Pilot</TableCell>
+                  <TableCell>Tricks</TableCell>
                   <TableCell>Warnings</TableCell>
                   <TableCell>Technicity</TableCell>
                   <TableCell>Judges marks</TableCell>
@@ -98,6 +99,13 @@ const TabResults = ({ code, rid }) => {
 { r.published || <p>NOT PUBLISHED YET</p> }
                   </TableCell>
                   <TableCell>{r.pilot.name}</TableCell>
+                  <TableCell>
+{r.tricks.map(t => {
+    return(
+        <p>{t.name}</p>
+    )
+})}
+                  </TableCell>
                   <TableCell>
                     <p>warnings: {r.final_marks.warnings.length}</p>
                     <p>Malus: {r.final_marks.malus}%</p>
