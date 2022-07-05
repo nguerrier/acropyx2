@@ -660,7 +660,6 @@ class Competition(CompetitionNew):
             if judge is None:
                 raise HTTPException(400, f"judge '{m.judge}' not found")
             weight = dict(config.judge_weights)[judge.level.value]
-            log.debug(m)
             if m.technical is not None:
                 technicals.append((m.technical, weight))
             if m.choreography is not None:
@@ -672,7 +671,6 @@ class Competition(CompetitionNew):
                     synchros.append((m.synchro, weight))
 
         if (len(technicals) == 0 or len(choreographies) == 0 or len(landings) == 0 or (self.type == CompetitionType.synchro and  len(synchros) == 0)):
-            log.debug("totoit")
             raise HTTPException(400, f"not enough marks")
 
         mark.judges_mark.technical = weight_average(technicals)
@@ -745,7 +743,6 @@ class Competition(CompetitionNew):
                         if flight.pilot != f.pilot:
                             continue
                         for t in f.tricks:
-                            log.log(f"-> {t}")
                             if t.base_trick == trick.base_trick and t.uniqueness == trick.uniqueness:
                                 mark.malus += config.malus_repetition
                                 mark.notes.append(f"trick number #{trick_i} ({trick.name}) has already been performed in a previous run. Adding a {config.malus_repetition}% malus.")
