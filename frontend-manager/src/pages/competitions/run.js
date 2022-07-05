@@ -411,7 +411,7 @@ const RunPage = () => {
               <TableContainer>
                 <Table sx={{ minWidth: 750 }}>
                   <TableBody>
-{ comp.pilots.sort((a,b) => b.rank-a.rank).map((p, i) => {
+{ run.pilots.sort((a,b) => b.rank-a.rank).map((p, i) => {
   return(
     <TableRow key="pilot-{i}">
       <TableCell>#{i+1}</TableCell>
