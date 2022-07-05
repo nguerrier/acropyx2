@@ -526,7 +526,7 @@ class Competition(CompetitionNew):
 
         return CompetitionResults(
             final = final,
-            overall_results = overall_results,
+            overall_results = overall_results[::-1],
             runs_results = runs_results,
         )
 
