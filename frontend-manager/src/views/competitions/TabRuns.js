@@ -49,7 +49,7 @@ const TabRuns = ({comp, refresh}) => {
       id: 'name',
       type: 'LINK',
       href: (name, run) => {
-        return `${process.env.NEXT_PUBLIC_APP_BASE_PATH}/competitions/run?cid=${comp.code}&rid=${run.id}`
+        return `/competitions/run?cid=${comp.code}&rid=${run.id}`
       },
     },
     {
