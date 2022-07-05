@@ -14,9 +14,9 @@ from core.utils import float2digits, float3digits
 
 class JudgeMarkExport(BaseModel):
     judge: Optional[Judge]
-    technical: float
-    choreography: float
-    landing: float
+    technical: Optional[float]
+    choreography: Optional[float]
+    landing: Optional[float]
     synchro: Optional[float]
 
     class Config:
@@ -25,9 +25,9 @@ class JudgeMarkExport(BaseModel):
 
 class JudgeMark(BaseModel):
     judge: str
-    technical: float = Field(..., ge=0)
-    choreography: float = Field(..., ge=0)
-    landing: float = Field(..., ge=0)
+    technical: Optional[float] = Field(None, ge=0)
+    choreography: Optional[float] = Field(None, ge=0)
+    landing: Optional[float] = Field(None, ge=0)
     synchro: Optional[float] = Field(None, ge=0)
 
     _technical = validator('technical', allow_reuse=True)(float3digits)

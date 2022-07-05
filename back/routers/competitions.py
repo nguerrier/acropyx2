@@ -10,7 +10,7 @@ from models.competitions import Competition, CompetitionExport, CompetitionNew, 
 from models.competition_configs import CompetitionConfig
 from models.runs import Run, RunExport
 from models.marks import FinalMark, FinalMarkExport
-from models.flights import Flight, FlightNew
+from models.flights import Flight, FlightNew, FlightExport
 from models.results import RunResults, CompetitionResults, CompetitionResultsExport, RunResultsExport
 
 log = logging.getLogger(__name__)
@@ -197,6 +197,19 @@ async def close(id: str):
 async def new_run(id: str, pilots_to_qualify: int = 0):
     comp = await Competition.get(id)
     run = await comp.new_run(pilots_to_qualify)
+    return await run.export()
+
+@competitions.get(
+    "/{cid}/runs/{rid}",
+    response_description="Retrieve a run",
+    response_model=RunExport,
+    dependencies=[Depends(auth)],
+)
+async def get_run(cid: str, rid: int):
+    comp = await Competition.get(cid)
+    run = await comp.run_get(rid)
+    log.debug(type(run))
+    log.debug(run)
     return await run.export()
 
 #

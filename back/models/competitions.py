@@ -660,13 +660,20 @@ class Competition(CompetitionNew):
             if judge is None:
                 raise HTTPException(400, f"judge '{m.judge}' not found")
             weight = dict(config.judge_weights)[judge.level.value]
-            technicals.append((m.technical, weight))
-            choreographies.append((m.choreography, weight))
-            landings.append((m.landing, weight))
+            log.debug(m)
+            if m.technical is not None:
+                technicals.append((m.technical, weight))
+            if m.choreography is not None:
+                choreographies.append((m.choreography, weight))
+            if m.landing is not None:
+                landings.append((m.landing, weight))
             if self.type == CompetitionType.synchro:
-                if m.synchro is None:
-                    raise HTTPException(400, f"synchro mark is missing. It is mandatory for {self.type} runs")
-                synchros.append((m.synchro, weight))
+                if m.synchro is not None:
+                    synchros.append((m.synchro, weight))
+
+        if (len(technicals) == 0 or len(choreographies) == 0 or len(landings) == 0 or (self.type == CompetitionType.synchro and  len(synchros) == 0)):
+            log.debug("totoit")
+            raise HTTPException(400, f"not enough marks")
 
         mark.judges_mark.technical = weight_average(technicals)
         mark.judges_mark.choreography = weight_average(choreographies)
@@ -795,7 +802,8 @@ class Competition(CompetitionNew):
 
         mark_percentage = dict(config.mark_percentages)[self.type.value]
         mark.technical = mark.technicity * mark.judges_mark.technical * mark_percentage.technical / 100
-        mark.choreography = mark.judges_mark.choreography * mark_percentage.choreography / 100 
+        if len(tricks) > 0:
+            mark.choreography = mark.judges_mark.choreography * mark_percentage.choreography / 100 
         mark.landing = mark.judges_mark.landing * mark_percentage.landing / 100
 
         if type == CompetitionType.synchro:
