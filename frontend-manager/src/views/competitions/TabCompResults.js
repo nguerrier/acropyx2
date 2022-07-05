@@ -6,6 +6,12 @@ import { useRouter } from 'next/router'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableRow from '@mui/material/TableRow'
+import TableHead from '@mui/material/TableHead'
+import Table from '@mui/material/Table'
+import TableContainer from '@mui/material/TableContainer'
 
 
 // ** local
@@ -40,20 +46,6 @@ const TabResults = ({ code }) => {
     setResults(retData)
   }
 
-  const headCells = [
-    {
-      id: 'rank',
-    },
-    {
-      id: 'pilot',
-      rewrite: (p) => p.name,
-    },
-    {
-      id: 'score',
-      numeric: true,
-    }
-  ]
-
   useEffect(() => {
     loadResults()
   }, [])
@@ -68,11 +60,54 @@ const TabResults = ({ code }) => {
       </Typography>
       <Grid container spacing={7}>
         <Grid item xs={12} sm={12}>
-          <EnhancedTable
-            rows={results.overall_results}
-            headCells={headCells}
-            orderById='rank'
-          />
+          <TableContainer>
+            <Table sx={{ minWidth: 750 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Rank</TableCell>
+                  <TableCell>Pilot</TableCell>
+                  <TableCell>Runs</TableCell>
+                  <TableCell>Score</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+{ results.overall_results.map((r,rank) => {
+  return(
+                <TableRow key="result-{i}">
+                  <TableCell>
+                    {rank+1}
+                  </TableCell>
+                  <TableCell>{r.pilot.name}</TableCell>
+                  <TableCell>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>#</TableCell>
+            <TableCell>Score</TableCell>
+            <TableCell>Ranking</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+{r.result_per_run.map((rr, rid) => {
+  return(
+          <TableRow>
+            <TableCell>{rid+1}</TableCell>
+            <TableCell>{rr.score}</TableCell>
+            <TableCell>{rr.rank}</TableCell>
+          </TableRow>
+  )
+})}
+        </TableBody>
+      </Table>
+
+                  </TableCell>
+                  <TableCell>{r.score}</TableCell>
+                </TableRow>
+ )
+})}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
     </CardContent>
