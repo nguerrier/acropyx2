@@ -80,12 +80,12 @@ class FinalMarkExport(BaseModel):
 class FinalMark(BaseModel):
     judges_mark: JudgeMark
     technicity: float = Field(..., ge=0)
-    bonus_percentage: float = Field(..., ge=0)
+    bonus_percentage: float
     technical: float = Field(..., ge=0)
     choreography: float = Field(..., ge=0)
     landing: float = Field(..., ge=0)
     synchro: float = Field(..., ge=0)
-    bonus: float = Field(..., ge=0)
+    bonus: float
     score: float = Field(..., ge=0)
     warnings: list[str]
     malus: float = Field(..., ge=0)
