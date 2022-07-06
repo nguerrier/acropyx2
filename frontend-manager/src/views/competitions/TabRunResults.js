@@ -131,7 +131,7 @@ const TabResults = ({ code, rid }) => {
 */}
                   </TableCell>
                   <TableCell>{r.final_marks.bonus}</TableCell>
-                  <TableCell>{r.final_marks.score}</TableCell>
+                  <TableCell><strong>{r.final_marks.score}</strong></TableCell>
                 </TableRow>
   )
 })}

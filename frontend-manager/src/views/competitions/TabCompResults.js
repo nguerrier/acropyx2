@@ -84,13 +84,13 @@ const TabResults = ({ code }) => {
                     })}
                   </TableCell>
                   <TableCell>
-                    {r.result_per_run.map((rr, rid) => (`Score ${rr.score.toFixed(3)}`)).reduce((res, v) => {
+                    {r.result_per_run.map((rr, rid) => (rr.score.toFixed(3))).reduce((res, v) => {
                       if (!res) return [v]
                       return [...res, <br />, v]
                     })}
                   </TableCell>
                   <TableCell>
-                    {r.result_per_run.map((rr, rid) => (`Rank ${rr.rank}`)).reduce((res, v) => {
+                    {r.result_per_run.map((rr, rid) => (`${rr.rank}`)).reduce((res, v) => {
                       if (!res) return [v]
                       return [...res, <br />, v]
                     })}

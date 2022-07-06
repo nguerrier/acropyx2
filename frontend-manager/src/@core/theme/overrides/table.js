@@ -13,7 +13,7 @@ const Table = theme => {
         root: {
           textTransform: 'capitalize',
           '& .MuiTableCell-head': {
-            fontSize: '0.75rem',
+            //fontSize: '0.75rem',
             fontWeight: 600,
             letterSpacing: '0.13px'
           }
@@ -50,6 +50,7 @@ const Table = theme => {
     MuiTableCell: {
       styleOverrides: {
         root: {
+          fontSize: '1rem',
           borderBottom: `1px solid ${theme.palette.divider}`,
           '& .MuiButton-root': {
             textTransform: 'uppercase',
