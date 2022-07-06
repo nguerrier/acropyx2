@@ -66,45 +66,38 @@ const TabResults = ({ code }) => {
                 <TableRow>
                   <TableCell>Rank</TableCell>
                   <TableCell>Pilot</TableCell>
-                  <TableCell>Runs</TableCell>
+                  <TableCell>Run</TableCell>
+                  <TableCell>Score</TableCell>
+                  <TableCell>Rank</TableCell>
                   <TableCell>Score</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-{ results.overall_results.map((r,rank) => {
-  return(
-                <TableRow key="result-{i}">
-                  <TableCell>
-                    {rank+1}
-                  </TableCell>
+{ results.overall_results.map((r,rank) => (
+                <TableRow key="result-{i}-{rid}">
+                  <TableCell>{rank+1}</TableCell>
                   <TableCell>{r.pilot.name}</TableCell>
                   <TableCell>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell>Score</TableCell>
-            <TableCell>Ranking</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-{r.result_per_run.map((rr, rid) => {
-  return(
-          <TableRow>
-            <TableCell>{rid+1}</TableCell>
-            <TableCell>{rr.score}</TableCell>
-            <TableCell>{rr.rank}</TableCell>
-          </TableRow>
-  )
-})}
-        </TableBody>
-      </Table>
-
+                    {r.result_per_run.map((rr, rid) => (`Run ${rid+1}`)).reduce((res, v) => {
+                      if (!res) return [v]
+                      return [...res, <br />, v]
+                    })}
                   </TableCell>
-                  <TableCell>{r.score}</TableCell>
+                  <TableCell>
+                    {r.result_per_run.map((rr, rid) => (`Score ${rr.score.toFixed(3)}`)).reduce((res, v) => {
+                      if (!res) return [v]
+                      return [...res, <br />, v]
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    {r.result_per_run.map((rr, rid) => (`Rank ${rr.rank}`)).reduce((res, v) => {
+                      if (!res) return [v]
+                      return [...res, <br />, v]
+                    })}
+                  </TableCell>
+                  <TableCell>{r.score.toFixed(3)}</TableCell>
                 </TableRow>
- )
-})}
+))}
               </TableBody>
             </Table>
           </TableContainer>
