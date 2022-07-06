@@ -57,12 +57,12 @@ const TabResults = ({ code }) => {
 
   if (!results) return('loading ...')
 
- window.onbeforeprint = (event) => {
-  $('.hideToPrint').hide()
- }; 
- window.onafterprint = (event) => {
-  $('.hideToPrint').show()
- }; 
+  window.onbeforeprint = (event) => {
+    $('.hideToPrint').hide()
+  }; 
+  window.onafterprint = (event) => {
+    $('.hideToPrint').show()
+  }; 
 
   return (
     <CardContent>

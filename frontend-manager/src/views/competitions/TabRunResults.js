@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
+import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
 import TableBody from '@mui/material/TableBody'
@@ -13,6 +14,10 @@ import TableHead from '@mui/material/TableHead'
 import Table from '@mui/material/Table'
 import TableContainer from '@mui/material/TableContainer'
 import Checkbox from '@mui/material/Checkbox'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+
+// ** jquery
+import $ from 'jquery'
 
 // ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
@@ -65,14 +70,22 @@ const TabResults = ({ code, rid }) => {
   }, [])
 
   if (!results) return('loading ...')
-  console.log(results)
+
+  window.onbeforeprint = (event) => {
+    $('.hideToPrint').hide()
+  }; 
+  window.onafterprint = (event) => {
+    $('.hideToPrint').show()
+  }; 
 
 
   return (
     <CardContent>
-      <Typography varian="h2">
-        { results.final ? 'Final' : 'Intermediate' } results
+      <Box sx={{display: 'flex',justifyContent: 'center'}}>
+      <Typography variant="h4">
+        <EmojiEventsIcon fontSize="large"/>{ results.final ? 'Final' : 'Intermediate' } Run {parseInt(rid)+1} Results
       </Typography>
+      </Box>
       <Grid container spacing={7}>
         <Grid item xs={12} sm={12}>
           <TableContainer>
@@ -135,6 +148,116 @@ const TabResults = ({ code, rid }) => {
                 </TableRow>
   )
 })}
+                <TableRow key="blank1">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank2">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank3">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank4">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank5">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank6">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank7">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank8">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank9">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
+                <TableRow key="blank10">
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                  <TableCell>&nbsp;</TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
