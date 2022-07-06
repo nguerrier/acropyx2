@@ -197,10 +197,12 @@ const TabResults = ({ code }) => {
           </TableContainer>
         </Grid>
       </Grid>
+{/*
 { results.runs_results.map((r, rid) => {
     return(
       <TabRunResults code={code} rid={rid} />
 )})}
+*/}
     </CardContent>
   )
 }
