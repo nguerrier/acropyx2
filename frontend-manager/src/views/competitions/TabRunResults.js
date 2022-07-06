@@ -106,15 +106,15 @@ const TabResults = ({ code, rid }) => {
               <TableBody>
 { results.results.sort((a,b) => b.final_marks.score-a.final_marks.score).map((r,rank) => {
   return(
-                <TableRow key="result-{i}">
+                <TableRow key={rank}>
                   <TableCell>
                     {rank+1}
                   </TableCell>
                   <TableCell>{r.pilot.name}</TableCell>
                   <TableCell>
-{r.tricks.map(t => {
+{r.tricks.map((t, i) => {
     return(
-        <p>{t.name}</p>
+        <p key={i}>{t.name}</p>
     )
 })}
                   </TableCell>
@@ -131,17 +131,17 @@ const TabResults = ({ code, rid }) => {
                     <p>Technical: {r.final_marks.judges_mark.technical}</p>
                     <p>Choreography: {r.final_marks.judges_mark.choreography}</p>
                     <p>Landing: {r.final_marks.judges_mark.landing}</p>
-{/* TODO
+{ results.type == "synchro" &&
                     <p>Synchro: {r.final_marks.judges_mark.synchro}</p>
-*/}
+}
                   </TableCell>
                   <TableCell>
                     <p>Technical: {r.final_marks.technical}</p>
                     <p>Choreography: {r.final_marks.choreography}</p>
                     <p>Landing: {r.final_marks.landing}</p>
-{/* TODO
+{ results.type == "synchro" &&
                     <p>Synchro: {r.final_marks.synchro}</p>
-*/}
+}
                   </TableCell>
                   <TableCell>{r.final_marks.bonus}</TableCell>
                   <TableCell><strong>{r.final_marks.score}</strong></TableCell>

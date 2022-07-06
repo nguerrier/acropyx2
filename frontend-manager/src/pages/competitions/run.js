@@ -409,18 +409,31 @@ const RunPage = () => {
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='starting_order'>
               <TableContainer>
-                <Table sx={{ minWidth: 750 }}>
-                  <TableBody>
+                <CardContent>
+                  <Box sx={{display: 'flex',justifyContent: 'center'}}>
+                    <Typography variant="h4">
+                      Run {parseInt(rid)+1} Starting Order
+                    </Typography>
+                  </Box>
+                  <Table sx={{ minWidth: 750 }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Starting Position</TableCell>
+                        <TableCell>Pilot</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
 { run.pilots.sort((a,b) => b.rank-a.rank).map((p, i) => {
   return(
-    <TableRow key="pilot-{i}">
-      <TableCell>#{i+1}</TableCell>
-      <TableCell>{p.name}</TableCell>
-    </TableRow>
+                      <TableRow key={`pilot-${i}`}>
+                        <TableCell>#{i+1}</TableCell>
+                        <TableCell>{p.name}</TableCell>
+                      </TableRow>
   )
 })}
-                  </TableBody>
-                </Table>
+                    </TableBody>
+                  </Table>
+                </CardContent>
               </TableContainer>
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
