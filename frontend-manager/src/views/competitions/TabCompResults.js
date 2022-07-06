@@ -112,7 +112,6 @@ const TabResults = ({ code }) => {
                   <TableCell>{r.score.toFixed(3)}</TableCell>
                 </TableRow>
 ))}
-{/*
                 <TableRow key="blank1">
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
@@ -193,7 +192,6 @@ const TabResults = ({ code }) => {
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
                 </TableRow>
-*/}
               </TableBody>
             </Table>
           </TableContainer>

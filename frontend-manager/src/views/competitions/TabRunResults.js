@@ -148,7 +148,6 @@ const TabResults = ({ code, rid }) => {
                 </TableRow>
   )
 })}
-{/*
                 <TableRow key="blank1">
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
@@ -259,7 +258,6 @@ const TabResults = ({ code, rid }) => {
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
                 </TableRow>
-*/}
               </TableBody>
             </Table>
           </TableContainer>
