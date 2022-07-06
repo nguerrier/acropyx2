@@ -506,7 +506,7 @@ class Competition(CompetitionNew):
             for j, result in enumerate(run_result.results):
 
                 run_result_summary = RunResultSummary(
-                    rank = j+1,
+                    rank = len(run_result.results)-j,
                     score = result.final_marks.score
                 )
 
