@@ -38,7 +38,7 @@ const LayoutAppBar = props => {
   const { contentWidth } = settings
 
   return (
-    <AppBar elevation={0} color='default' className='layout-navbar' position='static'>
+    <AppBar elevation={0} color='default' className='layout-navbar hideToPrint' position='static'>
       <Toolbar
         className='navbar-content-container'
       >

@@ -307,7 +307,7 @@ const CompetitionPage = () => {
     <Grid container spacing={6}>
 
       <Grid item xs={12}>
-        <Typography variant='h5'>{comp.name}<RefreshIcon onClick={loadCompetition} /></Typography>
+        <Typography variant='h5'>{comp.name}<RefreshIcon className="hideToPrint" onClick={loadCompetition} /></Typography>
       </Grid>
 
       <Grid item xs={12} md={6} sx={{ paddingBottom: 4 }}>
@@ -352,13 +352,13 @@ const CompetitionPage = () => {
         <Typography>
           Status: <strong>{tempComp.state}</strong>
 { comp.state == 'init' &&
-          <Button variant='outlined' startIcon={<RocketLaunchIcon />} onClick={() => setState('open') }>Open</Button>
+          <Button variant='outlined' className="hideToPrint" startIcon={<RocketLaunchIcon />} onClick={() => setState('open') }>Open</Button>
 }
 { comp.state == 'open' &&
-          <Button variant='outlined' startIcon={<CloseIcon />} onClick={() => setState('close') }>Close</Button>
+          <Button variant='outlined' className="hideToPrint" startIcon={<CloseIcon />} onClick={() => setState('close') }>Close</Button>
 }
 { comp.state == 'closed' &&
-          <Button variant='outlined' startIcon={<AutorenewIcon />} onClick={() => setState('reopen') }>Reopen</Button>
+          <Button variant='outlined' className="hideToPrint" startIcon={<AutorenewIcon />} onClick={() => setState('reopen') }>Reopen</Button>
 }
         </Typography>
         <Typography>
@@ -450,7 +450,7 @@ const CompetitionPage = () => {
       <Grid item xs={12}>
         <Card>
           <TabContext value={tabContext}>
-            <TabList
+            <TabList className="hideToPrint"
               onChange={(e, v) => {setTabContext(v)}}
               aria-label='account-settings tabs'
               sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}

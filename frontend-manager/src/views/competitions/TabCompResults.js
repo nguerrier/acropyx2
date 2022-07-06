@@ -4,6 +4,8 @@ import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
 import TableBody from '@mui/material/TableBody'
@@ -12,7 +14,10 @@ import TableRow from '@mui/material/TableRow'
 import TableHead from '@mui/material/TableHead'
 import Table from '@mui/material/Table'
 import TableContainer from '@mui/material/TableContainer'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 
+// ** jquery
+import $ from 'jquery'
 
 // ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
@@ -52,12 +57,20 @@ const TabResults = ({ code }) => {
 
   if (!results) return('loading ...')
 
+ window.onbeforeprint = (event) => {
+  $('.hideToPrint').hide()
+ }; 
+ window.onafterprint = (event) => {
+  $('.hideToPrint').show()
+ }; 
 
   return (
     <CardContent>
-      <Typography varian="h2">
-        { results.final ? 'Final' : 'Intermediate' } results
+      <Box sx={{display: 'flex',justifyContent: 'center'}}>
+      <Typography variant="h4">
+        <EmojiEventsIcon fontSize="large"/>{ results.final ? 'Final' : 'Intermediate' } Overall
       </Typography>
+      </Box>
       <Grid container spacing={7}>
         <Grid item xs={12} sm={12}>
           <TableContainer>
@@ -74,7 +87,7 @@ const TabResults = ({ code }) => {
               </TableHead>
               <TableBody>
 { results.overall_results.map((r,rank) => (
-                <TableRow key="result-{i}-{rid}">
+                <TableRow key={`result-${rank}`}>
                   <TableCell>{rank+1}</TableCell>
                   <TableCell>{r.pilot.name}</TableCell>
                   <TableCell>
