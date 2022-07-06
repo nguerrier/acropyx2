@@ -57,7 +57,7 @@ class Settings(BaseSettings):
                 ["twisted", "flip"],
                 ["twisted", "double flip"],
 
-                ["devil twist", "twisted exit"],
+#                ["devil twist", "twisted exit"],
                 ["devil twist", "full twist"],
                 ["devil twist", "to twisted sat"],
                 ["devil twist", "flip"],
