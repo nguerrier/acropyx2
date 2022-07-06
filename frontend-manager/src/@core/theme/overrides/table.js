@@ -25,11 +25,12 @@ const Table = theme => {
         root: {
           '& .MuiTableCell-body': {
             letterSpacing: '0.25px',
-            color: theme.palette.text.secondary,
+            color: theme.palette.text.primary,
             '&:not(.MuiTableCell-sizeSmall):not(.MuiTableCell-paddingCheckbox):not(.MuiTableCell-paddingNone)': {
               paddingTop: theme.spacing(3.5),
               paddingBottom: theme.spacing(3.5)
-            }
+            },
+            '@media print':{color:'black'}
           }
         }
       }
