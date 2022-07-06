@@ -42,8 +42,6 @@ class TrickCtrl:
     @staticmethod
     def generate_trick(trick: Trick, combination: [Bonus]):
 
-        log.debug(combination)
-
         pre_name = ""
         pre_acronym = ""
         post_name = ""
@@ -65,7 +63,7 @@ class TrickCtrl:
             if post:
                 post_acronym = f"{post_acronym}{post}"
                 if post_name:
-                    post_name = f"{bonus.name} {post_name}"
+                    post_name = f"{post_name} {bonus.name}"
                 else:
                     post_name = bonus.name
 
@@ -83,7 +81,6 @@ class TrickCtrl:
             acronym = f"{pre_acronym}{acronym}"
         if post_acronym:
             acronym = f"{acronym}{post_acronym}"
-
 
         uniqueness = []
         if "reverse" in bonus_types:
