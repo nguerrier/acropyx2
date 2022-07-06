@@ -21,6 +21,7 @@ import $ from 'jquery'
 
 // ** local
 import EnhancedTable from 'src/views/tables/EnhancedTable'
+import TabRunResults from 'src/views/competitions/TabRunResults'
 import { useNotifications } from 'src/util/notifications'
 import { APIRequest } from 'src/util/backend'
 
@@ -111,6 +112,7 @@ const TabResults = ({ code }) => {
                   <TableCell>{r.score.toFixed(3)}</TableCell>
                 </TableRow>
 ))}
+{/*
                 <TableRow key="blank1">
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
@@ -191,11 +193,16 @@ const TabResults = ({ code }) => {
                   <TableCell>&nbsp;</TableCell>
                   <TableCell>&nbsp;</TableCell>
                 </TableRow>
+*/}
               </TableBody>
             </Table>
           </TableContainer>
         </Grid>
       </Grid>
+{ results.runs_results.map((r, rid) => {
+    return(
+      <TabRunResults code={code} rid={rid} />
+)})}
     </CardContent>
   )
 }
