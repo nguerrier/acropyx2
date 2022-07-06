@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 class RunResultsExport(BaseModel):
     final: bool
+    type: str
     results: List[FlightExport]
 
     class Config:
@@ -24,6 +25,7 @@ class RunResultsExport(BaseModel):
 
 class RunResults(BaseModel):
     final: bool
+    type: str
     results: List[Flight]
 
     class Config:
@@ -41,6 +43,7 @@ class RunResults(BaseModel):
 
         return RunResultsExport(
             final = self.final,
+            type = self.type,
             results = results,
         )
 
@@ -100,6 +103,7 @@ class CompetitionPilotResults(BaseModel):
 
 class CompetitionResultsExport(BaseModel):
     final: bool
+    type: str
     overall_results: List[CompetitionPilotResultsExport]
     runs_results: List[RunResultsExport]
 
@@ -108,6 +112,7 @@ class CompetitionResultsExport(BaseModel):
 
 class CompetitionResults(BaseModel):
     final: bool
+    type: str
     overall_results: List[CompetitionPilotResults]
     runs_results: List[RunResults]
 
@@ -131,6 +136,7 @@ class CompetitionResults(BaseModel):
 
         return CompetitionResultsExport(
             final = self.final,
+            type = self.type,
             overall_results = overall_results,
             runs_results = runs_results,
         )

@@ -433,6 +433,7 @@ class Competition(CompetitionNew):
 
         return RunResults(
             results = flights,
+            type = self.type,
             final = (run.state == RunState.closed) and all_published
         )
 
@@ -526,6 +527,7 @@ class Competition(CompetitionNew):
 
         return CompetitionResults(
             final = final,
+            type = self.type,
             overall_results = overall_results[::-1],
             runs_results = runs_results,
         )
