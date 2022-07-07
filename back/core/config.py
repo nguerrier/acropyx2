@@ -50,7 +50,7 @@ class Settings(BaseSettings):
         ]
 
         bonus_constraints = [
-                ["twisted exit"],
+#                ["twisted exit"],
                 ["twisted", "devil twist"],
                 ["twisted", "full twist"],
                 ["twisted", "to twisted sat"],
