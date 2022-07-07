@@ -18,6 +18,7 @@ tricks = APIRouter()
     "/",
     response_description="List all tricks",
     response_model=List[Trick],
+    dependencies=[Depends(auth)],
 )
 async def list(deleted: bool = False, repeatable: bool = None):
     return await Trick.getall(deleted = deleted, repeatable = repeatable)
@@ -29,6 +30,7 @@ async def list(deleted: bool = False, repeatable: bool = None):
     "/uniques",
     response_description="Get all unique tricks",
     response_model=List[UniqueTrick],
+    dependencies=[Depends(auth)],
 )
 async def get_unique_tricks(solo: bool=True, synchro: bool=True):
     return await Trick.get_unique_tricks(solo, synchro)
@@ -65,6 +67,7 @@ async def get_directions():
     "/unique/{id:path}", # https://github.com/tiangolo/fastapi/issues/4390#issuecomment-1019558295
     response_description="Get a Unique Trick",
     response_model=UniqueTrick,
+    dependencies=[Depends(auth)],
 )
 async def get_unique_trick(id):
     return await Trick.get_unique_trick(id)
@@ -76,6 +79,7 @@ async def get_unique_trick(id):
     "/{id}",
     response_description="Get a Trick",
     response_model=Trick,
+    dependencies=[Depends(auth)],
 )
 async def get(id: str, deleted: bool = False):
     return await Trick.get(id, deleted)

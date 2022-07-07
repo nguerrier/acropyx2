@@ -17,6 +17,7 @@ pilots = APIRouter()
     "/",
     response_description="List all pilots",
     response_model=List[Pilot],
+    dependencies=[Depends(auth)],
 )
 async def list():
     return await Pilot.getall()
@@ -28,6 +29,7 @@ async def list():
     "/{civlid}",
     response_description="Get a Pilot",
     response_model=Pilot,
+    dependencies=[Depends(auth)],
 )
 async def get(civlid: int):
     return await Pilot.get(civlid)

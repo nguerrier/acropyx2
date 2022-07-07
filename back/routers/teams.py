@@ -16,6 +16,7 @@ teams = APIRouter()
     "/",
     response_description="List all teams",
     response_model=List[TeamExport],
+    dependencies=[Depends(auth)],
 )
 async def list(deleted: bool = False):
     teams = []
@@ -30,10 +31,10 @@ async def list(deleted: bool = False):
     "/{id}",
     response_description="Get a Team",
     response_model=TeamExport,
+    dependencies=[Depends(auth)],
 )
 async def get(id: str, deleted: bool = False):
     team = await Team.get(id, deleted)
-    log.debug(team)
     return await team.export()
 
 #

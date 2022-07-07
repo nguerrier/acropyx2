@@ -56,6 +56,24 @@ class CompetitionExport(BaseModel):
     class Config:
         json_encoders = {ObjectId: str}
 
+class CompetitionPublicExport(BaseModel):
+    id: str = Field(alias="_id")
+    name: str
+    code: str
+    start_date: date
+    end_date: date
+    location: str
+    published: bool
+    type: CompetitionType
+    pilots: List[Pilot] 
+    teams: List[TeamExport]
+    judges: List[Judge]
+    state: CompetitionState
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+
 class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
     code: Optional[str] = Field(regex='^[a-z][a-z0-9-]*[a-z0-9]')
@@ -209,6 +227,23 @@ class Competition(CompetitionNew):
             state = self.state,
             config = self.config,
             runs = runs
+        )
+
+    async def export_public(self) -> CompetitionPublicExport:
+        comp = await self.export()
+        return CompetitionPublicExport(
+            _id = str(comp.id),
+            name = comp.name,
+            code = comp.code,
+            start_date = comp.start_date,
+            end_date = comp.end_date,
+            location = comp.location,
+            published = comp.published,
+            type = comp.type,
+            pilots = comp.pilots,
+            teams = comp.teams,
+            judges = comp.judges,
+            state = comp.state
         )
 
 #    async def sort_pilots(self):

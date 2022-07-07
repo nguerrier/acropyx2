@@ -9,6 +9,7 @@ from routers.teams import teams
 from routers.tricks import tricks
 from routers.competitions import competitions
 from routers.scores import scores
+from routers.public import public
 
 from core.config import settings
 
@@ -21,6 +22,7 @@ router.include_router(teams, prefix="/teams", tags=["teams"])
 router.include_router(tricks, prefix="/tricks", tags=["tricks"])
 router.include_router(competitions, prefix="/competitions", tags=["competitions"])
 router.include_router(scores, prefix="/scores", tags=["scores"])
+router.include_router(public, prefix="/public", tags=["public"])
 
 @router.get(
     "/",

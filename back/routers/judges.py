@@ -16,6 +16,7 @@ judges = APIRouter()
     "/",
     response_description="List all judges",
     response_model=List[Judge],
+    dependencies=[Depends(auth)],
 )
 async def list(deleted: bool = False):
     return await Judge.getall(deleted)
@@ -27,6 +28,7 @@ async def list(deleted: bool = False):
     "/levels",
     response_description="Get list of judges levels",
     response_model=List[JudgeLevel],
+    dependencies=[Depends(auth)],
 )
 def get_levels():
     return [level.value for level in JudgeLevel]
@@ -38,6 +40,7 @@ def get_levels():
     "/{id}",
     response_description="Get a Judge",
     response_model=Judge,
+    dependencies=[Depends(auth)],
 )
 async def get(id: str, deleted: bool = False):
     return await Judge.get(id, deleted)
