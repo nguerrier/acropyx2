@@ -285,7 +285,7 @@ export default function EnhancedTable({ rows, headCells, orderById, actionRowId 
                           case 'ACTION':
                             return (
                               <TableCell align='left'>
-                                <Link href={'/competitions/' + row.id}>{row[h.id]}</Link>
+                                <Link href={h.path + '/' + row.id}>{row[h.id]}</Link>
                               </TableCell>
                             )
                           default:

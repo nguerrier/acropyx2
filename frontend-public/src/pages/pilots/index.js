@@ -57,7 +57,7 @@ const PilotsPage = ({ data }) => {
 }
 
 export async function getStaticProps() {
-  let data = await get('pilots')
+  let data = await get('public/pilots')
 
   // Pass data to the page via props
   return { props: { data } }
