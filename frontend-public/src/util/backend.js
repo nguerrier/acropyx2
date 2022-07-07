@@ -10,6 +10,7 @@ export async function getAuthToken() {
 }
 
 export async function get(route) {
+  console.log(route)
   //const token = await getAuthToken()
   // var myHeaders = new Headers({
   //   Authorization: 'Bearer ' + token.access_token
