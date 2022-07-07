@@ -251,6 +251,10 @@ class Competition(CompetitionNew):
 
     async def export_public_with_results(self) -> CompetitionPublicExportWithResults:
         results = await self.results()
+        for result in results.runs_results:
+            for r in result.results:
+                r.marks = []
+
         comp = await self.export_public()
         return CompetitionPublicExportWithResults(
             _id = str(comp.id),
