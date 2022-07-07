@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response
 from typing import List
 
-from models.competitions import Competition, CompetitionExport, CompetitionNew, CompetitionState, CompetitionPublicExport
+from models.competitions import Competition, CompetitionExport, CompetitionNew, CompetitionState, CompetitionPublicExport, CompetitionPublicExportWithResults
 from models.pilots import Pilot
 from models.judges import Judge
 from models.teams import Team, TeamExport
@@ -104,8 +104,8 @@ async def list():
 @public.get(
     "/competitions/{id}",
     response_description="Get a Competition",
-    response_model=CompetitionPublicExport,
+    response_model=CompetitionPublicExportWithResults,
 )
 async def get_by_id(id: str):
     comp = await Competition.get(id)
-    return await comp.export_public()
+    return await comp.export_public_with_results()

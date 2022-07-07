@@ -18,7 +18,7 @@ from models.tricks import Trick
 from models.flights import Flight, FlightNew
 from models.marks import JudgeMark, FinalMark
 from models.competition_configs import CompetitionConfig
-from models.results import RunResults, CompetitionResults, CompetitionPilotResults, RunResultSummary
+from models.results import RunResults, CompetitionResults, CompetitionPilotResults, RunResultSummary, CompetitionResultsExport
 
 from core.database import db, PyObjectId
 from core.config import settings
@@ -56,6 +56,7 @@ class CompetitionExport(BaseModel):
     class Config:
         json_encoders = {ObjectId: str}
 
+
 class CompetitionPublicExport(BaseModel):
     id: str = Field(alias="_id")
     name: str
@@ -73,6 +74,8 @@ class CompetitionPublicExport(BaseModel):
     class Config:
         json_encoders = {ObjectId: str}
 
+class CompetitionPublicExportWithResults(CompetitionPublicExport):
+    results: CompetitionResultsExport
 
 class CompetitionNew(BaseModel):
     name: str = Field(..., min_len=1)
@@ -244,6 +247,25 @@ class Competition(CompetitionNew):
             teams = comp.teams,
             judges = comp.judges,
             state = comp.state
+        )
+
+    async def export_public_with_results(self) -> CompetitionPublicExportWithResults:
+        results = await self.results()
+        comp = await self.export_public()
+        return CompetitionPublicExportWithResults(
+            _id = str(comp.id),
+            name = comp.name,
+            code = comp.code,
+            start_date = comp.start_date,
+            end_date = comp.end_date,
+            location = comp.location,
+            published = comp.published,
+            type = comp.type,
+            pilots = comp.pilots,
+            teams = comp.teams,
+            judges = comp.judges,
+            state = comp.state,
+            results = await results.export()
         )
 
 #    async def sort_pilots(self):
