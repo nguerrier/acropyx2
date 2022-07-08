@@ -38,6 +38,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Table from '@mui/material/Table'
+import SquareIcon from '@mui/icons-material/Square'
 
 // ** Third Party Imports
 import DatePicker from 'react-datepicker'
@@ -50,12 +51,25 @@ const CustomInput = forwardRef((props, ref) => {
   return <TextField inputRef={ref} label='Birth Date' fullWidth {...props} />
 })
 
-function createData(rank, name, score) {
-  return { rank, name, score }
+function createData(rank, name, score, tricks, finalMarks) {
+  return { rank, name, score, tricks, finalMarks }
 }
 
 function TabPanel(props) {
-  const { children, value, index, rows, ...other } = props
+  const { children, value, index, rows, handleBackButton, ...other } = props
+  const [selectedPilotIndex, setSelectedPilotIndex] = useState(0)
+  const [displayPilotResume, setDisplayPilotResume] = useState(false)
+
+  const handlePilot = (event, index) => {
+    if (rows[index].tricks) {
+      setSelectedPilotIndex(index)
+      setDisplayPilotResume(true)
+    }
+  }
+
+  const hiddenPilotResume = (event, index) => {
+    setDisplayPilotResume(false)
+  }
 
   return (
     <div
@@ -67,9 +81,11 @@ function TabPanel(props) {
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} hidden={displayPilotResume}>
+            <IconButton aria-label='delete' onClick={event => handleBackButton(event, 0)}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography>{children}</Typography>
             <Table aria-label='simple table'>
               <TableHead>
                 <TableRow>
@@ -80,7 +96,12 @@ function TabPanel(props) {
               </TableHead>
               <TableBody>
                 {rows.map((row, index) => (
-                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow
+                    hover
+                    key={index}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    onClick={event => handlePilot(event, index)}
+                  >
                     <TableCell component='th' scope='row'>
                       {index + 1}
                     </TableCell>
@@ -91,6 +112,51 @@ function TabPanel(props) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6} hidden={!displayPilotResume}>
+              <IconButton aria-label='delete' onClick={event => hiddenPilotResume(event, 0)}>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography>{children}</Typography>
+              <Typography>{rows[selectedPilotIndex].name}</Typography>
+              <Typography variant='span' gutterBottom component='div'>
+                Tricks:
+              </Typography>
+              <ol>
+                {rows[selectedPilotIndex].tricks?.map((t, i) => (
+                  <li key={i}>
+                    {t.name
+                      .split(' ')
+                      .map(word => word[0].toUpperCase() + word.substring(1))
+                      .join(' ')}
+                  </li>
+                ))}
+              </ol>
+
+              <Typography variant='span' gutterBottom component='div'>
+                Final Marks:
+              </Typography>
+              <ul>
+                <li>Technicity: {rows[selectedPilotIndex].finalMarks?.technicity}</li>
+                <li>Bonus percentage: {rows[selectedPilotIndex].finalMarks?.bonus_percentage}</li>
+                <li>Technical: {rows[selectedPilotIndex].finalMarks?.technical}</li>
+                <li>Choreography: {rows[selectedPilotIndex].finalMarks?.choreography}</li>
+                <li>Landing: {rows[selectedPilotIndex].finalMarks?.landing}</li>
+                <li>Bonus: {rows[selectedPilotIndex].finalMarks?.bonus}</li>
+                <li>Malus: {rows[selectedPilotIndex].finalMarks?.malus}</li>
+                <li>Score: {rows[selectedPilotIndex].finalMarks?.score}</li>
+                <li>
+                  Warnings:
+                  <ul>
+                    {rows[selectedPilotIndex].finalMarks?.warnings.map((w, i) => (
+                      <li key={i}>w</li>
+                    ))}
+                  </ul>
+                </li>
+              </ul>
+            </Grid>
+          </Grid>
         </Box>
       )}
     </div>
@@ -117,12 +183,8 @@ const TabResults = ({ results }) => {
   return (
     <CardContent>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6} sx={{ marginTop: 4.8 }}>
-          <Box hidden={value == -99}>
-            <IconButton aria-label='delete' onClick={event => handleBackButton(event, 0)}>
-              <ArrowBackIcon />
-            </IconButton>
-          </Box>
+        <Grid item xs={12} md={6}>
+          <Box hidden={value == -99}></Box>
           <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }} hidden={value != -99}>
             <ListItemButton onClick={event => handleListItemClick(event, 0)}>
               <ListItemAvatar>
@@ -149,6 +211,7 @@ const TabResults = ({ results }) => {
               .map((r, index) => createData(index, r.pilot.name, r.score))}
             index={0}
             value={value}
+            handleBackButton={event => handleBackButton(event, 100)}
           >
             Overall results
           </TabPanel>
@@ -157,9 +220,10 @@ const TabResults = ({ results }) => {
               key={index + 1}
               rows={rr.results
                 .sort((a, b) => b.final_marks.score - a.final_marks.score)
-                .map((r, index) => createData(index, r.pilot.name, r.final_marks.score))}
+                .map((r, index) => createData(index, r.pilot.name, r.final_marks.score, r.tricks, r.final_marks))}
               index={index + 1}
               value={value}
+              handleBackButton={event => handleBackButton(event, 100)}
             >
               Run {index + 1}
             </TabPanel>
