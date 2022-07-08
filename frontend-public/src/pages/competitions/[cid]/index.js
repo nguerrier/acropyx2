@@ -16,11 +16,14 @@ import MuiTab from '@mui/material/Tab'
 import AccountOutline from 'mdi-material-ui/AccountOutline'
 import LockOpenOutline from 'mdi-material-ui/LockOpenOutline'
 import InformationOutline from 'mdi-material-ui/InformationOutline'
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import GavelIcon from '@mui/icons-material/Gavel';
 
 // ** Demo Tabs Imports
 // import TabInfo from 'src/views/account-settings/TabInfo'
 import TabPilots from 'src/views/competitions/TabPilots'
 import TabResults from 'src/views/competitions/TabResults'
+import TabJudges from 'src/views/competitions/TabJudges'
 
 // import TabAccount from 'src/views/account-settings/TabAccount'
 // import TabSecurity from 'src/views/account-settings/TabSecurity'
@@ -59,7 +62,7 @@ const CompetitionsPage = ({ data }) => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <Typography variant='h5'>Competitions - {data.name}</Typography>
+        <Typography variant='h5'>Competition - {data.name}</Typography>
       </Grid>
       <Grid item xs={12}>
         <Card>
@@ -73,7 +76,7 @@ const CompetitionsPage = ({ data }) => {
                 value='results'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
+                    <FormatListNumberedIcon />
                     <TabName>Results</TabName>
                   </Box>
                 }
@@ -91,7 +94,7 @@ const CompetitionsPage = ({ data }) => {
                 value='judges'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <LockOpenOutline />
+                    <GavelIcon />
                     <TabName>Judges</TabName>
                   </Box>
                 }
@@ -99,11 +102,10 @@ const CompetitionsPage = ({ data }) => {
             </TabList>
 
             <TabPanel sx={{ p: 0 }} value='pilots'>
-
-              {/* <TabAccount /> */}
+              { <TabPilots pilots={data.pilots} /> }
             </TabPanel>
-            <TabPanel sx={{ p: 0 }} value='judge'>
-              {/* <TabSecurity /> */}
+            <TabPanel sx={{ p: 0 }} value='judges'>
+              { <TabJudges judges={data.judges} /> }
             </TabPanel>
             <TabPanel sx={{ p: 0 }} value='results'>
               {<TabResults results={data.results} />}
@@ -136,7 +138,7 @@ export async function getStaticProps({ params }) {
   //let data = mockData;
 
   // Pass data to the page via props
-  return { props: { data } }
+  return { props: { data }, revalidate: 10 }
 }
 
 const mockData = {
