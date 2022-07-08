@@ -13,6 +13,7 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     type: 'ACTION',
+    path: '/competitions',
     label: 'Name'
   },
   {
@@ -34,12 +35,6 @@ const headCells = [
     label: 'End date'
   },
   {
-    id: 'type',
-    numeric: false,
-    disablePadding: false,
-    label: 'Type'
-  },
-  {
     id: 'pilots',
     numeric: false,
     disablePadding: false,
@@ -50,26 +45,18 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     label: 'Judges'
-  },
-  {
-    id: 'runs',
-    numeric: false,
-    disablePadding: false,
-    label: 'Runs'
   }
 ]
 
-function createData(id, name, state, start_date, end_date, type, pilots, judges, runs) {
+function createData(id, name, state, start_date, end_date, pilots, judges) {
   return {
     id,
     name,
     state,
     start_date,
     end_date,
-    type,
     pilots,
-    judges,
-    runs
+    judges
   }
 }
 
@@ -84,15 +71,13 @@ const CompetitionsPage = ({ data }) => {
           <EnhancedTable
             rows={data.map(p =>
               createData(
-                p._id,
+                p.code,
                 p.name,
                 p.state,
                 p.start_date,
                 p.end_date,
-                p.type,
                 p.pilots.length,
-                p.judges.length,
-                p.runs.length
+                p.judges.length
               )
             )}
             headCells={headCells}
@@ -105,10 +90,8 @@ const CompetitionsPage = ({ data }) => {
 }
 
 // This gets called on every request
-export async function getServerSideProps() {
-  let data = await get('competitions')
-
-  console.log(data[0])
+export async function getStaticProps() {
+  let data = await get('public/competitions')
 
   // Pass data to the page via props
   return { props: { data } }
