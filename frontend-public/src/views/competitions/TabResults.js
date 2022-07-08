@@ -41,7 +41,7 @@ const CustomInput = forwardRef((props, ref) => {
 })
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, data, ...other } = props;
 
   return (
     <div
@@ -54,6 +54,7 @@ function TabPanel(props) {
       {value === index && (
         <Box sx={{ p: 3 }}>
           <Typography>{children}</Typography>
+          <Typography>{data[0].score}</Typography>
         </Box>
       )}
     </div>
