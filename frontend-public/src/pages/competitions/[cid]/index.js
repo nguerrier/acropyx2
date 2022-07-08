@@ -50,7 +50,7 @@ const TabName = styled('span')(({ theme }) => ({
 }))
 
 const CompetitionsPage = ({ data }) => {
-  const [value, setValue] = useState('competition')
+  const [value, setValue] = useState('results')
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
@@ -70,7 +70,16 @@ const CompetitionsPage = ({ data }) => {
               sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}
             >
               <Tab
-                value='account'
+                value='results'
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <InformationOutline />
+                    <TabName>Results</TabName>
+                  </Box>
+                }
+              />
+              <Tab
+                value='pilots'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AccountOutline />
@@ -79,7 +88,7 @@ const CompetitionsPage = ({ data }) => {
                 }
               />
               <Tab
-                value='security'
+                value='judges'
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <LockOpenOutline />
@@ -87,25 +96,16 @@ const CompetitionsPage = ({ data }) => {
                   </Box>
                 }
               />
-              <Tab
-                value='info'
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InformationOutline />
-                    <TabName>Results</TabName>
-                  </Box>
-                }
-              />
             </TabList>
 
-            <TabPanel sx={{ p: 0 }} value='account'>
-              {<TabPilots />}
+            <TabPanel sx={{ p: 0 }} value='pilots'>
+
               {/* <TabAccount /> */}
             </TabPanel>
-            <TabPanel sx={{ p: 0 }} value='security'>
+            <TabPanel sx={{ p: 0 }} value='judge'>
               {/* <TabSecurity /> */}
             </TabPanel>
-            <TabPanel sx={{ p: 0 }} value='info'>
+            <TabPanel sx={{ p: 0 }} value='results'>
               {<TabResults results={data.results} />}
             </TabPanel>
           </TabContext>
@@ -126,7 +126,9 @@ export async function getStaticPaths() {
 
 // This gets called on every request
 export async function getStaticProps(params) {
-  let data = await get(`public/competitions/${params.cid}`)
+  //let data = await get(`public/competitions/${params.cid}`)
+
+  let data = mockData;
 
   // Pass data to the page via props
   return { props: { data } }
