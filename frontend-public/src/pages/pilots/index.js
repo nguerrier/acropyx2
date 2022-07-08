@@ -60,7 +60,7 @@ export async function getStaticProps() {
   let data = await get('public/pilots')
 
   // Pass data to the page via props
-  return { props: { data } }
+  return { props: { data }, revalidate: 10 }
 }
 
 export default PilotsPage
