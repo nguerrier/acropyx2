@@ -130,7 +130,7 @@ const TabResults = ({ results }) => {
               </ListItemAvatar>
               <ListItemText primary='Overall' />
             </ListItemButton>
-            {results.runs_results.map((rr, index) => (
+            {results?.runs_results.map((rr, index) => (
               <ListItemButton
                 key={index}
                 selected={selectedIndex === 1}
@@ -146,7 +146,7 @@ const TabResults = ({ results }) => {
             ))}
           </List>
           <TabPanel
-            rows={results.overall_results
+            rows={results?.overall_results
               .sort((a,b) => b.score - a.score)
               .map((r, index) => createData(index, r.pilot.name, r.score))}
             index={0}
@@ -154,7 +154,7 @@ const TabResults = ({ results }) => {
           >
             Overall results
           </TabPanel>
-          {results.runs_results.map((rr, index) => (
+          {results?.runs_results.map((rr, index) => (
             <TabPanel
               key={index + 1}
               rows={rr.results
