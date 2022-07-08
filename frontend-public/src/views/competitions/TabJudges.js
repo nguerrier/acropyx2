@@ -42,7 +42,7 @@ const TabJudges = ({ judges }) => {
   return (
     <CardContent>
       <Grid container spacing={7}>
-        <Grid item xs={12} md={6} sx={{ marginTop: 4.8 }}>
+        <Grid item xs={12} md={6}>
           <TableContainer component={Paper}>
             <Table aria-label='simple table'>
               <TableHead>
