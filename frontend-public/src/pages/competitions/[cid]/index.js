@@ -130,7 +130,7 @@ export async function getStaticPaths() {
 }
 
 // This gets called on every request
-export async function getStaticProps(params) {
+export async function getStaticProps({ params }) {
   let data = await get(`public/competitions/${params.cid}`)
 
   //let data = mockData;
