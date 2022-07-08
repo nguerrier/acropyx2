@@ -33,9 +33,11 @@ const CustomInput = forwardRef((props, ref) => {
   return <TextField inputRef={ref} label='Birth Date' fullWidth {...props} />
 })
 
-const TabPilots = ({ pilots }) => {
+const TabJudges = ({ judges }) => {
   // ** State
   const [date, setDate] = useState(null)
+
+  console.log(judges);
 
   return (
     <CardContent>
@@ -47,17 +49,19 @@ const TabPilots = ({ pilots }) => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell align='right'>Name</TableCell>
-                  <TableCell align='right'>Rank</TableCell>
+                  <TableCell align='right'>Level</TableCell>
+                  <TableCell align='right'>Country</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {pilots.map((row, index) => (
+                {judges.map((row, index) => (
                   <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell component='th' scope='row'>
                       {index + 1}
                     </TableCell>
                     <TableCell align='right'>{row.name}</TableCell>
-                    <TableCell align='right'>{row.rank}</TableCell>
+                    <TableCell align='right'>{row.level}</TableCell>
+                    <TableCell align='right'>{row.country}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -69,4 +73,4 @@ const TabPilots = ({ pilots }) => {
   )
 }
 
-export default TabPilots
+export default TabJudges

@@ -112,44 +112,40 @@ const TabResults = ({ results }) => {
     setValue(-99)
   }
 
-  console.log("Results: " + results)
+  console.log('Results: ' + results)
 
   return (
     <CardContent>
-      <form>
-        <Grid container spacing={2}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6} sx={{ marginTop: 4.8 }}>
           <Box hidden={value == -99}>
             <IconButton aria-label='delete' onClick={event => handleBackButton(event, 0)}>
               <ArrowBackIcon />
             </IconButton>
           </Box>
           <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }} hidden={value != -99}>
-            <ListItemButton selected={selectedIndex === 0} onClick={event => handleListItemClick(event, 0)}>
+            <ListItemButton onClick={event => handleListItemClick(event, 0)}>
               <ListItemAvatar>
                 <Avatar>
                   <ImageIcon />
                 </Avatar>
               </ListItemAvatar>
-              <ListItemText primary='Overall' />
+              <ListItemText primary='Overall results' />
             </ListItemButton>
             {results.runs_results.map((rr, index) => (
-              <ListItemButton
-                key={index}
-                selected={selectedIndex === 1}
-                onClick={event => handleListItemClick(event, index + 1)}
-              >
+              <ListItemButton key={index} onClick={event => handleListItemClick(event, index + 1)}>
                 <ListItemAvatar>
                   <Avatar>
                     <WorkIcon />
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={'Run ' + (index + 1)} />
+                <ListItemText primary={'Run ' + (index + 1) + ' results'} />
               </ListItemButton>
             ))}
           </List>
           <TabPanel
             rows={results.overall_results
-              .sort((a,b) => b.score - a.score)
+              .sort((a, b) => b.score - a.score)
               .map((r, index) => createData(index, r.pilot.name, r.score))}
             index={0}
             value={value}
@@ -160,7 +156,7 @@ const TabResults = ({ results }) => {
             <TabPanel
               key={index + 1}
               rows={rr.results
-                .sort((a,b) => b.final_marks.score - a.final_marks.score)
+                .sort((a, b) => b.final_marks.score - a.final_marks.score)
                 .map((r, index) => createData(index, r.pilot.name, r.final_marks.score))}
               index={index + 1}
               value={value}
@@ -169,7 +165,7 @@ const TabResults = ({ results }) => {
             </TabPanel>
           ))}
         </Grid>
-      </form>
+      </Grid>
     </CardContent>
   )
 }
