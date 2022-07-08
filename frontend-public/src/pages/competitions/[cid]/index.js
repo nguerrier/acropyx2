@@ -126,9 +126,9 @@ export async function getStaticPaths() {
 
 // This gets called on every request
 export async function getStaticProps(params) {
-  //let data = await get(`public/competitions/${params.cid}`)
+  let data = await get(`public/competitions/${params.cid}`)
 
-  let data = mockData;
+  //let data = mockData;
 
   // Pass data to the page via props
   return { props: { data } }
