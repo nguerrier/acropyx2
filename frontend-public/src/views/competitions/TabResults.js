@@ -5,7 +5,7 @@ import { forwardRef, useState } from 'react'
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import Grid from '@mui/material/Grid'
 import Radio from '@mui/material/Radio'
 import Select from '@mui/material/Select'
@@ -131,19 +131,24 @@ const TabResults = ({ results }) => {
               <ListItemText primary='Overall' />
             </ListItemButton>
             {results.runs_results.map((rr, index) => (
-              <ListItemButton key={index} selected={selectedIndex === 1} onClick={event => handleListItemClick(event, index +1)}>
-              <ListItemAvatar>
-                <Avatar>
-                  <WorkIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={'Run ' + (index +1)} />
-            </ListItemButton>
-            ) )}
-
+              <ListItemButton
+                key={index}
+                selected={selectedIndex === 1}
+                onClick={event => handleListItemClick(event, index + 1)}
+              >
+                <ListItemAvatar>
+                  <Avatar>
+                    <WorkIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={'Run ' + (index + 1)} />
+              </ListItemButton>
+            ))}
           </List>
           <TabPanel
-            rows={results.overall_results.map((r, index) => createData(index, r.pilot.name, r.score))}
+            rows={results.overall_results
+              .sort((a,b) => b.score - a.score)
+              .map((r, index) => createData(index, r.pilot.name, r.score))}
             index={0}
             value={value}
           >
@@ -151,12 +156,14 @@ const TabResults = ({ results }) => {
           </TabPanel>
           {results.runs_results.map((rr, index) => (
             <TabPanel
-              key={index +1}
-              rows={rr.results.map((r, index) => createData(index, r.pilot.name, r.final_marks.score))}
-              index={index +1}
+              key={index + 1}
+              rows={rr.results
+                .sort((a,b) => b.final_marks.score - a.final_marks.score)
+                .map((r, index) => createData(index, r.pilot.name, r.final_marks.score))}
+              index={index + 1}
               value={value}
             >
-              Run {index +1}
+              Run {index + 1}
             </TabPanel>
           ))}
         </Grid>

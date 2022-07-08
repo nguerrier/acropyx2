@@ -90,7 +90,7 @@ const CompetitionsPage = ({ data }) => {
 }
 
 // This gets called on every request
-export async function getServerSideProps() {
+export async function getStaticProps() {
   let data = await get('public/competitions')
 
   // Pass data to the page via props
