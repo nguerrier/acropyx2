@@ -115,18 +115,32 @@ const CompetitionsPage = ({ data }) => {
   )
 }
 
-export async function getStaticPaths() {
-  return {
-    paths: [
-      { params: { cid: 'fr2022' }}
-    ],
-    fallback: false
-  };
-}
+// export async function getStaticPaths() {
+//   return {
+//     paths: [
+//       { params: { cid: 'fr2022' }}
+//     ],
+//     fallback: true
+//   };
+
+
+//   // Call an external API endpoint to get competitions
+//   let res = await get('public/competitions')
+//   const posts = await res.json()
+
+//   // Get the paths we want to pre-render based on posts
+//   const paths = posts.map((post) => ({
+//     params: { cid: post.id },
+//   }))
+
+//   // We'll pre-render only these paths at build time.
+//   // { fallback: false } means other routes should 404.
+//   return { paths, fallback: false }
+// }
 
 // This gets called on every request
-export async function getStaticProps(params) {
-  let data = await get(`public/competitions/${params.cid}`)
+export async function getServerSideProps(context) {
+  let data = await get(`public/competitions/${context.params.cid}`)
 
   //let data = mockData;
 
