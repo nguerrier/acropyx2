@@ -1,5 +1,6 @@
 // ** React Imports
-import { forwardRef, useState } from 'react'
+import { forwardRef, useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -46,6 +47,7 @@ import DatePicker from 'react-datepicker'
 // ** Styled Components
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { createUseGridApiEventHandler } from '@mui/x-data-grid'
+import { InboxRemoveOutline } from 'mdi-material-ui'
 
 const CustomInput = forwardRef((props, ref) => {
   return <TextField inputRef={ref} label='Birth Date' fullWidth {...props} />
@@ -59,16 +61,45 @@ function TabPanel(props) {
   const { children, value, index, rows, handleBackButton, ...other } = props
   const [selectedPilotIndex, setSelectedPilotIndex] = useState(0)
   const [displayPilotResume, setDisplayPilotResume] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (router.query.p) {
+      setSelectedPilotIndex(router.query.p)
+      setDisplayPilotResume(true)
+    } else {
+      setSelectedPilotIndex(0)
+      setDisplayPilotResume(false)
+    }
+  }, [router])
 
   const handlePilot = (event, index) => {
     if (rows[index].tricks) {
       setSelectedPilotIndex(index)
       setDisplayPilotResume(true)
+      router.push(
+        {
+          query: { r: router.query.r, tab: router.query.tab, p: index, cid: router.query.cid }
+        },
+        undefined,
+        { shallow: true }
+      )
     }
+  }
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue)
   }
 
   const hiddenPilotResume = (event, index) => {
     setDisplayPilotResume(false)
+    router.push(
+      {
+        query: { r: router.query.r, tab: router.query.tab, cid: router.query.cid }
+      },
+      undefined,
+      { shallow: true }
+    )
   }
 
   return (
@@ -118,7 +149,9 @@ function TabPanel(props) {
               <IconButton aria-label='delete' onClick={event => hiddenPilotResume(event, 0)}>
                 <ArrowBackIcon />
               </IconButton>
-              <Typography>{children} - {rows[selectedPilotIndex].name}</Typography>
+              <Typography>
+                {children} - {rows[selectedPilotIndex].name}
+              </Typography>
               <Typography variant='span' gutterBottom component='div'>
                 Tricks:
               </Typography>
@@ -167,14 +200,42 @@ const TabResults = ({ results }) => {
   const [date, setDate] = useState(null)
   const [selectedIndex, setSelectedIndex] = useState(1)
   const [value, setValue] = useState(-99)
+  const router = useRouter()
+
+  useEffect(() => {
+    console.log('r:' + router.query.r)
+    if (router.query.r) {
+      setSelectedIndex(parseInt(router.query.r))
+      setValue(parseInt(router.query.r))
+    } else {
+      setSelectedIndex(1)
+      setValue(-99)
+    }
+  }, [router])
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index)
     setValue(index)
+    console.log(value)
+    router.push(
+      {
+        query: { r: index, tab: router.query.tab, cid: router.query.cid }
+      },
+      undefined,
+      { shallow: true }
+    )
   }
 
   const handleBackButton = (event, index) => {
+    console("back")
     setValue(-99)
+    router.push(
+      {
+        query: { tab: router.query.tab, cid: router.query.cid }
+      },
+      undefined,
+      { shallow: true }
+    )
   }
 
   return (
