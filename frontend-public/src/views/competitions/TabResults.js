@@ -118,8 +118,7 @@ function TabPanel(props) {
               <IconButton aria-label='delete' onClick={event => hiddenPilotResume(event, 0)}>
                 <ArrowBackIcon />
               </IconButton>
-              <Typography>{children}</Typography>
-              <Typography>{rows[selectedPilotIndex].name}</Typography>
+              <Typography>{children} - {rows[selectedPilotIndex].name}</Typography>
               <Typography variant='span' gutterBottom component='div'>
                 Tricks:
               </Typography>
@@ -225,7 +224,7 @@ const TabResults = ({ results }) => {
               value={value}
               handleBackButton={event => handleBackButton(event, 100)}
             >
-              Run {index + 1}
+              Run {index + 1} results
             </TabPanel>
           ))}
         </Grid>
