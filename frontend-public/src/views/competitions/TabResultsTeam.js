@@ -8,30 +8,17 @@ import IconButton from '@mui/material/IconButton'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import Grid from '@mui/material/Grid'
-import Radio from '@mui/material/Radio'
-import Select from '@mui/material/Select'
-import Button from '@mui/material/Button'
-import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
-import FormLabel from '@mui/material/FormLabel'
-import InputLabel from '@mui/material/InputLabel'
-import RadioGroup from '@mui/material/RadioGroup'
 import CardContent from '@mui/material/CardContent'
-import FormControl from '@mui/material/FormControl'
-import OutlinedInput from '@mui/material/OutlinedInput'
-import FormControlLabel from '@mui/material/FormControlLabel'
 import Typography from '@mui/material/Typography'
 import ListItemButton from '@mui/material/ListItemButton'
 
 import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import Avatar from '@mui/material/Avatar'
 import ImageIcon from '@mui/icons-material/Image'
 import WorkIcon from '@mui/icons-material/Work'
-import BeachAccessIcon from '@mui/icons-material/BeachAccess'
-import EnhancedTable from 'src/views/tables/EnhancedTable'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
@@ -39,22 +26,13 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Table from '@mui/material/Table'
-import SquareIcon from '@mui/icons-material/Square'
-
-// ** Third Party Imports
-import DatePicker from 'react-datepicker'
-
-// ** Styled Components
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { createUseGridApiEventHandler } from '@mui/x-data-grid'
-import { InboxRemoveOutline } from 'mdi-material-ui'
 
 const CustomInput = forwardRef((props, ref) => {
   return <TextField inputRef={ref} label='Birth Date' fullWidth {...props} />
 })
 
-function createData(rank, name, score, tricks, finalMarks) {
-  return { rank, name, score, tricks, finalMarks }
+function createData(rank, teamName, pilots, score, tricks, finalMarks) {
+  return { rank, teamName, pilots, score, tricks, finalMarks }
 }
 
 function TabPanel(props) {
@@ -122,6 +100,7 @@ function TabPanel(props) {
                 <TableRow>
                   <TableCell>Rank</TableCell>
                   <TableCell align='right'>Name</TableCell>
+                  <TableCell align='right'>Pilots name</TableCell>
                   <TableCell align='right'>Score</TableCell>
                 </TableRow>
               </TableHead>
@@ -136,7 +115,10 @@ function TabPanel(props) {
                     <TableCell component='th' scope='row'>
                       {index + 1}
                     </TableCell>
-                    <TableCell align='right'>{row.name}</TableCell>
+                    <TableCell align='right'>{row.teamName}</TableCell>
+                    <TableCell align='right'>{row.pilots.map((p,i)=>(
+                      <div key="i">{p.name}</div>
+                    ))}</TableCell>
                     <TableCell align='right'>{row.score.toLocaleString('en-US')}</TableCell>
                   </TableRow>
                 ))}
@@ -227,7 +209,6 @@ const TabResults = ({ results }) => {
   }
 
   const handleBackButton = (event, index) => {
-    console("back")
     setValue(-99)
     router.push(
       {
@@ -266,7 +247,7 @@ const TabResults = ({ results }) => {
           <TabPanel
             rows={results.overall_results
               .sort((a, b) => b.score - a.score)
-              .map((r, index) => createData(index, r.pilot.name, r.score))}
+              .map((r, index) => createData(index, r.team.name, r.team.pilots, r.score))}
             index={0}
             value={value}
             handleBackButton={event => handleBackButton(event, 100)}
@@ -278,7 +259,7 @@ const TabResults = ({ results }) => {
               key={index + 1}
               rows={rr.results
                 .sort((a, b) => b.final_marks.score - a.final_marks.score)
-                .map((r, index) => createData(index, r.pilot.name, r.final_marks.score, r.tricks, r.final_marks))}
+                .map((r, index) => createData(index, r.team.name, r.team.pilots, r.final_marks.score, r.tricks, r.final_marks))}
               index={index + 1}
               value={value}
               handleBackButton={event => handleBackButton(event, 100)}
