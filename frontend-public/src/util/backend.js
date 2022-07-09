@@ -14,22 +14,7 @@ export async function getAuthToken() {
 }
 
 export async function get(route) {
-
-  //const token = await getAuthToken()
-  // var myHeaders = new Headers({
-  //   Authorization: 'Bearer ' + token.access_token
-  // })
-
   const { data } = await axios.get('https://preprod-api-acropyx.herokuapp.com/' + route)
-
-  // const res = await fetch('https://preprod-api-acropyx.herokuapp.com/' + route, {
-  //   method: 'GET',
-
-  //   //headers: myHeaders
-  // })
-
-  //let result = res.json()
-  //console.log(res)
 
   return data
 }

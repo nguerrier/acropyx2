@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 // ** MUI Imports
@@ -56,6 +56,10 @@ const TabName = styled('span')(({ theme }) => ({
 const CompetitionsPage = ({ data }) => {
   const router = useRouter()
   const [value, setValue] = useState('results')
+
+  useEffect(() => {
+    setValue(router.query.tab)
+  }, [router]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
@@ -138,30 +142,30 @@ const CompetitionsPage = ({ data }) => {
 
 export async function getStaticPaths() {
   // Call an external API endpoint to get competitions
-   let res = await get('public/competitions')
+  //let res = await get('public/competitions')
 
   // Get the paths we want to pre-render based on posts
-   const paths = res.map((c) => ({
-     params: { cid: c.code },
-   }))
+  //const paths = res.map((c) => ({
+  //  params: { cid: c.code },
+  //}))
 
   // We'll pre-render only these paths at build time.
   // { fallback: false } means other routes should 404.
   return {
-    paths,
+    //paths,
 
-    // paths: [
-    //   { params: { cid: 'awt-leryposes-2022' } } // See the "paths" section below
-    // ],
+    paths: [
+      { params: { cid: 'awt-leryposes-2022' } } // See the "paths" section below
+    ],
     fallback: false
   }
 }
 
 // This gets called on every request
 export async function getStaticProps({ params }) {
-  let data = await get(`public/competitions/${params.cid}`)
+  //let data = await get(`public/competitions/${params.cid}`)
 
-  //let data = mockData
+  let data = mockData
 
   // Pass data to the page via props
   return { props: { data }, revalidate: 10 }
