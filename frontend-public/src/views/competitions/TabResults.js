@@ -177,8 +177,6 @@ const TabResults = ({ results }) => {
     setValue(-99)
   }
 
-  console.log('Results: ' + results)
-
   return (
     <CardContent>
       <Grid container spacing={2}>
