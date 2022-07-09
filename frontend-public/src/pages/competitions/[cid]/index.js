@@ -149,6 +149,7 @@ export async function getStaticPaths() {
   // { fallback: false } means other routes should 404.
   return {
     paths,
+
     // paths: [
     //   { params: { cid: 'awt-leryposes-2022' } } // See the "paths" section below
     // ],
